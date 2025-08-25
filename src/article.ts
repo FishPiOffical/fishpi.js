@@ -1,7 +1,5 @@
 import { analyzeMetalAttr, domain, isBrowse, request } from './utils';
-import { 
-    ArticlePost, ArticleListType, ArticleDetail, VoteStatus, ArticleList, ArticleType
-} from './types';
+import { ArticlePost } from './types';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export class Article
@@ -81,7 +79,7 @@ export class Article
     async list(
         { type, page = 1, tag }:
         { type:ArticleListType, page?: number, tag?:string }
-    ):Promise<ArticleList> {
+    ):Promise<IArticleList> {
         let rsp;
         try {
             rsp = await request({
@@ -103,19 +101,20 @@ export class Article
     /**
      * 查询用户文章列表
      * @param userName 用户名
+     * @param page 页码
      * @returns 文章列表
      */
     async userArticles(
         { userName, page = 1 }: 
         { userName: string, page: number }
-    ):Promise<ArticleList> {
+    ):Promise<IArticleList> {
         let rsp;
         try {
             rsp = await request({
                 url: `api/articles/${userName}/articles?p=${page}&${
                     this._apiKey ? `apiKey=${this._apiKey}` : ''
                 }`,
-            });         
+            });
             
             if (rsp.code) throw new Error(rsp.msg);
 
@@ -130,7 +129,7 @@ export class Article
      * @param id 文章id
      * @returns 文章详情
      */
-    async detail(id:string, p=1):Promise<ArticleDetail> {
+    async detail(id:string, p=1):Promise<IArticleDetail> {
         let rsp;
         try {
             rsp = await request({
@@ -161,7 +160,7 @@ export class Article
      * @param type 点赞类型
      * @returns 文章点赞状态
      */
-    async vote(id:string, type:'up' | 'down'):Promise<VoteStatus> {
+    async vote(id:string, type:'up' | 'down'):Promise<VoteType> {
         let rsp;
         try {
             rsp = await request({

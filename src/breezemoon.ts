@@ -1,7 +1,5 @@
 import { request } from './utils';
-import { 
-    BreezemoonContent
-} from './types';
+
 
 export class Breezemoon
 {
@@ -25,7 +23,7 @@ export class Breezemoon
      * @param page 消息页码
      * @param size 每页个数
      */
-    async list(page=1, size=20):Promise<BreezemoonContent[]> {
+    async list(page=1, size=20):Promise<IBreezemoonContent[]> {
         try {
             let rsp = await request({
                 url: `api/breezemoons?p=${page}&size=${size}`
@@ -34,6 +32,24 @@ export class Breezemoon
             if (rsp.code) throw new Error(rsp.msg);
 
             return rsp.breezemoons;
+        } catch (e) {
+            throw e;
+        }
+    }
+
+    /**
+     * 获取用户清风明月列表
+     * @param user 用户名
+     * @param page 消息页码
+     * @param size 每页个数
+     */
+    async listByUser(user: string, page=1, size=20):Promise<IBreezemoonContent[]> {
+        try {
+            let rsp = await request({
+                url: `api/user/${user}/breezemoons?p=${page}&size=${size}&apiKey=${this._apiKey}`
+            });
+
+            return rsp.data;
         } catch (e) {
             throw e;
         }

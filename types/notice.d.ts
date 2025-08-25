@@ -1,9 +1,8 @@
-import { ArticleTag, DataType } from "./";
 
 /**
  * 通知类型
  */
-export enum NoticeType {
+declare enum NoticeType {
     /**
      * 积分
      */
@@ -37,281 +36,281 @@ export enum NoticeType {
 /**
  * 通知列表
  */
-export type NoticeList = Array<NoticePoint | NoticeComment | NoticeAt | NoticeFollow | NoticeSystem>
+declare type NoticeList = Array<INoticePoint | INoticeComment | INoticeAt | INoticeFollow | INoticeSystem>
 
 /**
  * 通知数
  */
-export class  NoticeCount {
+declare interface INoticeCount {
     /**
      * 用户是否启用 Web 通知
      */
-    userNotifyStatus: boolean = true;
+    userNotifyStatus: boolean;
     /**
      * 未读通知数
      */
-    unreadNotificationCnt: number = 0;
+    unreadNotificationCnt: number;
     /**
      * 未读回复通知数
      */
-    unreadReplyNotificationCnt: number = 0;
+    unreadReplyNotificationCnt: number;
     /**
      * 未读积分通知数
      */
-    unreadPointNotificationCnt: number = 0;
+    unreadPointNotificationCnt: number;
     /**
      * 未读 @ 通知数
      */
-    unreadAtNotificationCnt: number = 0;
+    unreadAtNotificationCnt: number;
     /**
      * 未读同城通知数
      */
-    unreadBroadcastNotificationCnt: number = 0;
+    unreadBroadcastNotificationCnt: number;
     /**
      * 未读系统通知数
      */
-    unreadSysAnnounceNotificationCnt: number = 0;
+    unreadSysAnnounceNotificationCnt: number;
     /**
      * 未读关注者通知数
      */
-    unreadNewFollowerNotificationCnt: number = 0;
+    unreadNewFollowerNotificationCnt: number;
     /**
      * 未读关注通知数
      */
-    unreadFollowingNotificationCnt: number = 0;
+    unreadFollowingNotificationCnt: number;
     /**
      * 未读评论通知数
      */
-    unreadCommentedNotificationCnt: number = 0;
+    unreadCommentedNotificationCnt: number;
 }
 
 /**
  * 积分通知
  */
-export class NoticePoint {
+declare interface INoticePoint {
     /**
      * 通知 id
      */
-    oId: string = '';
+    oId: string;
     /**
      * 数据 id
      */
-    dataId: string = '';
+    dataId: string;
     /**
      * 用户 id
      */
-    userId: string = '';
+    userId: string;
     /**
      * 数据类型
      */
-    dataType: DataType = DataType.at;
+    dataType: DataType;
     /**
      * 通知描述
      */
-    description: string = '';
+    description: string;
     /**
      * 是否已读
      */
-    hasRead: boolean = true;
+    hasRead: boolean;
     /**
      * 创建日期
      */
-    createTime: string = '';
+    createTime: string;
 }
 
 /**
  * 评论/回帖通知
  */
-export class NoticeComment {
+declare interface INoticeComment {
     /**
      * 通知 id
      */
-    oId: string = '';
+    oId: string;
     /**
      * 文章标题
      */
-    commentArticleTitle: string = '';
+    commentArticleTitle: string;
     /**
      * 文章作者
      */
-    commentAuthorName: string = '';
+    commentAuthorName: string;
     /**
      * 作者头像
      */
-    commentAuthorThumbnailURL: string = '';
+    commentAuthorThumbnailURL: string;
     /**
      * 文章类型
      */
-    commentArticleType: number = 0;
+    commentArticleType: number;
     /**
      * 是否精选
      */
-    commentArticlePerfect: number = 0;
+    commentArticlePerfect: number;
     /**
      * 评论内容
      */
-    commentContent: string = '';
+    commentContent: string;
     /**
      * 评论地址
      */
-    commentSharpURL: string = '';
+    commentSharpURL: string;
     /**
      * 是否已读
      */
-    hasRead: boolean = true;
+    hasRead: boolean;
     /**
      * 评论时间
      */
-    commentCreateTime: string = '';
+    commentCreateTime: string;
 }
 
 /**
  * 提到我通知
  */
-export class NoticeAt {
+declare interface INoticeAt {
     /**
      * 通知 id
      */
-    oId: string = '';
+    oId: string;
     /**
      * 数据类型
      */
-    dataType: DataType = DataType.at;
+    dataType: DataType;
     /**
      * 用户名
      */
-    userName: string = '';
+    userName: string;
     /**
      * 用户头像
      */
-    userAvatarURL: string = '';
+    userAvatarURL: string;
     /**
      * 通知内容
      */
-    content: string = '';
+    content: string;
     /**
      * 是否已读
      */
-    hasRead: boolean = true;
+    hasRead: boolean;
     /**
      * 创建时间
      */
-    createTime: string = '';
+    createTime: string;
 }
 
 /**
  * 我关注的通知
  */
-export class NoticeFollow {
+declare interface INoticeFollow {
     /**
      * 通知 Id
      */
-    oId: string = '';
+    oId: string;
     /**
      * 文章地址
      */
-    url: string = '';
+    url: string;
     /**
      * 数据类型
      */
-    dataType: DataType = DataType.at;
+    dataType: DataType;
     /**
      * 文章标题
      */
-    articleTitle: string = '';
+    articleTitle: string;
     /**
      * 作者
      */
-    authorName: string = '';
+    authorName: string;
     /**
      * 通知内容
      */
-    content: string = '';
+    content: string;
     /**
      * 是否评论
      */
-    isComment: boolean = false;
+    isComment: boolean;
     /**
      * 作者头像
      */
-    thumbnailURL: string = '';
+    thumbnailURL: string;
     /**
      * 文章评论数
      */
-    articleCommentCount: number = 0;
+    articleCommentCount: number;
     /**
      * 是否精选
      */
-    articlePerfect: number = 0;
+    articlePerfect: number;
     /**
      * 文章标签列表
      */
-    articleTagObjs: Array<ArticleTag> = [];
+    articleTagObjs: IArticleTag[];
     /**
      * 文章标签
      */
-    articleTags: string = '';
+    articleTags: string;
     /**
      * 文章类型
      */
-    articleType: number = 0;
+    articleType: number;
     /**
      * 是否已读
      */
-    hasRead: boolean = true;
+    hasRead: boolean;
     /**
      * 通知创建时间
      */
-    createTime: string = '';
+    createTime: string;
 }
 
 /**
  * 系统通知数据
  */
-export class NoticeSystem {
+declare interface INoticeSystem {
     /**
      * 消息的 oId
      */
-    oId: string = '';
+    oId: string;
     /**
      * 用户 Id
      */
-    userId: string = '';
+    userId: string;
     /**
      * 数据 Id
      */
-    dataId: string = '';
+    dataId: string;
     /**
      * 数据类型
      */
-    dataType: DataType = DataType.at;
+    dataType: DataType;
     /**
      * 消息描述
      */
-    description: string = '';
+    description: string;
     /**
      * 是否已读
      */
-    hasRead: boolean = true;
+    hasRead: boolean;
     /**
      * 创建日期
      */
-    createTime: string = '';
+    createTime: string;
 }
 
 
 /**
  * 通知消息
  */
-export class NoticeMsg {
+declare interface INoticeMsg {
     /**
      * 通知类型 
      */ 
-    command: 'refreshNotification' | 'chatUnreadCountRefresh' | 'newIdleChatMessage' | 'warnBroadcast' = 'refreshNotification';
+    command: 'refreshNotification' | 'chatUnreadCountRefresh' | 'newIdleChatMessage' | 'warnBroadcast';
     /*
      * 通知接收者用户Id
      */
-    userId: string = '';
+    userId: string;
     /**
      * 私聊内容预览，仅 `newIdleChatMessage` 有信息
      */

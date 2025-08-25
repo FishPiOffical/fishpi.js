@@ -1,6 +1,5 @@
 import { 
     Metal,
-    MetalList
 } from './types';
 
 let domain = 'fishpi.cn'
@@ -65,7 +64,7 @@ function analyzeMetalAttr(m:any): Metal {
     return m;
 }
 
-function toMetal(sysMetal:string):MetalList {
+function toMetal(sysMetal:string): IMetal[] {
     try {
         let metal: { list: Array<any> } = JSON.parse(sysMetal);
         metal.list.forEach((m, i, list) => {

@@ -1,4 +1,3 @@
-import { UserAppRole } from "./";
 import { domain } from "../utils";
 
 /**
@@ -76,12 +75,12 @@ export class UserInfo {
     /**
      * 用户所有勋章列表，包含未佩戴
      */
-    allMetalOwned: MetalList = [];
+    allMetalOwned: Metal[] = [];
 
     /**
      * 用户勋章列表
      */
-    sysMetal: MetalList = [];
+    sysMetal: Metal[] = [];
 }
 
 /**
@@ -163,78 +162,6 @@ export class Metal extends MetalBase {
     enable: boolean = true;
 }
 
-/**
- * 徽章列表
- */
-export type MetalList = Array<Metal>
-
-export enum ClientType {
-    /**
-     * 网页端
-     */
-    Web = 'Web',
-    /**
-     * PC 端
-     */
-    PC = 'PC',
-    /**
-     * 移动端聊天室
-     */
-    Mobile = 'Mobile',
-    /**
-     * Windows 客户端
-     */
-    Windows = 'Windows',
-    /**
-     * macOS 客户端
-     */
-    macOS = 'macOS',
-    /**
-     * iOS 客户端
-     */
-    iOS = 'iOS',
-    /**
-     * Android 客户端
-     */
-    Android = 'Android',
-    /**
-     * IDEA 插件
-     */
-    IDEA = 'IDEA',
-    /**
-     * Chrome 插件
-     */
-    Chrome = 'Chrome',
-    /**
-     * Edge 插件
-     */
-    Edge = 'Edge',
-    /**
-     * VSCode 插件
-     */
-    VSCode = 'VSCode',
-    /**
-     * Python 插件
-     */
-    Python = 'Python',
-    /**
-     * Golang 插件
-     */
-    Golang = 'Golang',
-    /**
-     * 小冰机器人
-     */
-    IceNet = 'IceNet',
-    /**
-     * 凌机器人
-     */
-    ElvesOnline = 'ElvesOnline',
-    /**
-     * 其他插件
-     */
-    Other = 'Other',
-}
-
 export class AtUser {
     /**
      * 用户名
@@ -249,8 +176,3 @@ export class AtUser {
      */
     userNameLowerCase: string = '';
 }
-
-/**
- * @ 用户列表
- */
-export type AtUserList = AtUser[];

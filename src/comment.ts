@@ -1,6 +1,6 @@
 import { request } from './utils';
 import { 
-    CommentPost, VoteStatus, 
+    CommentPost, 
 } from './types';
 
 export class Comment
@@ -72,7 +72,7 @@ export class Comment
      * @param id 评论 Id
      * @param type 点赞类型
      */
-    async vote(id:string, type:'up' | 'down'):Promise<VoteStatus> {
+    async vote(id:string, type:'up' | 'down'):Promise<VoteType> {
         let rsp;
         try {
             rsp = await request({

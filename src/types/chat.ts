@@ -1,64 +1,25 @@
-/**
- * 私聊内容
- */
-export class ChatData {
+export interface ChatEvents {
     /**
-     * 接收者 Id
+     * 私聊消息
+     * @param msg 私聊消息内容
      */
-    toId: string = '';
+    data: (msg: IChatData) => void;
     /**
-     * 预览内容
+     * 私聊通知消息
+     * @param msg 私聊通知
      */
-    preview: string = '';
+    notice: (msg: IChatNotice) => void;
     /**
-     * 消息用户 Session
+     * 撤回消息
+     * @param oId 消息 ID
      */
-    user_session: string = '';
+    revoke: (oId: string) => void;
     /**
-     * 发送者头像
+     * 聊天 Websocket 关闭
      */
-    senderAvatar: string = '';
+    socketClose: (event: CloseEvent) => void;
     /**
-     * 消息 Markdown
+     * 聊天 Websocket 错误
      */
-    markdown: string = '';
-    /**
-     * 接收者头像
-     */
-    receiverAvatar: string = '';
-    /**
-     * 消息 Id
-     */
-    oId: string = '';
-    /**
-     * 发送时间
-     */
-    time: string = '';
-    /**
-     * 来源 Id
-     */
-    fromId: string = '';
-    /**
-     * 发送者用户名
-     */
-    senderUserName: string = '';
-    /**
-     * 消息内容 HTML
-     */
-    content: string = '';
-    /**
-     * 接收者用户名
-     */
-    receiverUserName: string = '';
-}
-
-/**
- * 私聊撤回消息
- */
-export class ChatRevoke {
-    /**
-     * 消息 Id
-     */
-    data: string = '';
-    type: 'revoke' = 'revoke';
+    socketError: (error: ErrorEvent) => void;
 }

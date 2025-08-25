@@ -1,4 +1,4 @@
-import { MetalBase, UserBag, UserIP } from './types';
+import { MetalBase } from './types';
 import { analyzeMetalAttr, request } from './utils';
 
 export class Finger
@@ -46,7 +46,7 @@ export class Finger
      * 查询用户最近登录的IP地址
      * @param userName: 用户在摸鱼派的用户名
      */
-    async queryLatestLoginIP(userName: string): Promise<UserIP> {
+    async queryLatestLoginIP(userName: string): Promise<IUserIP> {
         let rsp;
         try {
             rsp = await request({
@@ -140,7 +140,7 @@ export class Finger
      * 查询用户背包
      * @param userName: 用户在摸鱼派的用户名
      */
-    async queryUserBag(userName: string): Promise<UserBag> {
+    async queryUserBag(userName: string): Promise<IUserBag> {
         let rsp;
         try {
             rsp = await request({
@@ -246,9 +246,7 @@ export class Finger
                     goldFingerKey: this.goldFingerKey,
                     userName,
                 },
-            });
-            
-            if (rsp.code !== 0) throw new Error(rsp.msg)
+            });            
 
             return rsp.sum;
         } catch (e) {

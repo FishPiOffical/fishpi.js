@@ -1,6 +1,6 @@
-import { ClientType, MetalList, RedPacket, RedPacketMessage, RedPacketStatusMsg } from "../typing";
+import { ErrorEvent, CloseEvent } from "reconnecting-websocket";
 
-export class ChatRoomSource {
+export class ChatRoomSource implements IChatRoomSource {
     /**
      * 消息来源
      */
@@ -11,247 +11,63 @@ export class ChatRoomSource {
     version: string = 'latest';
 }
 
-/**
- * 聊天室消息
- */
-export class ChatRoomMessage {
+export interface ChatRoomEvents {
     /**
-     * 消息 Id
+     * 在线用户变更
+     * @param onlines 在线用户
      */
-    oId: string = '';
+    online: (onlines: IOnlineInfo[]) => void;
     /**
-     * 发送者用户名
+     * 话题变更
+     * @param discuss 话题
      */
-    userName: string = '';
+    discussChanged: (discuss: discussMsg) => void;
     /**
-     * 用户昵称
+     * 撤回消息
+     * @param oId 被撤回消息 oId
      */
-    userNickname: string = '';
+    revoke: (oId: RevokeMsg) => void;
     /**
-     * 用户头像
+     * 弹幕消息
+     * @param barrage 弹幕消息内容
      */
-    userAvatarURL: string = '';
+    barrager: (barrage: IBarragerMsg) => void;
     /**
-     * 用户徽章
+     * 聊天消息
+     * @param msg 聊天消息内容
      */
-    sysMetal: MetalList = [];
+    msg: (msg: IChatRoomMsg) => void;
     /**
-     * 消息来源
+     * 红包消息
+     * @param redpacket 红包内容
      */
-    client: string = '';
+    redPacket: (redpacket: IRedPacketInfo) => void;
     /**
-     * 消息来源解析
+     * 音乐消息
+     * @param music 音乐消息内容
      */
-    via = new ChatRoomSource();
+    music: (music: IChatMusic) => void;
     /**
-     * 消息内容
+     * 天气消息
+     * @param weather 天气消息内容
      */
-    content: string | RedPacketMessage = new RedPacketMessage();
+    weather: (weather: IChatWeather) => void;
     /**
-     * 发送时间
+     * 红包领取
+     * @param status 红包领取状态
      */
-    time: string = '';
-}
-
-/**
- * 历史消息类型
- */
-export enum ChatContentType {
+    redPacketStatus: (status: IRedPacketStatusMsg) => void;
     /**
-     * 原始 Markdown
+     * 进出通知
+     * @param msg 进出通知内容
      */
-    Markdown = 'md',
+    customMessage: (msg: CustomMsg) => void;
     /**
-     * 渲染 HTML 
+     * 聊天 Websocket 关闭
      */
-    HTML = 'html'
-}
-
-/**
- * chatroom get 接口获取 oId 的相关消息类型
- */
-export enum ChatMessageType {
+    socketClose: (event: CloseEvent) => void;
     /**
-     * 前后消息
+     * 聊天 Websocket 错误
      */
-    Context = 0,
-    /**
-     * 前面的消息
-     */
-    Before = 1,
-    /**
-     * 后面的消息
-     */
-    After = 2,
-}
-
-/**
- * 聊天室消息类型
- */
-export enum ChatRoomMessageType {
-    /**
-     * 在线用户
-     */
-    online = 'online',
-    /**
-     * 话题修改
-     */
-    discussChanged = 'discussChanged',
-    /**
-     * 消息撤回
-     */
-    revoke = 'revoke',
-    /**
-     * 消息
-     */
-    msg = 'msg',
-    /**
-     * 红包
-     */
-    redPacket = 'redPacket',
-    /**
-     * 红包状态
-     */
-    redPacketStatus = 'redPacketStatus',
-    /**
-     * 弹幕
-     */
-    barrager = 'barrager',
-    /**
-     * 自定义消息
-     */
-    custom = 'customMessage',
-}
-
-/**
- * 聊天室消息
- */
-export interface Message extends MessageEvent {
-    /**
-     * 消息类型，
-     */
-    type: ChatRoomMessageType | string;
-    /**
-     * 消息内容
-     */
-    data: OnlineMsg | discussMsg | RevokeMsg | ChatMsg | RedPacketStatusMsg | BarragerMsg | CustomMsg;
-}
-
-export type CustomMsg = string;
-
-/**
- * 弹幕消息
- */
-export class BarragerMsg {
-    /**
-     * 用户名
-     */
-    userName: string = '';
-    /**
-     * 用户昵称
-     */
-    userNickname: string = '';
-    /**
-     * 弹幕内容
-     */
-    barragerContent: string = '';
-    /**
-     * 弹幕颜色
-     */
-    barragerColor: string = '';
-    /**
-     * 用户头像地址
-     */
-    userAvatarURL: string = '';
-    /**
-     * 用户头像地址 20x20
-     */
-    userAvatarURL20: string = '';
-    /**
-     * 用户头像地址 48x48
-     */
-    userAvatarURL48: string = '';
-    /**
-     * 用户头像地址 210x210
-     */
-    userAvatarURL210: string = '';
-}
-
-/**
- * 在线用户信息
- */
-export class OnlineInfo {
-    /**
-     * 用户首页
-     */
-    homePage: string = '';
-    /**
-     * 用户头像
-     */
-    userAvatarURL: string = '';
-    /**
-     * 用户名
-     */
-    userName: string = '';
-}
-
-/**
- * 在线用户消息
- */
-export type OnlineMsg = OnlineInfo[]
-
-/**
- * 主题修改消息，主题内容
- */
-export type discussMsg = string
-
-/**
- * 撤回消息，被撤回消息的 oId
- */
-export type RevokeMsg = string
-
-/**
- * 聊天消息
- */
-export class ChatMsg {
-    /**
-     * 消息 oId
-     */
-    oId: string = '';
-    /**
-     * 消息发送时间
-     */
-    time: string = '';
-    /**
-     * 用户 Id
-     */
-    userOId: string = '';
-    /**
-     * 发送者用户名
-     */
-    userName: string = '';
-    /**
-     * 发送者昵称
-     */
-    userNickname: string = '';
-    /**
-     * 发送者头像
-     */
-    userAvatarURL: string = '';
-    /**
-     * 消息内容
-     */
-    content: string | RedPacket = '';
-    /**
-     * 消息内容 Markdown
-     */
-    md: string = ''
-    /**
-     * 消息来源
-     */
-    client: string = '';
-    /**
-     * 消息来源解析
-     */
-    via = new ChatRoomSource();
+    socketError: (error: ErrorEvent) => void;
 }

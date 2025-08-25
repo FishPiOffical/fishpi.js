@@ -1,7 +1,4 @@
 import { request } from './utils';
-import { 
-    NoticeCount, NoticeList, NoticeType
-} from './types';
 
 export class Notice
 {
@@ -23,7 +20,7 @@ export class Notice
     /**
      * 获取未读消息数
      */
-     async count():Promise<NoticeCount> {
+     async count():Promise<INoticeCount> {
         let rsp;
         try {
             rsp = await request({

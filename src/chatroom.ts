@@ -1,18 +1,17 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { request, domain, toMetal, isBrowse, clientToVia } from './utils';
-import { 
-    ChatContentType, ChatMessageType, ClientType, ChatRoomMessage, GestureType, Message, MuteItem, RedPacket, RedPacketInfo 
-} from './types';
+import { ChatRoomEvents } from './types';
+import { EventEmitter } from 'events';
 
 export class ChatRoom {
     private _apiKey:string = '';
     private _discusse:string = '';
-    private _onlines:Array<any>=[];
+    private _onlines:IOnlineInfo[]=[];
     private _rws:ReconnectingWebSocket | null = null;
     private _wsTimer:NodeJS.Timeout | null = null;
-    private _wsCallbacks:Array<Function> = [];
     private _client:ClientType | string = ClientType.Other;
     private _version:string = 'Latest';
+    private emitter = new EventEmitter();
 
     constructor(token:string='') {
         if (!token) { return; }
@@ -46,6 +45,7 @@ export class ChatRoom {
      */
     setToken(apiKey:string) {
         this._apiKey = apiKey;
+        this.redpacket.setToken(apiKey);
     }
 
     /**
@@ -62,7 +62,7 @@ export class ChatRoom {
      * 查询聊天室历史消息
      * @param page 消息页码
      */
-    async more(page=1, type=ChatContentType.HTML):Promise<ChatRoomMessage[]> {
+    async more(page=1, type=ChatContentType.HTML):Promise<IChatRoomMessage[]> {
         try {
             let rsp = await request({
                 url: `chat-room/more?page=${page}&type=${type}&apiKey=${this._apiKey}`
@@ -78,10 +78,8 @@ export class ChatRoom {
                 try {
                     data[i].via = clientToVia(data[i].client)
                     data[i].sysMetal = toMetal(data[i].sysMetal);
-                    redpacket = JSON.parse(d.content);
-                    if (redpacket.msgType !== 'redPacket') return rsp;
-                    if (redpacket.recivers) redpacket.recivers = JSON.parse(redpacket.recivers);
-                    data[i].content = redpacket;
+                    data[i].content = JSON.parse(d.content);
+                    if (data[i].content.recivers) data[i].content.recivers = JSON.parse(data[i].content.recivers);
                 } catch (e) {}
             })
 
@@ -93,7 +91,7 @@ export class ChatRoom {
 
     async get({
         oId, mode, size=25, type
-    }:{ oId:string, mode:ChatMessageType.Context, size:number, type:ChatContentType.HTML }):Promise<ChatRoomMessage[]> {
+    }:{ oId:string, mode:ChatMessageType.Context, size:number, type:ChatContentType.HTML }):Promise<IChatRoomMessage[]> {
         try {
             let rsp = await request({
                 url: `chat-room/getMessage?oId=${oId}&mode=${mode}&size=${size}&type=${type}&apiKey=${this._apiKey}`
@@ -222,7 +220,7 @@ export class ChatRoom {
     /**
      * 获取禁言中成员列表（思过崖）
      */
-    async mutes(): Promise<MuteItem[]> {
+    async mutes(): Promise<IMuteItem[]> {
         let rsp;
         try {
             rsp = await request({
@@ -260,59 +258,56 @@ export class ChatRoom {
     /**
      * 红包接口对象
      */
-     get redpacket() {
-        let apiKey = this._apiKey;
-        let that = this;
-        return {
-            /**
-             * 打开一个红包
-             * @param oId 红包消息 Id
-             * @param gesture 猜拳类型
-             */
-            async open(oId:string, gesture?:GestureType):Promise<RedPacketInfo> {
-                let rsp;
-                try {
-                    rsp = await request({
-                        url: `chat-room/red-packet/open`,
-                        method: 'post',
-                        data: {
-                            oId,
-                            gesture,
-                            apiKey
-                        },
-                    });
+    redpacket = new RedPacket(this, this._apiKey);
 
-                    if (rsp.code) throw new Error(rsp.msg)
-        
-                    return rsp.data;            
-                } catch (e) {
-                    throw e;
-                }
-            },
-            /**
-             * 发送一个红包
-             * @param redpacket 红包对象
-             */
-            async send(redpacket:RedPacket) {
-                return await that.send(`[redpacket]${JSON.stringify(redpacket)}[/redpacket]`)
-            }
+    /**
+     * 获取聊天室节点
+     * @returns 返回节点地址
+     */
+    async getNode():Promise<IChatRoomNodeInfo> {
+        let rsp: any;
+        try {
+            rsp = await request({
+                url: `chat-room/node/get?apiKey=${this._apiKey}`,
+                method: 'get',
+            });
+
+            if (rsp.code != 0) throw new Error("获取节点失败：" + rsp.msg);            
+
+            return {
+                recommend: {
+                    node: rsp.data,
+                    name: rsp.msg,
+                    online: rsp.avaliable.find((n:any) => n.node === rsp.data)?.online || 0
+                },
+                avaliable: rsp.avaliable,
+            };
+        } catch (e) {
+            throw e;
         }
     }
 
     /**
+     * 连接聊天室
+     * @param url 聊天室节点地址
+     * @param timeout 超时时间，单位为秒，默认为 10
+     */
+    connect(args: { url?:string, timeout?: number }={}) {
+        return this.reconnect(args);
+    }
+
+    /**
      * 重连聊天室
-     * @param timeout 超时时间
-     * @param error 错误回调
-     * @param close 关闭回调
+     * @param url 聊天室节点地址
+     * @param timeout 超时时间，单位为秒，默认为 10
      * @returns 返回 Open Event
      */
-    async reconnect(
-        { timeout=10, error=(ev: any) => {}, close=(ev: any) => {} }: 
-        { timeout?: number, error?: (ev: any) => void, close?: (ev: any) => void} = {}) {
-        return new Promise(async (resolve, reject) => {
+    async reconnect({ url=``, timeout=10 }: { url?:string, timeout?: number }={}) {
+        return new Promise(async (resolve) => {
+            if (!url) url = await this.getNode().then((rsp) => rsp.recommend.node).catch(() => `wss://${domain}/chat-room-channel?apiKey=${this._apiKey}`);
+            if (!url.includes('apiKey=')) url += `${url.includes('?') ? '&' : '?'}apiKey=${this._apiKey}`;
             if (this._rws) return resolve(this._rws.reconnect());
-            this._rws = new ReconnectingWebSocket(
-                `wss://${domain}/chat-room-channel?apiKey=${this._apiKey}`, [], {
+            this._rws = new ReconnectingWebSocket(url, [], {
                     // eslint-disable-next-line @typescript-eslint/naming-convention
                     WebSocket: isBrowse ? window.WebSocket : (await import('ws')).WebSocket,
                     connectionTimeout: 1000 * timeout
@@ -353,9 +348,9 @@ export class ChatRoom {
                         let { userOId, oId, time, userName, userNickname, userAvatarURL, content, md, client } = msg;
                         try {
                             let data = JSON.parse(content);
-                            if (data.msgType === 'redPacket') {
+                            if (['redPacket', 'music', 'weather'].includes(data.msgType)) {
                                 content = data;
-                                msg.type = 'redPacket'
+                                msg.type = data.msgType;
                             }
                         } catch (e) { }
                         data = { userOId, oId, time, userName, userNickname, userAvatarURL, content, md, client, via: clientToVia(client) };
@@ -371,49 +366,118 @@ export class ChatRoom {
                         break;
                     }
                 }
-                this._wsCallbacks.forEach(call => call(Object.assign({ ...e, msg: { type: msg.type, data } } )));
+                this.emitter.emit(msg.type, data);
             };
-            this._rws.onerror = error || ((e) => {
-                console.error(e);
+            this._rws.onerror = ((e) => {
+                this.emitter.emit('socketError', e);
             });
-            this._rws.onclose = close || ((e) => {
-                console.log(e);
+            this._rws.onclose = ((e) => {
+                this.emitter.emit('socketClose', e);
             });
         });
+    }
+
+    /**
+     * 聊天室监听
+     * @param event 聊天室事件
+     * @param listener 监听器
+     */
+    on<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+        if (this._rws == null) { 
+            this.reconnect();
+        }
+        return this.emitter.on(event, listener);
+    }
+
+    /**
+     * 移除聊天室监听
+     * @param event 聊天室事件
+     * @param listener 监听器
+     */
+    off<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+        return this.emitter.off(event, listener);
+    }
+
+    /**
+     * 聊天室单次监听
+     * @param event 聊天室事件
+     * @param listener 监听器
+     */
+    once<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+        return this.emitter.once(event, listener);
     }
 
     /**
      * 清除聊天室监听
      */
     clearListener() {
-        this._wsCallbacks = [];
+        this.emitter.removeAllListeners();
     }
 
     /**
      * 移除聊天室消息监听函数
-     * @param wsCallback 消息监听函数
+     * @param event 聊天室事件
+     * @param listener 监听器
      */
-     removeListener(wsCallback: (event: { msg: Message }) => void) {
-        if (this._wsCallbacks.indexOf(wsCallback) < 0) return;
-        this._wsCallbacks.splice(this._wsCallbacks.indexOf(wsCallback), 1);
+     removeListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+        return this.off(event, listener);
     }
 
     /**
      * 添加聊天室消息监听函数
-     * @param wsCallback 消息监听函数
-     * @param timeout 超时时间
-     * @param error 错误回调
-     * @param close 关闭回调
+     * @param event 聊天室事件
+     * @param listener 监听器
      */
-     async addListener(wsCallback: (event: { msg: Message }) => void, 
-        { timeout=10, error=(ev: any) => {}, close=(ev: any) => {} }: { timeout?: number, error?: (ev: any) => void, close?: (ev: any) => void} = {}) {
-        if (this._rws !== null) { 
-            if (this._wsCallbacks.indexOf(wsCallback) < 0) 
-                this._wsCallbacks.push(wsCallback);
-            return;
+     addListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+        return this.on(event, listener);
+     }
+}
+
+class RedPacket {
+    private chatroom: ChatRoom;
+    private apiKey: string = '';
+
+    constructor(chatroom: ChatRoom, apiKey: string) {
+        this.chatroom = chatroom;
+        this.apiKey = apiKey;
+    }
+
+    setToken(apiKey: string) {
+        this.apiKey = apiKey;
+    }
+
+    /**
+     * 打开一个红包
+     * @param oId 红包消息 Id
+     * @param gesture 猜拳类型
+     */
+    async open(oId:string, gesture?:GestureType):Promise<IRedPacketInfo> {
+        let rsp;
+        try {
+            rsp = await request({
+                url: `chat-room/red-packet/open`,
+                method: 'post',
+                data: {
+                    oId,
+                    gesture,
+                    apiKey: this.apiKey
+                },
+            });
+
+            if (rsp.code) throw new Error(rsp.msg)
+
+            return rsp.data;            
+        } catch (e) {
+            throw e;
         }
-        this._wsCallbacks.push(wsCallback);
-        await this.reconnect({ timeout, error, close });
+    }
+
+    /**
+     * 发送一个红包
+     * @param redpacket 红包对象
+     */
+    async send(redpacket:RedPacket) {
+        return await this.chatroom.send(`[redpacket]${JSON.stringify(redpacket)}[/redpacket]`)
     }
 }
 
