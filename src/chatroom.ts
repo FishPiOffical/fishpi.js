@@ -382,7 +382,7 @@ export class ChatRoom {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    on<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+    on<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
         if (this._rws == null) { 
             this.reconnect();
         }
@@ -394,7 +394,7 @@ export class ChatRoom {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    off<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+    off<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
         return this.emitter.off(event, listener);
     }
 
@@ -403,7 +403,7 @@ export class ChatRoom {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    once<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+    once<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
         return this.emitter.once(event, listener);
     }
 
@@ -419,7 +419,7 @@ export class ChatRoom {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-     removeListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+     removeListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
         return this.off(event, listener);
     }
 
@@ -428,7 +428,7 @@ export class ChatRoom {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-     addListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]): typeof this.emitter {
+     addListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
         return this.on(event, listener);
      }
 }

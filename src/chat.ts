@@ -92,7 +92,7 @@ class ChatChannel {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    on<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]): typeof this.emitter {
+    on<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
         if (this.ws == null) { 
             this.connect();
         }
@@ -104,7 +104,7 @@ class ChatChannel {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    off<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]): typeof this.emitter {
+    off<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
         return this.emitter.off(event, listener);
     }
 
@@ -113,7 +113,7 @@ class ChatChannel {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    once<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]): typeof this.emitter {
+    once<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
         return this.emitter.once(event, listener);
     }
 
@@ -129,7 +129,7 @@ class ChatChannel {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-        removeListener<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]): typeof this.emitter {
+        removeListener<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
         return this.off(event, listener);
     }
 
@@ -138,7 +138,7 @@ class ChatChannel {
      * @param event 聊天室事件
      * @param listener 监听器
      */
-    addListener<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]): typeof this.emitter {
+    addListener<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
         return this.on(event, listener);
     }
 
