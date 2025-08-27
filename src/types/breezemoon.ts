@@ -1,7 +1,7 @@
 /**
  * 清风明月内容
  */
-declare interface IBreezemoonContent {
+export interface IBreezemoonContent {
   /**
    * 发布者用户名
    */

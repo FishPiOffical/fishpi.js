@@ -1,18 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
-    "declaration": true,
-    "outDir": "./lib/",
-    "typeRoots": [
-      "./node_modules/@types",
-      "./types"
-    ],
-    "lib": ["es2017", "es7", "es6", "dom"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "declaration": false,
+    "outDir": "./lib",
+    "sourceMap": true,
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts", "types/**/*.d.ts"],
+  "include": ["src"],
+  "exclude": ["node_modules", "lib"]
 }
