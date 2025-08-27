@@ -4,10 +4,11 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug ESNext Module",
-      "program": "${workspaceFolder}/src/cli/index.ts",
+      "name": "Debug Command Line Interface",
+      "program": "${workspaceFolder}/src/cli.ts",
       "preLaunchTask": "npm: build",
-      "outFiles": ["${workspaceFolder}/lib/**/*.js"]
+      "outFiles": ["${workspaceFolder}/lib/**/*.cjs"],
+      "console": "integratedTerminal"
     }
   ]
 }

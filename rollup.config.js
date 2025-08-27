@@ -7,8 +7,8 @@ import pkg from "./package.json" assert {type: 'json'};
 
 const moduleName = pkg.name.replace(/^@.*\//, "");
 const inputFileName = "src/index.ts";
+const cliFileName = "src/cli.ts";
 const typeFileName = "lib/types/index.d.ts";
-const cliFileName = "src/cli/index.ts";
 const author = pkg.author;
 const banner = `
 /**
@@ -49,14 +49,6 @@ export default [
     ]
   },
   {
-    input: typeFileName,
-    output: {
-      file: pkg.types,
-      format: "es",
-    },
-    plugins: [dts()],
-  },
-  {
     input: cliFileName,
     output: [
       {
@@ -78,5 +70,13 @@ ${banner}`,
       ...Object.keys(pkg.dependencies || {}),
       ...Object.keys(pkg.devDependencies || {}),
     ]
+  },
+  {
+    input: typeFileName,
+    output: {
+      file: pkg.types,
+      format: "es",
+    },
+    plugins: [dts()],
   },
 ];

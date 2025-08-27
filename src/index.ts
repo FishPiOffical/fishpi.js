@@ -1,49 +1,48 @@
-import { isBrowse, request, setDomain, toMetal } from './utils';
-import { ChatRoom, Notice, Emoji, User, Article, Comment, Chat, Breezemoon, Finger } from './';
 import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
-
 import md5 from 'js-md5';
+import { isBrowse, request, setDomain, toMetal } from './utils';
+import { ChatRoom, Notice, Emoji, User, Article, Comment, Chat, Breezemoon, Finger } from './';
 import { IAtUser, ILog, IUploadInfo, UserInfo, Account, PreRegisterInfo, RegisterInfo } from './';
 
 export class FishPi {
   /**
    *  请求 API 的 API Key
    */
-  apiKey: string = '';
+  private apiKey: string = '';
   /**
    *  聊天室接口对象
    */
-  chatroom: ChatRoom = new ChatRoom();
+  readonly chatroom: ChatRoom = new ChatRoom();
   /**
    *  通知接口对象
    */
-  notice: Notice = new Notice();
+  readonly notice: Notice = new Notice();
   /**
    *  表情包接口对象
    */
-  emoji: Emoji = new Emoji();
+  readonly emoji: Emoji = new Emoji();
   /**
    *  用户接口对象
    */
-  account: User = new User();
+  readonly account: User = new User();
   /**
    *  文章接口对象
    */
-  article: Article = new Article();
+  readonly article: Article = new Article();
   /**
    *  评论接口对象
    */
-  comment: Comment = new Comment();
+  readonly comment: Comment = new Comment();
   /**
    *  清风明月对象
    */
-  breezemoon: Breezemoon = new Breezemoon();
+  readonly breezemoon: Breezemoon = new Breezemoon();
   /**
    * 私聊接口对象
    */
-  chat: Chat = new Chat();
+  readonly chat: Chat = new Chat();
 
   /**
    * 构造一个 API 请求对象
@@ -54,6 +53,10 @@ export class FishPi {
       return;
     }
     this.setToken(token);
+  }
+
+  get version() {
+    return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8')).version;
   }
 
   async setToken(apiKey: string) {

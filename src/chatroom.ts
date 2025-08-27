@@ -151,7 +151,7 @@ export class ChatRoom {
    * @param page 消息页码
    * @param type 消息内容类型，HTML 或 Raw，默认 HTML
    */
-  async more(page = 1, type = ChatContentType.HTML): Promise<IChatRoomMessage[]> {
+  async history(page = 1, type = ChatContentType.HTML): Promise<IChatRoomMessage[]> {
     try {
       let rsp = await request({
         url: `chat-room/more?page=${page}&type=${type}&apiKey=${this.apiKey}`,
@@ -533,7 +533,9 @@ export class ChatRoom {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  off<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
+  off<K extends keyof ChatRoomEvents>(event?: K, listener?: ChatRoomEvents[K]) {
+    if (!event) return this.emitter.removeAllListeners();
+    if (!listener) return this.emitter.removeAllListeners(event);
     return this.emitter.off(event, listener);
   }
 
@@ -549,8 +551,8 @@ export class ChatRoom {
   /**
    * 清除聊天室监听
    */
-  clearListener() {
-    this.emitter.removeAllListeners();
+  clearListener(event?: keyof ChatRoomEvents) {
+    this.emitter.removeAllListeners(event);
   }
 
   /**
