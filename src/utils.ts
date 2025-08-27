@@ -1,8 +1,6 @@
 import { IMetal, Metal } from './';
-// #if !BROWSER
 import ws from 'ws';
 import FormData from 'form-data';
-// #endif
 
 let domain = 'fishpi.cn';
 

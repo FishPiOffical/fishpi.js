@@ -10,13 +10,13 @@ import {
 } from './';
 
 export class Article {
-  private _apiKey: string = '';
+  private apiKey: string = '';
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -24,7 +24,7 @@ export class Article {
    * @param apiKey 接口 API Key
    */
   setToken(token: string) {
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -40,7 +40,7 @@ export class Article {
         method: 'post',
         data: {
           ...data,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -66,7 +66,7 @@ export class Article {
         method: 'put',
         data: {
           ...data,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -98,7 +98,7 @@ export class Article {
       rsp = await request({
         url: `api/articles/${
           tag !== undefined ? `tag/${tag}` : 'recent'
-        }${type}?p=${page}&${this._apiKey ? `apiKey=${this._apiKey}` : ''}`,
+        }${type}?p=${page}&${this.apiKey ? `apiKey=${this.apiKey}` : ''}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -126,7 +126,7 @@ export class Article {
     try {
       rsp = await request({
         url: `api/articles/${userName}/articles?p=${page}&${
-          this._apiKey ? `apiKey=${this._apiKey}` : ''
+          this.apiKey ? `apiKey=${this.apiKey}` : ''
         }`,
       });
 
@@ -147,7 +147,7 @@ export class Article {
     let rsp;
     try {
       rsp = await request({
-        url: `api/article/${id}?apiKey=${this._apiKey}&p=${p}`,
+        url: `api/article/${id}?apiKey=${this.apiKey}&p=${p}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -188,7 +188,7 @@ export class Article {
         method: 'post',
         data: {
           dataId: id,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -211,7 +211,7 @@ export class Article {
         url: `article/thank?articleId=${id}`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -232,7 +232,7 @@ export class Article {
         url: `follow/article`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
           followingId,
         },
       });
@@ -254,7 +254,7 @@ export class Article {
         url: `follow/article-watch`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
           followingId,
         },
       });
@@ -276,7 +276,7 @@ export class Article {
         url: `article/reward?articleId=${id}`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -294,7 +294,7 @@ export class Article {
     let rsp;
     try {
       rsp = await request({
-        url: `api/article/heat/${id}?apiKey=${this._apiKey}`,
+        url: `api/article/heat/${id}?apiKey=${this.apiKey}`,
         method: 'get',
       });
 
@@ -317,7 +317,7 @@ export class Article {
     callback: (ev: any) => void,
   ) {
     const rws = new ReconnectingWebSocket(
-      `wss://${domain}/article-channel?articleId=${id}&articleType=${type}&apiKey=${this._apiKey}`,
+      `wss://${domain}/article-channel?articleId=${id}&articleType=${type}&apiKey=${this.apiKey}`,
       [],
       {
         // eslint-disable-next-line @typescript-eslint/naming-convention

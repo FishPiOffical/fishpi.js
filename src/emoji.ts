@@ -1,8 +1,8 @@
 import { request, domain } from './utils';
 
 export class Emoji {
-  private _apiKey: string = '';
-  private _emojis: string[] = [];
+  private apiKey: string = '';
+  private emojis: string[] = [];
 
   constructor(token: string = '') {
     if (!token) {
@@ -16,10 +16,10 @@ export class Emoji {
    * @param apiKey 接口 API Key
    */
   setToken(token: string) {
-    this._apiKey = token;
+    this.apiKey = token;
     if (token)
       this.get()
-        .then((e) => (this._emojis = e))
+        .then((e) => (this.emojis = e))
         .catch(() => {});
   }
 
@@ -215,14 +215,14 @@ export class Emoji {
         method: 'post',
         data: {
           gameId: 'emojis',
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      this._emojis = JSON.parse(rsp.data);
-      return this._emojis.concat([]);
+      this.emojis = JSON.parse(rsp.data);
+      return this.emojis.concat([]);
     } catch (e) {
       throw e;
     }
@@ -241,7 +241,7 @@ export class Emoji {
         data: {
           gameId: 'emojis',
           data: JSON.stringify(data),
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -254,25 +254,25 @@ export class Emoji {
   }
 
   async append(url: string): Promise<string[]> {
-    let emojis = this._emojis.length > 0 ? this._emojis : await this.get();
+    let emojis = this.emojis.length > 0 ? this.emojis : await this.get();
     if (emojis.indexOf(url) >= 0) throw new Error('表情包已存在');
     emojis.push(url);
     await this.set(emojis);
-    this._emojis = emojis;
+    this.emojis = emojis;
     return emojis.concat([]);
   }
 
   async remove(url: string): Promise<string[]> {
-    let emojis = this._emojis.length > 0 ? this._emojis : await this.get();
+    let emojis = this.emojis.length > 0 ? this.emojis : await this.get();
     if (emojis.indexOf(url) < 0) return emojis;
     emojis.splice(emojis.indexOf(url), 1);
     await this.set(emojis);
-    this._emojis = emojis;
+    this.emojis = emojis;
     return emojis.concat([]);
   }
 
   async exists(url: string): Promise<Boolean> {
-    let emojis = this._emojis.length > 0 ? this._emojis : await this.get();
+    let emojis = this.emojis.length > 0 ? this.emojis : await this.get();
     return emojis.indexOf(url) >= 0;
   }
 }

@@ -74,30 +74,36 @@ interface ChatRoomEvents {
    */
   customMessage: (msg: CustomMsg) => void;
   /**
+   * 发送所有消息
+   * @param type 消息类型
+   * @param data 消息内容
+   */
+  all: (type: string, data: any) => void;
+  /**
    * 聊天 Websocket 关闭
    */
-  socketClose: (event: CloseEvent) => void;
+  close: (event: CloseEvent) => void;
   /**
    * 聊天 Websocket 错误
    */
-  socketError: (error: ErrorEvent) => void;
+  error: (error: ErrorEvent) => void;
 }
 
 export class ChatRoom {
-  private _apiKey: string = '';
+  private apiKey: string = '';
   private _discusse: string = '';
   private _onlines: IOnlineInfo[] = [];
-  private _rws: ReconnectingWebSocket | null = null;
-  private _wsTimer: NodeJS.Timeout | null = null;
-  private _client: ClientType | string = ClientType.Other;
-  private _version: string = 'Latest';
+  private ws: ReconnectingWebSocket | null = null;
+  private wsTimer: NodeJS.Timeout | null = null;
+  private client: ClientType | string = ClientType.Other;
+  private version: string = 'Latest';
   private emitter = new EventEmitter();
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -126,7 +132,7 @@ export class ChatRoom {
    * @param apiKey 接口 API Key
    */
   setToken(apiKey: string) {
-    this._apiKey = apiKey;
+    this.apiKey = apiKey;
     this.redpacket.setToken(apiKey);
   }
 
@@ -136,8 +142,8 @@ export class ChatRoom {
    * @param version 版本号
    */
   setVia(client: ClientType | string, version: string) {
-    this._client = client;
-    this._version = version;
+    this.client = client;
+    this.version = version;
   }
 
   /**
@@ -148,7 +154,7 @@ export class ChatRoom {
   async more(page = 1, type = ChatContentType.HTML): Promise<IChatRoomMessage[]> {
     try {
       let rsp = await request({
-        url: `chat-room/more?page=${page}&type=${type}&apiKey=${this._apiKey}`,
+        url: `chat-room/more?page=${page}&type=${type}&apiKey=${this.apiKey}`,
       });
 
       if (rsp.code != 0) {
@@ -192,7 +198,7 @@ export class ChatRoom {
   }): Promise<IChatRoomMessage[]> {
     try {
       let rsp = await request({
-        url: `chat-room/getMessage?oId=${oId}&mode=${mode}&size=${size}&type=${type}&apiKey=${this._apiKey}`,
+        url: `chat-room/getMessage?oId=${oId}&mode=${mode}&size=${size}&type=${type}&apiKey=${this.apiKey}`,
       });
 
       if (rsp.code != 0) {
@@ -229,7 +235,7 @@ export class ChatRoom {
         url: `chat-room/revoke/${oId}`,
         method: 'delete',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -251,8 +257,8 @@ export class ChatRoom {
         method: 'post',
         data: {
           content: msg,
-          client: `${clientType || this._client}/${version || this._version}`,
-          apiKey: this._apiKey,
+          client: `${clientType || this.client}/${version || this.version}`,
+          apiKey: this.apiKey,
         },
       });
 
@@ -275,7 +281,7 @@ export class ChatRoom {
         method: 'post',
         data: {
           content: `[barrager]{\"color\":\"${color}\",\"content\":\"${msg}\"}[/barrager]`,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -293,7 +299,7 @@ export class ChatRoom {
     let rsp;
     try {
       rsp = await request({
-        url: `cr?apiKey=${this._apiKey}`,
+        url: `cr?apiKey=${this.apiKey}`,
         method: 'get',
       });
 
@@ -355,7 +361,7 @@ export class ChatRoom {
   /**
    * 红包接口对象
    */
-  redpacket = new RedPacket(this, this._apiKey);
+  redpacket = new RedPacket(this, this.apiKey);
 
   /**
    * 获取聊天室节点
@@ -365,7 +371,7 @@ export class ChatRoom {
     let rsp: any;
     try {
       rsp = await request({
-        url: `chat-room/node/get?apiKey=${this._apiKey}`,
+        url: `chat-room/node/get?apiKey=${this.apiKey}`,
         method: 'get',
       });
 
@@ -404,28 +410,27 @@ export class ChatRoom {
       if (!url)
         url = await this.getNode()
           .then((rsp) => rsp.recommend.node)
-          .catch(() => `wss://${domain}/chat-room-channel?apiKey=${this._apiKey}`);
-      if (!url.includes('apiKey=')) url += `${url.includes('?') ? '&' : '?'}apiKey=${this._apiKey}`;
-      if (this._rws) return resolve(this._rws.reconnect());
-      this._rws = new ReconnectingWebSocket(url, [], {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+          .catch(() => `wss://${domain}/chat-room-channel?apiKey=${this.apiKey}`);
+      if (!url.includes('apiKey=')) url += `${url.includes('?') ? '&' : '?'}apiKey=${this.apiKey}`;
+      if (this.ws) return resolve(this.ws.reconnect());
+      this.ws = new ReconnectingWebSocket(url, [], {
         WebSocket,
         connectionTimeout: 1000 * timeout,
       });
 
-      this._rws.onopen = (e) => {
-        if (this._wsTimer) {
-          clearInterval(this._wsTimer);
+      this.ws.onopen = (e) => {
+        if (this.wsTimer) {
+          clearInterval(this.wsTimer);
         }
-        this._wsTimer = setInterval(
+        this.wsTimer = setInterval(
           () => {
-            this._rws?.send('-hb-');
+            this.ws?.send('-hb-');
           },
           1000 * 60 * 3,
         );
         resolve(e);
       };
-      this._rws.onmessage = async (e) => {
+      this.ws.onmessage = async (e) => {
         let msg = JSON.parse(e.data);
         let data: any | null = null;
         switch (msg.type) {
@@ -502,11 +507,11 @@ export class ChatRoom {
         }
         this.emitter.emit(msg.type, data);
       };
-      this._rws.onerror = (e) => {
-        this.emitter.emit('socketError', e);
+      this.ws.onerror = (e) => {
+        this.emitter.emit('error', e);
       };
-      this._rws.onclose = (e) => {
-        this.emitter.emit('socketClose', e);
+      this.ws.onclose = (e) => {
+        this.emitter.emit('close', e);
       };
     });
   }
@@ -517,7 +522,7 @@ export class ChatRoom {
    * @param listener 监听器
    */
   on<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
-    if (this._rws == null) {
+    if (this.ws == null) {
       this.reconnect();
     }
     return this.emitter.on(event, listener);

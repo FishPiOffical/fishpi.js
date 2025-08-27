@@ -2,13 +2,13 @@ import { IBreezemoonContent } from '.';
 import { request } from './utils';
 
 export class Breezemoon {
-  private _apiKey: string = '';
+  private apiKey: string = '';
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -16,7 +16,7 @@ export class Breezemoon {
    * @param apiKey 接口 API Key
    */
   setToken(token: string) {
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -47,7 +47,7 @@ export class Breezemoon {
   async listByUser(user: string, page = 1, size = 20): Promise<IBreezemoonContent[]> {
     try {
       let rsp = await request({
-        url: `api/user/${user}/breezemoons?p=${page}&size=${size}&apiKey=${this._apiKey}`,
+        url: `api/user/${user}/breezemoons?p=${page}&size=${size}&apiKey=${this.apiKey}`,
       });
 
       return rsp.data;
@@ -66,7 +66,7 @@ export class Breezemoon {
         url: `breezemoon`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
           breezemoonContent: content,
         },
       });

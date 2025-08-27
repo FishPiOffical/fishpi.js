@@ -22,11 +22,11 @@ interface ChatEvents {
   /**
    * 聊天 Websocket 关闭
    */
-  socketClose: (event: CloseEvent) => void;
+  close: (event: CloseEvent) => void;
   /**
    * 聊天 Websocket 错误
    */
-  socketError: (error: ErrorEvent) => void;
+  error: (error: ErrorEvent) => void;
 }
 
 class ChatChannel {
@@ -74,7 +74,6 @@ class ChatChannel {
           : `wss://${domain}/user-channel?apiKey=${this.apiKey}`,
         [],
         {
-          // eslint-disable-next-line @typescript-eslint/naming-convention
           WebSocket,
           connectionTimeout: 10000,
         },
@@ -97,10 +96,10 @@ class ChatChannel {
         this.emitter.emit(type, data);
       };
       this.ws.onerror = (e) => {
-        this.emitter.emit('socketError', e);
+        this.emitter.emit('error', e);
       };
       this.ws.onclose = (e) => {
-        this.emitter.emit('socketClose', e);
+        this.emitter.emit('close', e);
       };
     });
   }
@@ -213,18 +212,18 @@ class ChatChannel {
 }
 
 export class Chat {
-  private _apiKey: string = '';
+  private apiKey: string = '';
   private chats: { [key: string]: ChatChannel } = {};
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   channel(user = '') {
-    if (!this.chats[user]) this.chats[user] = new ChatChannel(user, this._apiKey);
+    if (!this.chats[user]) this.chats[user] = new ChatChannel(user, this.apiKey);
     return this.chats[user];
   }
 
@@ -233,7 +232,7 @@ export class Chat {
    * @param apiKey 接口 API Key
    */
   setToken(apiKey: string) {
-    this._apiKey = apiKey;
+    this.apiKey = apiKey;
     Object.values(this.chats).forEach((c) => c.setToken(apiKey));
   }
 
@@ -244,7 +243,7 @@ export class Chat {
   async list(): Promise<IChatData[]> {
     try {
       let rsp = await request({
-        url: `chat/get-list?apiKey=${this._apiKey}`,
+        url: `chat/get-list?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -262,7 +261,7 @@ export class Chat {
   async unread(): Promise<IChatData> {
     try {
       let rsp = await request({
-        url: `chat/has-unread?apiKey=${this._apiKey}`,
+        url: `chat/has-unread?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -280,7 +279,7 @@ export class Chat {
   async revoke(msgId: string): Promise<number> {
     try {
       let rsp = await request({
-        url: `chat/revoke?apiKey=${this._apiKey}&oId=${msgId}`,
+        url: `chat/revoke?apiKey=${this.apiKey}&oId=${msgId}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);

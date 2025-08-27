@@ -2,13 +2,13 @@ import { INoticeCount, NoticeList, NoticeType } from './';
 import { request } from './utils';
 
 export class Notice {
-  private _apiKey: string = '';
+  private apiKey: string = '';
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -16,7 +16,7 @@ export class Notice {
    * @param apiKey 接口 API Key
    */
   setToken(token: string) {
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -26,7 +26,7 @@ export class Notice {
     let rsp;
     try {
       rsp = await request({
-        url: `notifications/unread/count?apiKey=${this._apiKey}`,
+        url: `notifications/unread/count?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code !== 0) throw new Error(rsp.msg);
@@ -46,7 +46,7 @@ export class Notice {
     let rsp;
     try {
       rsp = await request({
-        url: `api/getNotifications?apiKey=${this._apiKey}&type=${type}`,
+        url: `api/getNotifications?apiKey=${this.apiKey}&type=${type}`,
       });
 
       if (rsp.code !== 0) throw new Error(rsp.msg);
@@ -65,7 +65,7 @@ export class Notice {
     let rsp;
     try {
       rsp = await request({
-        url: `notifications/make-read/${type}?apiKey=${this._apiKey}`,
+        url: `notifications/make-read/${type}?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code !== 0) throw new Error(rsp.msg);
@@ -81,7 +81,7 @@ export class Notice {
     let rsp;
     try {
       rsp = await request({
-        url: `notifications/all-read?apiKey=${this._apiKey}`,
+        url: `notifications/all-read?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code !== 0) throw new Error(rsp.msg);

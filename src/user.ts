@@ -2,13 +2,13 @@ import { UserInfo } from './';
 import { request, toMetal } from './utils';
 
 export class User {
-  private _apiKey: string = '';
+  private apiKey: string = '';
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -16,7 +16,7 @@ export class User {
    * @param apiKey 接口 API Key
    */
   setToken(token: string) {
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -26,7 +26,7 @@ export class User {
   async info(): Promise<UserInfo> {
     try {
       let rsp = await request({
-        url: `api/user?apiKey=${this._apiKey}`,
+        url: `api/user?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code != 0) throw new Error(rsp.msg);
@@ -47,7 +47,7 @@ export class User {
     let rsp;
     try {
       rsp = await request({
-        url: `users/emotions?apiKey=${this._apiKey}`,
+        url: `users/emotions?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code != 0) throw new Error(rsp.msg);
@@ -64,12 +64,12 @@ export class User {
    * @returns 活跃度
    */
   async liveness(): Promise<number> {
-    if (!this._apiKey) {
+    if (!this.apiKey) {
       return 0;
     }
     try {
       let rsp = await request({
-        url: `user/liveness?apiKey=${this._apiKey}`,
+        url: `user/liveness?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -85,12 +85,12 @@ export class User {
    * @returns 是否已经签到
    */
   async isCheckIn(): Promise<boolean> {
-    if (!this._apiKey) {
+    if (!this.apiKey) {
       return false;
     }
     try {
       let rsp = await request({
-        url: `user/checkedIn?apiKey=${this._apiKey}`,
+        url: `user/checkedIn?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -106,12 +106,12 @@ export class User {
    * @returns 是否已经领取昨日活跃奖励
    */
   async isCollectedLiveness(): Promise<boolean> {
-    if (!this._apiKey) {
+    if (!this.apiKey) {
       return false;
     }
     try {
       let rsp = await request({
-        url: `api/activity/is-collected-liveness?apiKey=${this._apiKey}`,
+        url: `api/activity/is-collected-liveness?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -127,12 +127,12 @@ export class User {
    * @returns sum 领取的奖励积分
    */
   async rewardLiveness(): Promise<number> {
-    if (!this._apiKey) {
+    if (!this.apiKey) {
       return 0;
     }
     try {
       let rsp = await request({
-        url: `activity/yesterday-liveness-reward-api?apiKey=${this._apiKey}`,
+        url: `activity/yesterday-liveness-reward-api?apiKey=${this.apiKey}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);
@@ -156,7 +156,7 @@ export class User {
         method: 'POST',
         url: `point/transfer`,
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
           userName,
           amount,
           memo,

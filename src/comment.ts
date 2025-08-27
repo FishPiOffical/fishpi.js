@@ -2,13 +2,13 @@ import { CommentPost, VoteType } from './';
 import { request } from './utils';
 
 export class Comment {
-  private _apiKey: string = '';
+  private apiKey: string = '';
 
   constructor(token: string = '') {
     if (!token) {
       return;
     }
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -16,7 +16,7 @@ export class Comment {
    * @param apiKey 接口 API Key
    */
   setToken(token: string) {
-    this._apiKey = token;
+    this.apiKey = token;
   }
 
   /**
@@ -31,7 +31,7 @@ export class Comment {
         method: 'post',
         data: {
           ...data,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -54,7 +54,7 @@ export class Comment {
         method: 'put',
         data: {
           ...data,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -79,7 +79,7 @@ export class Comment {
         method: 'post',
         data: {
           dataId: id,
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
@@ -102,7 +102,7 @@ export class Comment {
         url: `comment/thank`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
           commentId: id,
         },
       });
@@ -124,7 +124,7 @@ export class Comment {
         url: `comment/${id}/remove`,
         method: 'post',
         data: {
-          apiKey: this._apiKey,
+          apiKey: this.apiKey,
         },
       });
 
