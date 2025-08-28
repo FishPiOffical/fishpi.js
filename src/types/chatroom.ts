@@ -173,6 +173,10 @@ export interface IChatRoomMessage {
    */
   oId: string;
   /**
+   * 消息类型
+   */
+  type: string;
+  /**
    * 发送者用户名
    */
   userName: string;
@@ -200,6 +204,10 @@ export interface IChatRoomMessage {
    * 消息内容
    */
   content: string | IRedPacketMessage;
+  /**
+   * Markdown 内容
+   */
+  md: string;
   /**
    * 发送时间
    */

@@ -179,6 +179,16 @@ interface TerminalEvents {
    */
   cmd: (value: string) => void;
   /**
+   * 输入模式切换
+   * @param value 模式
+   */
+  mode: (value: string) => void;
+  /**
+   * 按键按下
+   * @param value 按键内容
+   */
+  keydown: (value: blessed.Widgets.Events.IKeyEventArg) => void;
+  /**
    * 命令行退出
    */
   quit: () => void;
@@ -234,20 +244,14 @@ class TerminalInput {
 
     this.input.key(['/'], () => {
       if (!this.input.getValue().startsWith('/')) return;
-      this.inputLabel.setContent('>');
-      if (this.screen?.focused != this.input) this.input.focus();
-      this.inputMode = 'input';
       this.input.clearValue();
-      this.screen?.render();
+      this.setInputMode('input');
     });
 
     this.input.key([':'], () => {
       if (!this.input.getValue().startsWith(':')) return;
-      this.inputLabel.setContent(':');
-      if (this.screen?.focused != this.input) this.input.focus();
-      this.inputMode = 'cmd';
       this.input.clearValue();
-      this.screen?.render();
+      this.setInputMode('cmd');
     });
 
     this.input.key(['escape'], () => {
@@ -261,6 +265,7 @@ class TerminalInput {
     this.inputMode = mode;
     this.input.show();
     this.inputLabel.setContent(label ?? { cmd: ':', input: '>' }[mode] ?? '');
+    this.inputLabel.focus();
     if (this.screen?.focused != this.input) this.input.focus();
     this.inputMode = mode;
     this.screen?.render();
@@ -313,9 +318,9 @@ export class Terminal extends TerminalStyle {
     this.input.register(this.screen);
     this.screen.append(this.output);
 
-    this.output.on('click', () => {
-      this.screen.focusPop();
-    });
+    // this.output.on('click', () => {
+    //   this.screen.focusPop();
+    // });
 
     this.screen.key(['C-c'], () => {
       this.emitter.emit('quit');
@@ -331,8 +336,8 @@ export class Terminal extends TerminalStyle {
       this.input.setInputMode('cmd');
     });
 
-    this.screen.on('keypress', (ch) => {
-      this.emitter.emit('keydown', ch);
+    this.screen.on('keypress', (_ch, ev) => {
+      this.emitter.emit('keydown', ev);
     })
   }
 

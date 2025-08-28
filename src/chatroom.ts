@@ -164,12 +164,16 @@ export class ChatRoom {
       if (!rsp.data) return rsp;
       (rsp.data as Array<any>).forEach((d, i, data) => {
         try {
+          data[i].type = 'msg';
+          data[i].md = data[i].content;
           data[i].via = clientToVia(data[i].client);
           data[i].sysMetal = toMetal(data[i].sysMetal);
           data[i].content = JSON.parse(d.content);
           if (data[i].content.recivers)
             data[i].content.recivers = JSON.parse(data[i].content.recivers);
-        } catch (e) {}
+          data[i].type = data[i].content.msgType;
+        } catch (e) {
+        }
       });
 
       return rsp.data;
