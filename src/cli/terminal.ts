@@ -1,5 +1,5 @@
 import blessed from "blessed";
-import { EventEmitter } from 'events';
+import { EventEmitter, EventEmitterReferencingAsyncResource } from 'events';
 
 export class TerminalStyle {
   style: {
@@ -184,13 +184,98 @@ interface TerminalEvents {
   quit: () => void;
 }
 
+class TerminalInput {
+  private screen?: blessed.Widgets.Screen;
+  private input: blessed.Widgets.TextboxElement;
+  private inputLabel: blessed.Widgets.BoxElement;
+  private emitter: EventEmitter;
+  private inputMode = 'cmd';
+
+  constructor(emitter: EventEmitter) {
+    this.emitter = emitter;
+    this.input = blessed.textbox({
+      bottom: 0,
+      left: 2,
+      width: "100%",
+      height: 1,
+      inputOnFocus: true,
+      mouse: true,
+    });
+    this.inputLabel = blessed.box({
+      bottom: 0,
+      left: 0,
+      width: 1,
+      height: 1,
+      content: '',
+      tags: true,
+      scrollable: false,
+      style: {
+        bold: true,
+        fg: 'yellow',
+      }
+    });
+  }
+
+  register(screen: blessed.Widgets.Screen) {
+    screen.append(this.inputLabel);
+    screen.append(this.input);
+    this.screen = screen;
+
+    this.onListen();
+  }
+
+  onListen() {
+    this.input.on('submit', (value) => {
+      this.emitter.emit(this.inputMode, value);
+      this.input.clearValue();
+      if (this.screen?.focused != this.input) this.input.focus();
+      this.screen?.render();
+    });
+
+    this.input.key(['/'], () => {
+      if (!this.input.getValue().startsWith('/')) return;
+      this.inputLabel.setContent('>');
+      if (this.screen?.focused != this.input) this.input.focus();
+      this.inputMode = 'input';
+      this.input.clearValue();
+      this.screen?.render();
+    });
+
+    this.input.key([':'], () => {
+      if (!this.input.getValue().startsWith(':')) return;
+      this.inputLabel.setContent(':');
+      if (this.screen?.focused != this.input) this.input.focus();
+      this.inputMode = 'cmd';
+      this.input.clearValue();
+      this.screen?.render();
+    });
+
+    this.input.key(['escape'], () => {
+      this.inputLabel.setContent('');
+      this.input.hide();
+      this.screen?.render();
+    });
+  }
+
+  setInputMode(mode: string, label?: string) {
+    this.inputMode = mode;
+    this.input.show();
+    this.inputLabel.setContent(label ?? { cmd: ':', input: '>' }[mode] ?? '');
+    if (this.screen?.focused != this.input) this.input.focus();
+    this.inputMode = mode;
+    this.screen?.render();
+  }
+
+  clear() {
+    this.input.clearValue();
+  }
+}
+
 export class Terminal extends TerminalStyle {
   private screen: blessed.Widgets.Screen;
   private output: blessed.Widgets.BoxElement;
-  private inputLabel: blessed.Widgets.BoxElement;
-  private input: blessed.Widgets.TextboxElement;
   private emitter: EventEmitter = new EventEmitter();
-  private inputMode = 'cmd';
+  private input: TerminalInput;
 
   constructor() {
     super();
@@ -224,36 +309,12 @@ export class Terminal extends TerminalStyle {
         scrollbar: { bg: 'blue' }
       },
     });
-    this.input = blessed.textbox({
-      bottom: 0,
-      left: 2,
-      width: "100%",
-      height: 1,
-      inputOnFocus: true,
-    });
-    this.inputLabel = blessed.box({
-      bottom: 0,
-      left: 0,
-      width: 1,
-      height: 1,
-      content: '$',
-      tags: true,
-      scrollable: false,
-      style: {
-        bold: true,
-        fg: 'yellow',
-      }
-    });
+    this.input = new TerminalInput(this.emitter);
+    this.input.register(this.screen);
     this.screen.append(this.output);
-    this.screen.append(this.inputLabel);
-    this.screen.append(this.input);
-    this.input.focus();
 
-    this.input.on('submit', (value) => {
-      this.emitter.emit(this.inputMode, value);
-      this.input.clearValue();
-      if (this.screen.focused != this.input) this.input.focus();
-      this.screen.render();
+    this.output.on('click', () => {
+      this.screen.focusPop();
     });
 
     this.screen.key(['C-c'], () => {
@@ -261,30 +322,18 @@ export class Terminal extends TerminalStyle {
       this.log('Bye~')
       return setTimeout(() => process.exit(0), 500);
     });
-
-    this.input.on('cancel', () => {
-      this.cancel();
-    });
-    
-    this.screen.key(['escape'], () => {
-      this.cancel();
-    });
     
     this.screen.key(['/'], () => {
-      this.input.show();
-      this.inputLabel.setContent('>');
-      if (this.screen.focused != this.input) this.input.focus();
-      this.inputMode = 'input';
-      this.refresh();
+      this.input.setInputMode('input');
     });
 
     this.screen.key([':'], () => {
-      this.input.show();
-      this.inputLabel.setContent(':');
-      if (this.screen.focused != this.input) this.input.focus();
-      this.inputMode = 'cmd';
-      this.refresh();
+      this.input.setInputMode('cmd');
     });
+
+    this.screen.on('keypress', (ch) => {
+      this.emitter.emit('keydown', ch);
+    })
   }
 
   append(content: string, refresh = true): void {
@@ -297,18 +346,10 @@ export class Terminal extends TerminalStyle {
     this.append(args.join(' '));
   }
 
-  cancel() {
-    if (this.screen.focused != this.output) this.output.focus();
-    this.input.hide();
-    this.inputLabel.setContent('');
-    this.refresh();
-  }
-
   clear() {
     this.output.setContent('');
     this.refresh();
-    this.input.clearValue();
-    if (this.screen.focused != this.input) this.input.focus();
+    this.input.clear();
   }
 
   refresh(): void {
