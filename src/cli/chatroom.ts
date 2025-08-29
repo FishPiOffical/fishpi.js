@@ -1,9 +1,10 @@
+import { Config } from './config';
 import { ChatContentType, FishPi, BaseCli, IChatRoomMsg, UserInfo, IChatRoomMessage } from './lib';
 import { Terminal } from './terminal';
 
 export class ChatRoomCli extends BaseCli {
   eventFn: Record<string, any> = {};
-  me: UserInfo | undefined;
+  me: string | undefined;
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
@@ -11,8 +12,8 @@ export class ChatRoomCli extends BaseCli {
   }
 
   async load() {
-    this.me = await this.fishpi.account.info();
-    const history = await this.fishpi.chatroom.history(1, ChatContentType.Markdown);
+    this.me = Config.get('username');
+    const history = await this.fishpi.chatroom.history(3, ChatContentType.Markdown);
     history.reverse().forEach(msg => this.render(msg));
     this.fishpi.chatroom.on('msg', this.eventFn.msg = this.onMessage.bind(this));
     this.terminal.on('input', this.eventFn.input = this.onInput.bind(this));
@@ -31,6 +32,10 @@ export class ChatRoomCli extends BaseCli {
     this.fishpi.chatroom.send(value);
   }
 
+  onHover(line: string, row: number, col: number) {
+    
+  }
+
   render(msg: IChatRoomMessage) {
     if (msg.type == 'msg') {
       return this.renderMessage(msg);
@@ -39,29 +44,30 @@ export class ChatRoomCli extends BaseCli {
 
   renderMessage(msg: { time: string; userNickname: string; userName: string; oId: string; md: string; }) {
     const time = this.terminal.blue.text(`${msg.time}`);
-    const nickname = this.terminal.Bold.green.text(msg.userNickname || msg.userName + (msg.userNickname ? `(${msg.userName})` : ''));
+    const nickname = this.terminal.Bold.green.text((msg.userNickname || msg.userName) + (msg.userNickname ? `(${msg.userName})` : ''));
     const oId = this.terminal.gray.text(`[${msg.oId}]:`);
     const content = this.terminal.white.text(this.filterContent(msg.md));
-    this.log(time, nickname + oId, content);
+    this.log(time, nickname, oId, content);
   }
 
   filterContent(content: string) {
-    const lines = content.replace(/\n+/, '\n').split('\n');
+    const lines = content.replace(/\n+/g, '\n').split('\n').filter(l => l.replace(/^(>|\s)*/g, '').trim());
     let quoteTab = '', beginQuote = false;
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i];
-      if (line.trim().startsWith('##### 引用')) {
+      if (line.replace(/^(>|\s)*/g, '').startsWith('##### 引用')) {
         beginQuote = true;
         quoteTab += '\t';
-        line = quoteTab + line.replace(/##### 引用/, '└─引用');
+        line = quoteTab + line.replace(/^(>|\s)*##### 引用/, '└─引用');
       } else if (!line.startsWith('>')) {
         beginQuote = false;
       } else if (beginQuote && line.startsWith('>')) {
-        line = quoteTab + line.slice(1);
+        lines[i - 1] += ' ' + (lines[i - 1] ? '' : quoteTab) + line.replace(/^(>|\s)*/g, '');
+        line = '';
       }
       lines[i] = line;
     }
-    content = lines.join('\n');
+    content = lines.filter(l => l.trim()).join('\n');
 
     content = (content.trim().replace(/>+\s*$/gm, '').trim())
       .replace(/```(.*?)\n([\s\S]*?)```/g, '{inverse}$1\n$2{/inverse}') // ``` 代码块 ```
@@ -71,9 +77,10 @@ export class ChatRoomCli extends BaseCli {
       .replace(/\*(.*?)\*/g, '{underline}$1{/underline}')         // *下划线*
       .replace(/_(.*?)_/g, '{underline}$1{/underline}')           // _下划线_
       .replace(/\[↩\]\([^)]*?\)/g, '')                           // 过滤引用来源
-      .replace(/(^(>+) .*?$)\n*(^(\2) .*?$\n*)*(?![\s\S])/g, '') // 过滤小尾巴
+      .replace(/(^(>+) .*?$)\n*(^(\2) .*?$\n*)*(?![\s\S])/gm, '') // 过滤小尾巴
       .replace(/>+\s*$/gm, '')
-      .replaceAll(`@${this.me?.userName}`, `{bold}{yellow-fg}@${this.me?.userName}{/}{/}`)
+      .replace(/>+\s*$/gm, '')
+      .replaceAll(`@${this.me}`, `{bold}{yellow-fg}@${this.me}{/}{/}`)
       .replace(/@([^<]*?)( |$)/gm, '{green-fg}@$1$2{/}')
       .replace(/<img\s+src="([^"]*?)"\s+alt="图片表情"([^>]*?>)/g, '[动画表情]')
       .replace(/<audio[^>]*?>.*?<\/audio>/g, '[音频]')

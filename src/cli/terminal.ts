@@ -167,31 +167,95 @@ export class TerminalStyle {
   }
 }
 
-interface TerminalEvents {
-  /**
-   * 输入提交
-   * @param value 提交的内容
-   */
-  input: (value: string) => void;
-  /**
-   * 输入命令
-   * @param value 命令的内容
-   */
-  cmd: (value: string) => void;
-  /**
-   * 输入模式切换
-   * @param value 模式
-   */
-  mode: (value: string) => void;
-  /**
-   * 按键按下
-   * @param value 按键内容
-   */
-  keydown: (value: blessed.Widgets.Events.IKeyEventArg) => void;
-  /**
-   * 命令行退出
-   */
-  quit: () => void;
+class TerminalOutput {
+  private output: blessed.Widgets.BoxElement;
+  private screen?: blessed.Widgets.Screen;
+  private emitter: EventEmitter;
+  private todoAppend: string[] = [];
+  private lock = false;
+
+  constructor(emitter: EventEmitter) {
+    this.emitter = emitter;
+    this.output = blessed.box({
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: "100%-1",
+      content: "",
+      tags: true,
+      scrollable: true,
+      alwaysScroll: true,
+      keys: true,
+      mouse: true,
+      scrollbar: {
+        ch: ' ',
+        track: {
+          bg: 'default'
+        },
+        style: {
+          inverse: true
+        }
+      },
+      style: {
+        scrollbar: { bg: 'blue' }
+      },
+    });
+  }
+
+  register(screen: blessed.Widgets.Screen) {
+    this.screen = screen;
+    screen.append(this.output);
+  }
+
+  onListen() {
+    this.output.on('mousemove', (data) => {
+      const scrollOffset = this.output.getScroll();
+      const lines = this.output.getContent().split('\n');
+      const row = data.y + scrollOffset;
+      const col = data.x;
+      if (row < lines.length) {
+        const line = lines[row];
+        if (!line) return;
+        this.emitter.emit('hover', line, row, col);
+      }
+    });
+  }
+
+  update(line: string, row: number, col?: number, len?: number) {
+    this.lock = true;
+    const lines = this.output.getContent().split('\n');
+    if (!col) lines[row] = line;
+    else if(!len) lines[row] = lines[row].slice(0, col) + line + lines[row].slice(col);
+    else if (len) lines[row] = lines[row].slice(0, col) + line + lines[row].slice(col + len);
+    if (this.todoAppend.length) lines.push(...this.todoAppend);
+    this.output.setContent(lines.join('\n'));
+    this.lock = false;
+    this.todoAppend = [];
+  }
+
+  append(content: string, refresh = true): void {
+    if (this.lock) {
+      this.todoAppend.push(content);
+      return;
+    }
+    this.output.pushLine(content);
+    this.output.scrollTo(this.output.getLines().length);
+    if (refresh && this.screen) this.screen.render();
+  }
+
+  setContent(content: string) {
+    this.output.setContent(content);
+    if (this.screen) this.screen.render();
+  }
+
+  clear() {
+    this.output.setContent('');
+    if (this.screen) this.screen.render();
+  }
+
+  getLines() {
+    return this.output.getLines();
+  }
 }
 
 class TerminalInput {
@@ -226,6 +290,10 @@ class TerminalInput {
     });
   }
 
+  get mode() {
+    return this.inputMode;
+  }
+
   register(screen: blessed.Widgets.Screen) {
     screen.append(this.inputLabel);
     screen.append(this.input);
@@ -258,10 +326,18 @@ class TerminalInput {
       this.inputLabel.setContent('');
       this.input.hide();
       this.screen?.render();
+      this.inputMode = 'shortshot';
     });
   }
 
   setInputMode(mode: string, label?: string) {
+    if (mode == 'shortshot') {
+      this.inputLabel.setContent('');
+      this.input.hide();
+      this.screen?.render();
+      this.inputMode = 'shortshot';
+      return;
+    }
     this.inputMode = mode;
     this.input.show();
     this.inputLabel.setContent(label ?? { cmd: ':', input: '>' }[mode] ?? '');
@@ -276,84 +352,116 @@ class TerminalInput {
   }
 }
 
+interface TerminalEvents {
+  /**
+   * 输入提交
+   * @param value 提交的内容
+   */
+  input: (value: string) => void;
+  /**
+   * 输入命令
+   * @param value 命令的内容
+   */
+  cmd: (value: string) => void;
+  /**
+   * 输入模式切换
+   * @param value 模式
+   */
+  mode: (value: string) => void;
+  /**
+   * 按键按下
+   * @param value 按键内容
+   */
+  keydown: (value: blessed.Widgets.Events.IKeyEventArg) => void;
+  /**
+   * 鼠标在输出经过
+   * @param line 鼠标经过行内容
+   * @param row 内容所在行数
+   * @param col 内容所在列数
+   */
+  hover: (line: string, row: number, col: number) => void;
+  /**
+   * 命令行退出
+   */
+  quit: () => void;
+}
+
 export class Terminal extends TerminalStyle {
   private screen: blessed.Widgets.Screen;
-  private output: blessed.Widgets.BoxElement;
-  private emitter: EventEmitter = new EventEmitter();
   private input: TerminalInput;
+  private output: TerminalOutput;
+  private emitter: EventEmitter = new EventEmitter();
 
   constructor() {
     super();
-    this.screen = blessed.screen({
+    const { screen, input, output } = this.register();
+    this.screen = screen;
+    this.input = input;
+    this.output = output;
+  }
+
+  setInputMode(mode: string, label?: string) {
+    this.input.setInputMode(mode, label);
+  }
+
+  reBuild() {
+    const { screen, input, output } = this.register();
+    this.screen = screen;
+    this.input = input;
+    this.output = output;
+  }
+
+  register() {
+    const screen = blessed.screen({
       smartCSR: true,
       fullUnicode: true,
       title: "FishPi Terminal",
     });
 
-    this.output = blessed.box({
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: "100%-1",
-      content: "",
-      tags: true,
-      scrollable: true,
-      alwaysScroll: true,
-      keys: true,
-      mouse: true,
-      scrollbar: {
-        ch: ' ',
-        track: {
-          bg: 'default'
-        },
-        style: {
-          inverse: true
-        }
-      },
-      style: {
-        scrollbar: { bg: 'blue' }
-      },
-    });
-    this.input = new TerminalInput(this.emitter);
-    this.input.register(this.screen);
-    this.screen.append(this.output);
+    const output = new TerminalOutput(this.emitter);
+    const input = new TerminalInput(this.emitter);
+    input.register(screen);
+    output.register(screen);
+    this.onListen(screen);
+    return {
+      screen, input, output
+    }
+  }
 
-    // this.output.on('click', () => {
-    //   this.screen.focusPop();
-    // });
-
-    this.screen.key(['C-c'], () => {
+  onListen(screen: blessed.Widgets.Screen) {
+    screen.key(['C-c'], () => {
       this.emitter.emit('quit');
       this.log('Bye~')
       return setTimeout(() => process.exit(0), 500);
     });
     
-    this.screen.key(['/'], () => {
+    screen.key(['/'], () => {
       this.input.setInputMode('input');
     });
 
-    this.screen.key([':'], () => {
+    screen.key([':'], () => {
       this.input.setInputMode('cmd');
     });
 
-    this.screen.on('keypress', (_ch, ev) => {
+    screen.on('keypress', (_ch, ev) => {
       this.emitter.emit('keydown', ev);
     })
   }
 
   append(content: string, refresh = true): void {
-    this.output.pushLine(content);
-    this.output.scrollTo(this.output.getLines().length);
-    if (refresh) this.refresh();
+    this.output.append(content, refresh);
   }
 
   log(...args: string[]) {
     this.append(args.join(' '));
   }
 
+  tab(size: number, ...args: string[]) {
+    this.log('\t'.repeat(size), args.join(' '));
+  }
+
   clear() {
-    this.output.setContent('');
-    this.refresh();
+    this.output.clear();
     this.input.clear();
   }
 

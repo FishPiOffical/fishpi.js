@@ -13,7 +13,7 @@ export class BaseCli {
     this.terminal = terminal;
   }
 
-  async load(_params: any): Promise<void> {
+  async load(...args: any): Promise<void> {
     // Load the CLI with the given parameters
   }
 
@@ -23,5 +23,9 @@ export class BaseCli {
 
   async log(...args: string[]) {
     this.terminal.log(...args);
+  }
+
+  help() {
+    this.terminal.log('帮助信息：');
   }
 }

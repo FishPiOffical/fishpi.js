@@ -1,4 +1,4 @@
-import { Terminal, Config, AccountCli, ChatRoomCli } from './cli/index';
+import { Config, Page, Terminal } from './cli/index';
 import { FishPi } from './cli/lib';
 
 async function main() {
@@ -6,20 +6,11 @@ async function main() {
 
   const terminal = new Terminal();
   const fishpi = new FishPi();
+  const page = new Page(terminal, fishpi);
 
-  const account = new AccountCli(fishpi, terminal);
-  const isLoggedIn = await account.isLogin();
-  if (!isLoggedIn) {
-    console.log('您尚未登录，请先登录！');
-  }
-  if (!isLoggedIn && !(await account.login())) {
-    return;
-  }
+  if (!await page.init()) return;
 
-  terminal.refresh();
-  terminal.log('欢迎您~', terminal.Bold.cyan.text(account.me?.userNickname));
-  const chatroom = new ChatRoomCli(fishpi, terminal);
-  chatroom.load();
+  await page.load();
 }
 
 main().catch(console.error);

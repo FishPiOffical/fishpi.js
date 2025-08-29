@@ -16,7 +16,10 @@ export class AccountCli extends BaseCli {
 
     this.fishpi.setToken(token);
     const info: UserInfo | false = await this.fishpi.account.info().catch(() => false);
-    if (info) this.me = info;
+    if (info) {
+      this.me = info;
+      Config.set('username', info.userName);
+    }
 
     return info != false;
   }
@@ -28,11 +31,11 @@ export class AccountCli extends BaseCli {
     if (await confirm({ message: '是否有二次验证码？', default: false })) {
       account.mfaCode = await input({ message: '请输入二次验证码' });
     }
-    const token = await this.fishpi.login(account).catch((e) => {
-      console.error('登录失败：', e.message);
-    });
+    const token = await this.fishpi.login(account);
     if (!token) return false;
+    this.me = await this.fishpi.account.info();
     Config.set('token', token);
+    Config.set('username', this.me.userName);
     return true;
   }
 }
