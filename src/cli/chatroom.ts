@@ -92,8 +92,8 @@ export class ChatRoomCli extends BaseCli {
       this.terminal.log(this.terminal.red.raw(`[错误]: 未找到要回复的消息 ${oId}`));
       return;
     }
-    const replyContent = `> ##### 引用 @${msg.userName}[↩](https://fishpi.cn/cr#chatroom${oId} "跳转至原消息")
-> ${msg.md.split('\n').map(line => `> ${line}`).join('\n')}\n\n${content}`;
+    const replyContent = `${content}\n\n##### 引用 @${msg.userName}[↩](https://fishpi.cn/cr#chatroom${oId} "跳转至原消息")\n
+> ${msg.md.split('\n').map(line => `> ${line}`).join('\n')}`;
     this.fishpi.chatroom.send(replyContent);
   }
 
