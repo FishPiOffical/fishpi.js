@@ -24,7 +24,7 @@ export class Page {
   async init () {
     const isLoggedIn = await this.account.isLogin();
     if (!isLoggedIn) {
-      console.log('您尚未登录，请先登录！');
+      console.info('您尚未登录，请先登录！');
     }
     if (!isLoggedIn && !(await this.account.login().catch(err => console.error('登录失败：' + err.message)))) {
       return false;
@@ -73,19 +73,19 @@ export class Page {
   help() {
     this.terminal.clear();
     const me = this.account.me;
-    this.terminal.log('欢迎您~', this.terminal.Bold.cyan.text(me?.userNickname || me?.userName));
+    this.terminal.log('欢迎您~', this.terminal.Bold.cyan.raw(me?.userNickname || me?.userName));
     this.terminal.log('');
-    this.terminal.log(this.terminal.blue.text('全局命令：'));
+    this.terminal.log(this.terminal.blue.raw('全局命令：'));
     Object.keys(this.commands).forEach(page => {
       const command = this.commands[page];
-      this.terminal.tab(1, this.terminal.yellow.text(`${command.commands.join(' / ')}`), '\t', command.description);
+      this.terminal.tab(1, this.terminal.yellow.raw(`${command.commands.join(' / ')}`), '\t', command.description);
     });
-    this.terminal.tab(1, this.terminal.yellow.text(`help`), '\t', '查看帮助');
-    this.terminal.tab(1, this.terminal.yellow.text(`exit`), '\t', '退出程序 / 返回首页');
+    this.terminal.tab(1, this.terminal.yellow.raw(`help`), '\t', '查看帮助');
+    this.terminal.tab(1, this.terminal.yellow.raw(`exit`), '\t', '退出程序 / 返回首页');
     this.terminal.log('');
     this.terminal.log(
-      this.terminal.gray.text('输入') + this.terminal.Inverse.text(' : ') + this.terminal.gray.text('进入命令输入模式，'),
-      this.terminal.gray.text('输入') + this.terminal.Inverse.text(' / ') + this.terminal.gray.text('进入文字输入模式（若该页面支持）。'),
+      this.terminal.gray.raw('输入'), this.terminal.Inverse.raw(' : '), this.terminal.gray.raw('进入命令输入模式，'),
+      this.terminal.gray.raw('输入'), this.terminal.Inverse.raw(' / '), this.terminal.gray.raw('进入文字输入模式（若该页面支持）。'),
     );
   }
 }
