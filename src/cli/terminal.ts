@@ -498,20 +498,6 @@ interface TerminalEvents {
    */
   keydown: (value: ITerminalKeyEvent) => void;
   /**
-   * 鼠标在输出经过
-   * @param line 鼠标经过行内容
-   * @param row 内容所在行数
-   * @param col 内容所在列数
-   */
-  hover: (line: TerminalLine, row: number, col: number) => void;
-  /**
-   * 鼠标离开输出内容
-   * @param line 鼠标经过行内容
-   * @param row 内容所在行数
-   * @param col 内容所在列数
-   */
-  leave: (line: TerminalLine, row: number, col: number) => void;
-  /**
    * 自动补全
    * @param value 当前输入内容
    */

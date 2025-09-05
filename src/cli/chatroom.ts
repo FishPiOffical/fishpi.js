@@ -20,8 +20,6 @@ export class ChatRoomCli extends BaseCli {
     this.terminal.setInputMode(TerminalInputMode.INPUT);
     this.fishpi.chatroom.on('msg', this.eventFn.msg = this.onMessage.bind(this));
     this.terminal.on('input', this.eventFn.input = this.onInput.bind(this));
-    this.terminal.on('hover', this.eventFn.hover = this.onHover.bind(this));
-    this.terminal.on('leave', this.eventFn.leave = this.onLeave.bind(this));
     this.terminal.on('complete', this.eventFn.complete = this.onComplete.bind(this));
     this.terminal.on('keydown', this.eventFn.key = this.onKeyDown.bind(this));
   }
@@ -29,8 +27,6 @@ export class ChatRoomCli extends BaseCli {
   async unload() {
     this.fishpi.chatroom.off('msg', this.eventFn.msg);
     this.terminal.off('input', this.eventFn.input);
-    this.terminal.off('hover', this.eventFn.hover);
-    this.terminal.off('leave', this.eventFn.leave);
     this.terminal.off('complete', this.eventFn.complete);
     this.terminal.off('keydown', this.eventFn.key);
   }
@@ -64,23 +60,6 @@ export class ChatRoomCli extends BaseCli {
         })
       }
     }
-  }
-
-  onHover(line: TerminalLine, row: number, col: number) {
-    let size = 0;
-    let targetIdx = line.findIndex((l) => {
-      size += l.content.length;
-      return size >= col;
-    });
-    if (![2,4].includes(targetIdx)) return
-    let content = line[targetIdx];
-    content.style.underline = true;
-    this.terminal.update(line, row);
-  }
-
-  onLeave(line: TerminalLine, row: number, col: number) {
-    line.forEach(l => l.style.underline = false);
-    this.terminal.update(line, row);
   }
 
   onKeyDown(key: ITerminalKeyEvent) {
