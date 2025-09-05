@@ -524,6 +524,14 @@ export class Terminal extends TerminalStyle {
     this.output = output;
   }
 
+  get info() {
+    return {
+      width: this.screen.width,
+      height: this.screen.height,
+      inputMode: this.input.mode,
+    }
+  }
+
   setInputMode(mode: string, label?: string) {
     this.input.setInputMode(mode, label);
   }

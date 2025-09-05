@@ -44,6 +44,7 @@ export class Page {
     switch(cmds[0]) {
       case 'help':
         if (!this.currentPage) this.help();
+        else this.currentPage.help();
         break;
       case 'exit':
         if (this.currentPage) {
@@ -55,14 +56,19 @@ export class Page {
           setTimeout(() => process.exit(0), 500);
         }
         break;
-    }
-    const page = Object.keys(this.commands).find(c => this.commands[c].commands.includes(cmds[0]));
-    if (page) {
-      const command = this.commands[page];
-      this.currentPage?.unload();
-      this.terminal.clear();
-      command.cli.load(...cmds.slice(1));
-      this.currentPage = command.cli;
+      default:
+        {
+          const page = Object.keys(this.commands).find(c => this.commands[c].commands.includes(cmds[0]));
+          if (page) {
+            const command = this.commands[page];
+            this.currentPage?.unload();
+            this.terminal.clear();
+            command.cli.load(...cmds.slice(1));
+            this.currentPage = command.cli;
+          } else if (this.currentPage) {
+            this.currentPage.command(cmd);
+          }
+        }
     }
   }
 
@@ -76,16 +82,18 @@ export class Page {
     this.terminal.log('欢迎您~', this.terminal.Bold.cyan.raw(me?.userNickname || me?.userName));
     this.terminal.log('');
     this.terminal.log(this.terminal.blue.raw('全局命令：'));
+    const maxLength = Math.max(...Object.keys(this.commands).map(page => this.commands[page].commands.join(' / ').length), 4) + 4;
     Object.keys(this.commands).forEach(page => {
       const command = this.commands[page];
-      this.terminal.tab(1, this.terminal.yellow.raw(`${command.commands.join(' / ')}`), '\t', command.description);
+      const descriptions = command.description.split('\n').map((d, i) => (i === 0 ? d : '\t' + ' '.repeat(maxLength) + '\t' + d));
+      this.terminal.tab(1, this.terminal.yellow.raw(`${command.commands.join(' / ')}`.padEnd(maxLength)), '\t', descriptions.join('\n'));
     });
-    this.terminal.tab(1, this.terminal.yellow.raw(`help`), '\t', '查看帮助');
-    this.terminal.tab(1, this.terminal.yellow.raw(`exit`), '\t', '退出程序 / 返回首页');
+    this.terminal.tab(1, this.terminal.yellow.raw(`help`.padEnd(maxLength)), '\t', '查看帮助');
+    this.terminal.tab(1, this.terminal.yellow.raw(`exit`.padEnd(maxLength)), '\t', '退出程序 / 返回首页');
     this.terminal.log('');
-    this.terminal.log(
-      this.terminal.gray.raw('输入'), this.terminal.Inverse.raw(' : '), this.terminal.gray.raw('进入命令输入模式，'),
-      this.terminal.gray.raw('输入'), this.terminal.Inverse.raw(' / '), this.terminal.gray.raw('进入文字输入模式（若该页面支持）。'),
+    this.terminal.setTip(
+      this.terminal.gray.text('输入') + this.terminal.Inverse.text(' : ') + this.terminal.gray.text('进入命令输入模式，') +
+      this.terminal.gray.text('输入') + this.terminal.Inverse.text(' / ') + this.terminal.gray.text('进入文字输入模式（若该页面支持）。'),
     );
   }
 }

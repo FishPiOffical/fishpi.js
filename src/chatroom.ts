@@ -191,14 +191,14 @@ export class ChatRoom {
    */
   async get({
     oId,
-    mode,
+    mode = ChatMessageType.Context,
     size = 25,
-    type,
+    type = ChatContentType.HTML,
   }: {
     oId: string;
-    mode: ChatMessageType.Context;
-    size: number;
-    type: ChatContentType.HTML;
+    mode?: ChatMessageType;
+    size?: number;
+    type?: ChatContentType;
   }): Promise<IChatRoomMessage[]> {
     try {
       let rsp = await request({
