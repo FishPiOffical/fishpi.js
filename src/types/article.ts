@@ -143,7 +143,7 @@ export enum ArticleListType {
   /**
    * 最近
    */
-  Recent,
+  Recent = '',
   /**
    * 热门
    */
@@ -1000,7 +1000,7 @@ export interface IArticleList {
   /**
    * 文章列表
    */
-  articles: Array<IArticleDetail>;
+  articles: IArticleDetail[];
   /**
    * 分页信息
    */

@@ -127,6 +127,13 @@ export class ChatRoomCli extends BaseCli {
 
   async unload() {
     this.fishpi.chatroom.off('msg', this.eventFn.msg);
+    this.fishpi.chatroom.off('music', this.eventFn.music);
+    this.fishpi.chatroom.off('weather', this.eventFn.weather);
+    this.fishpi.chatroom.off('redPacket', this.eventFn.redPacket);
+    this.fishpi.chatroom.off('discuss', this.eventFn.discuss);
+    this.fishpi.chatroom.off('barrager', this.eventFn.barrage);
+    this.fishpi.chatroom.off('custom', this.eventFn.custom);
+    this.fishpi.chatroom.off('revoke', this.eventFn.revoke);
     this.terminal.off('input', this.eventFn.input);
     this.terminal.off('complete', this.eventFn.complete);
     this.terminal.off('keydown', this.eventFn.key);

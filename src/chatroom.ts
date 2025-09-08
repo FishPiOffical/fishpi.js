@@ -99,6 +99,7 @@ export class ChatRoom {
   private client: ClientType | string = ClientType.Other;
   private version: string = 'Latest';
   private emitter = new EventEmitter();
+  private status = 'close';
 
   constructor(token: string = '') {
     if (!token) {
@@ -415,6 +416,7 @@ export class ChatRoom {
    */
   async reconnect({ url = ``, timeout = 10 }: { url?: string; timeout?: number } = {}) {
     return new Promise(async (resolve) => {
+      this.status = 'connecting';
       if (!url)
         url = await this.getNode()
           .then((rsp) => rsp.recommend.node)
@@ -427,6 +429,7 @@ export class ChatRoom {
       });
 
       this.ws.onopen = (e) => {
+      this.status = 'connected';
         if (this.wsTimer) {
           clearInterval(this.wsTimer);
         }
@@ -520,9 +523,11 @@ export class ChatRoom {
         this.emitter.emit('all', data);
       };
       this.ws.onerror = (e) => {
+        this.status = 'close';
         this.emitter.emit('error', e);
       };
       this.ws.onclose = (e) => {
+        this.status = 'close';
         this.emitter.emit('close', e);
       };
     });
@@ -534,7 +539,7 @@ export class ChatRoom {
    * @param listener 监听器
    */
   on<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
-    if (this.ws == null) {
+    if (this.status == 'close') {
       this.reconnect();
     }
     return this.emitter.on(event, listener);

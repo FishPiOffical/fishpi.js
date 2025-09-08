@@ -249,6 +249,9 @@ class TerminalOutput {
       tags: true,
       scrollable: false,
       mouse: false,
+      style: {
+        fg: 'cyan',
+      }
     });
   }
 
@@ -526,8 +529,8 @@ export class Terminal extends TerminalStyle {
 
   get info() {
     return {
-      width: this.screen.width,
-      height: this.screen.height,
+      width: Number(this.screen.width),
+      height: Number(this.screen.height),
       inputMode: this.input.mode,
     }
   }

@@ -87,10 +87,12 @@ export class Article {
   async list({
     type,
     page = 1,
+    size = 20,
     tag,
   }: {
     type: ArticleListType;
     page?: number;
+    size?: number;
     tag?: string;
   }): Promise<IArticleList> {
     let rsp;
@@ -98,7 +100,7 @@ export class Article {
       rsp = await request({
         url: `api/articles/${
           tag !== undefined ? `tag/${tag}` : 'recent'
-        }${type}?p=${page}&${this.apiKey ? `apiKey=${this.apiKey}` : ''}`,
+        }${type}?p=${page}&size=${size}&${this.apiKey ? `apiKey=${this.apiKey}` : ''}`,
       });
 
       if (rsp.code) throw new Error(rsp.msg);

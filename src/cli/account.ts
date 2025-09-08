@@ -38,4 +38,12 @@ export class AccountCli extends BaseCli {
     Config.set('username', this.me.userName);
     return true;
   }
+
+  async load() {
+    super.load();
+  }
+
+  async unload() {
+    super.unload();
+  }
 }
