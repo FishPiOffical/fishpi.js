@@ -14,13 +14,12 @@ export class ArticleCli extends BaseCli {
     super(fishpi, terminal);
     this.commands = [
       { commands: ['read', 'r'], description: '阅读文章，示例：r 0', call: this.read.bind(this) },
-      { commands: ['next', 'n'], description: '下一页文章', call: this.next.bind(this) },
-      { commands: ['prev', 'p'], description: '上一页文章', call: this.prev.bind(this) },
+      { commands: ['next', 'n'], description: '下一页文章，在文章内则是下一页评论', call: this.next.bind(this) },
+      { commands: ['prev', 'p'], description: '上一页文章，在文章内则是上一页评论', call: this.prev.bind(this) },
       { commands: ['vote', 'v'], description: '点赞文章', call: this.vote.bind(this) },
       { commands: ['reward', 'w'], description: '打赏文章', call: this.reward.bind(this) },
-      { commands: ['thank', 't'], description: '感谢文章，加上序号则是感谢评论，示例：tc 0', call: this.thank.bind(this) },
-      { commands: ['comment', 'c'], description: '评论文章，示例：c 这是一条评论', call: this.comment.bind(this) },
-      { commands: ['reply', 're'], description: '回复评论，示例：re 0 这是一条回复', call: this.reply.bind(this) },
+      { commands: ['thank', 't'], description: '感谢文章，加上序号则是感谢评论，示例：t 0', call: this.thank.bind(this) },
+      { commands: ['comment', 'c'], description: '评论文章，加上序号则是回复评论，示例：c 这是一条评论，c 0 这是一条回复', call: this.comment.bind(this) },
       { commands: ['list', 'l'], description: '返回文章列表', call: this.list.bind(this) },
     ];
   }
@@ -147,7 +146,13 @@ export class ArticleCli extends BaseCli {
     });
   }
 
-  comment(content: string) {
+  comment(...contents: string[]) {
+    let content = contents.join(' ');
+    if (!isNaN(Number(contents[0])) && contents.length > 1) {
+      const index = contents.shift();
+      content = contents.join(' ');
+      return this.reply(index!, content);
+    }
     if (!this.currentPostId) {
       this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再评论'));
       return;
@@ -268,7 +273,7 @@ export class ArticleCli extends BaseCli {
           );
         });
       }
-      this.terminal.setTip(`输入 n 下一页, p 上一页, v 点赞, w 打赏, t 感谢, c 评论, r <序号> 回复评论, t <序号> 感谢评论, l 返回列表`);
+      this.terminal.setTip(`输入 n 下一页, p 上一页, v 点赞, w 打赏, t 感谢, c 评论, c <序号> 回复评论, t <序号> 感谢评论, l 返回列表`);
       this.terminal.setInputMode(TerminalInputMode.CMD);
     }).catch(err => {
       this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
