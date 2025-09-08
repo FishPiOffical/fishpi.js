@@ -1,4 +1,4 @@
-import { IMetal, IRedpacket, IRedPacketMessage } from '.';
+import { IMetal, IRedPacketMessage } from '.';
 
 export enum ClientType {
   /**
@@ -275,7 +275,7 @@ export interface IOnlineInfo {
 /**
  * 主题修改消息，主题内容
  */
-export type discussMsg = string;
+export type DiscussMsg = string;
 
 /**
  * 撤回消息，被撤回消息的 oId
@@ -285,7 +285,11 @@ export type RevokeMsg = string;
 /**
  * 聊天消息
  */
-export interface IChatRoomMsg {
+export interface IChatRoomMsg<T = string> {
+  /**
+   * 消息类型
+   */
+  type: string;
   /**
    * 消息 oId
    */
@@ -313,7 +317,7 @@ export interface IChatRoomMsg {
   /**
    * 消息内容
    */
-  content: string | IRedpacket;
+  content: T;
   /**
    * 消息内容 Markdown
    */
@@ -328,6 +332,28 @@ export interface IChatRoomMsg {
   via: IChatRoomSource;
 }
 
+type WeatherCode =
+  | 'CLEAR_DAY'
+  | 'CLEAR_NIGHT'
+  | 'CLOUDY'
+  | 'DUST'
+  | 'FOG'
+  | 'HEAVY_HAZE'
+  | 'HEAVY_RAIN'
+  | 'HEAVY_SNOW'
+  | 'LIGHT_HAZE'
+  | 'LIGHT_RAIN'
+  | 'LIGHT_SNOW'
+  | 'MODERATE_HAZE'
+  | 'MODERATE_RAIN'
+  | 'MODERATE_SNOW'
+  | 'PARTLY_CLOUDY_DAY'
+  | 'PARTLY_CLOUDY_NIGHT'
+  | 'SAND'
+  | 'STORM_RAIN'
+  | 'STORM_SNOW'
+  | 'WIND';
+
 /**
  * 聊天天气消息详情
  */
@@ -339,7 +365,7 @@ export interface IChatWeatherData {
   /**
    * 天气代码
    */
-  code: string;
+  code: WeatherCode;
   /**
    * 最小气温
    */

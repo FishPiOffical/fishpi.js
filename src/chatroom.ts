@@ -8,7 +8,7 @@ import {
   Redpacket,
   ClientType,
   IOnlineInfo,
-  discussMsg as DiscussMsg,
+  DiscussMsg,
   RevokeMsg,
   IBarragerMsg,
   IChatRoomMsg,
@@ -20,6 +20,7 @@ import {
   IChatRoomMessage,
   IMuteItem,
   IChatRoomNodeInfo,
+  IRedpacket,
 } from './';
 
 interface ChatRoomEvents {
@@ -32,7 +33,7 @@ interface ChatRoomEvents {
    * 话题变更
    * @param discuss 话题
    */
-  discussChanged: (discuss: DiscussMsg) => void;
+  discuss: (discuss: DiscussMsg) => void;
   /**
    * 撤回消息
    * @param oId 被撤回消息 oId
@@ -52,17 +53,17 @@ interface ChatRoomEvents {
    * 红包消息
    * @param redpacket 红包内容
    */
-  redPacket: (redpacket: IRedPacketInfo) => void;
+  redPacket: (redpacket: IChatRoomMsg<IRedpacket>) => void;
   /**
    * 音乐消息
    * @param music 音乐消息内容
    */
-  music: (music: IChatMusic) => void;
+  music: (music: IChatRoomMsg<IChatMusic>) => void;
   /**
    * 天气消息
    * @param weather 天气消息内容
    */
-  weather: (weather: IChatWeather) => void;
+  weather: (weather: IChatRoomMsg<IChatWeather>) => void;
   /**
    * 红包领取
    * @param status 红包领取状态
@@ -72,7 +73,7 @@ interface ChatRoomEvents {
    * 进出通知
    * @param msg 进出通知内容
    */
-  customMessage: (msg: CustomMsg) => void;
+  custom: (msg: CustomMsg) => void;
   /**
    * 发送所有消息
    * @param type 消息类型
@@ -124,7 +125,7 @@ export class ChatRoom {
    * 設置当前聊天室话题
    */
   set discusse(val) {
-    this.send(`[setdiscuss]${val}[/setdiscuss]`);
+    this.send(`[setdiscuss]${val}[/setdiscuss]`).catch(() => {});
   }
 
   /**
@@ -171,6 +172,9 @@ export class ChatRoom {
           data[i].content = JSON.parse(d.content);
           if (data[i].content.recivers)
             data[i].content.recivers = JSON.parse(data[i].content.recivers);
+          if (data[i].content.msgType == 'redPacket') {
+            data[i].content.type = data[i].content.interface;
+          }
           data[i].type = data[i].content.msgType;
         } catch (e) {
         }
@@ -446,6 +450,7 @@ export class ChatRoom {
           }
           case 'discussChanged': {
             data = msg.newDiscuss;
+            msg.type = 'discuss';
             break;
           }
           case 'revoke': {
@@ -486,6 +491,7 @@ export class ChatRoom {
               }
             } catch (e) {}
             data = {
+              type: msg.type,
               userOId,
               oId,
               time,
@@ -506,10 +512,12 @@ export class ChatRoom {
           }
           case 'customMessage': {
             data = msg.message;
+            msg.type = 'custom';
             break;
           }
         }
         this.emitter.emit(msg.type, data);
+        this.emitter.emit('all', data);
       };
       this.ws.onerror = (e) => {
         this.emitter.emit('error', e);

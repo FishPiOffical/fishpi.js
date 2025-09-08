@@ -159,7 +159,7 @@ export interface IRedPacketMessage {
   /**
    * 红包类型
    */
-  interface: string;
+  type: RedPacketType;
   /**
    * 接收者，专属红包有效
    */
