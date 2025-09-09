@@ -38,7 +38,7 @@ export enum NoticeType {
  * 通知列表
  */
 export type NoticeList = Array<
-  INoticePoint | INoticeComment | INoticeAt | INoticeFollow | INoticeSystem
+  INoticePoint | INoticeComment | INoticeReply | INoticeAt | INoticeArticle | INoticeSystem
 >;
 
 /**
@@ -122,7 +122,7 @@ export interface INoticePoint {
 }
 
 /**
- * 评论/回帖通知
+ * 评论通知
  */
 export interface INoticeComment {
   /**
@@ -168,6 +168,20 @@ export interface INoticeComment {
 }
 
 /**
+ * 回帖通知
+ */
+export interface INoticeReply extends INoticeComment {
+  /**
+   * 文章 id
+   */
+  articleId: string;
+  /**
+   * 数据类型
+   */
+  dataType: DataType;
+}
+
+/**
  * 提到我通知
  */
 export interface INoticeAt {
@@ -175,6 +189,10 @@ export interface INoticeAt {
    * 通知 id
    */
   oId: string;
+  /**
+   * 数据 id
+   */
+  dataId: string;
   /**
    * 数据类型
    */
@@ -186,11 +204,11 @@ export interface INoticeAt {
   /**
    * 用户头像
    */
-  userAvatarURL: string;
+  thumbnailURL: string;
   /**
    * 通知内容
    */
-  content: string;
+  description: string;
   /**
    * 是否已读
    */
@@ -204,7 +222,7 @@ export interface INoticeAt {
 /**
  * 我关注的通知
  */
-export interface INoticeFollow {
+export interface INoticeArticle {
   /**
    * 通知 Id
    */
@@ -301,44 +319,82 @@ export interface INoticeSystem {
   createTime: string;
 }
 
+export enum NoticeCommandType {
+  /** 刷新通知 */
+  RefreshNotification = 'refreshNotification',
+  /**
+   * 聊天未读数刷新
+   */
+  ChatUnreadCountRefresh = 'chatUnreadCountRefresh',
+  /**
+   * 新的闲聊消息
+   */
+  NewIdleChatMessage = 'newIdleChatMessage',
+  /**
+   * 系统广播警告
+   */
+  WarnBroadcast = 'warnBroadcast',
+  /**
+   * 清风明月更新
+   */
+  bzUpdate = 'bzUpdate',
+}
+
 /**
  * 通知消息
  */
-export interface INoticeMsg {
+export interface INoticeCommand {
   /**
    * 通知类型
    */
-  command:
-    | 'refreshNotification'
-    | 'chatUnreadCountRefresh'
-    | 'newIdleChatMessage'
-    | 'warnBroadcast';
-  /*
-   * 通知接收者用户Id
-   */
-  userId: string;
+  command: NoticeCommandType;
+}
+
+/**
+ * 未读消息数
+ */
+export interface INoticeUnReadCount extends INoticeCommand {
   /**
-   * 私聊内容预览，仅 `newIdleChatMessage` 有信息
+   * 未读数
    */
-  preview?: string;
+  count: number;
+}
+
+/**
+ * 私聊通知
+ */
+export interface INoticeIdleChat extends INoticeCommand {
+  senderUserName: string;
+  senderAvatar: string;
+  preview: string;
+}
+
+/**
+ * 系统广播
+ */
+export interface INoticeWarnBroadcast extends INoticeCommand {
+  warnBroadcastText: string;
+  who: string;
+}
+
+/**
+ * 清风明月更新
+ */
+export interface INoticeBreezemoon extends INoticeCommand {
   /**
-   * 私聊发送者头像，仅 `refreshNotification` 有信息
+   * 发布者用户名
    */
-  senderAvatar?: string;
+  breezemoonAuthorName: string;
   /**
-   * 私聊发送者用户名，仅 `refreshNotification` 有信息
+   * 发布者头像
    */
-  senderUserName?: string;
+  breezemoonAuthorThumbnailURL48: string;
   /**
-   * 私聊消息数，仅 `chatUnreadCountRefresh` 有信息
+   * 内容
    */
-  count?: number;
+  breezemoonContent: string;
   /**
-   * 全局公告内容，仅 `warnBroadcast` 有信息
+   * 清风明月ID
    */
-  warnBroadcastText?: string;
-  /**
-   * 全局公告发布者，仅 `warnBroadcast` 有信息
-   */
-  who?: string;
+  oId: string;
 }

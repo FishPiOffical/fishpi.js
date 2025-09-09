@@ -3,6 +3,7 @@ import { AccountCli, ChatRoomCli, Terminal } from ".";
 import { BaseCli, FishPi } from "./lib";
 import { ArticleCli } from "./article";
 import { BreezemoonCli } from "./breezemoon";
+import { NoticeCli } from "./notice";
 
 interface ICommand {
   cli: BaseCli,
@@ -34,10 +35,13 @@ export class Page {
     const chatroom = new ChatRoomCli(this.fishpi, this.terminal);
     const article = new ArticleCli(this.fishpi, this.terminal);
     const breezemoon = new BreezemoonCli(this.fishpi, this.terminal);
+    const notice = new NoticeCli(this.fishpi, this.terminal);
+    notice.addListener();
     this.commands = {
       chatroom: { cli: chatroom, commands: ['chatroom', 'cr'], description: '聊天室' },
       article: { cli: article, commands: ['article', 'a'], description: '文章' },
       breezemoon: { cli: breezemoon, commands: ['breezemoon', 'b'], description: '清风明月' },
+      notice: { cli: notice, commands: ['notice', 'n'], description: '通知' },
       account: { cli: this.account, commands: ['profile', 'p'], description: '个人页' },
     }
     this.terminal.on('cmd', this.onCommand.bind(this));

@@ -3,7 +3,7 @@ import { request, domain, WebSocket } from './utils';
 import { EventEmitter } from 'events';
 import { IChatData, IChatNotice, IChatQuery } from '.';
 
-interface ChatEvents {
+interface IChatEvents {
   /**
    * 私聊消息
    * @param msg 私聊消息内容
@@ -49,6 +49,10 @@ class ChatChannel {
     this.connect(true);
   }
 
+  /**
+   * 重连私聊频道
+   * @returns Websocket 连接对象
+   */
   reconnect() {
     if (!this.ws) return this.connect();
     return new Promise((resolve) => {
@@ -68,10 +72,10 @@ class ChatChannel {
     return new Promise(async (resolve, reject) => {
       if (this.ws && !reload) return resolve(this.ws);
       if (this.ws) this.ws.close();
+      if (!this.user) return reject(new Error('请先设置私聊用户名'));
+      if (!this.apiKey) return reject(new Error('请先设置 API Key'));
       this.ws = new ReconnectingWebSocket(
-        this.user
-          ? `wss://${domain}/chat-channel?apiKey=${this.apiKey}&toUser=${this.user}`
-          : `wss://${domain}/user-channel?apiKey=${this.apiKey}`,
+        `wss://${domain}/chat-channel?apiKey=${this.apiKey}&toUser=${this.user}`,
         [],
         {
           WebSocket,
@@ -82,18 +86,13 @@ class ChatChannel {
         resolve(this.ws!);
       };
       this.ws.onmessage = async (e) => {
-        const msg = JSON.parse(e.data);
+        let msg = JSON.parse(e.data);
         let type = 'data';
-        let data = msg;
-        if (['chatUnreadCountRefresh', 'newIdleChatMessage'].includes(msg.command ?? '')) {
-          type = 'notice';
-        }
         if (msg.type == 'revoke') {
           type = 'revoke';
-          data = msg.data;
+          msg = msg.data;
         }
-        if (type != 'notice' && msg.command != null) return;
-        this.emitter.emit(type, data);
+        this.emitter.emit(type, msg);
       };
       this.ws.onerror = (e) => {
         this.emitter.emit('error', e);
@@ -120,7 +119,7 @@ class ChatChannel {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  on<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
+  on<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
     if (this.ws == null) {
       this.connect();
     }
@@ -132,7 +131,7 @@ class ChatChannel {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  off<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
+  off<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
     return this.emitter.off(event, listener);
   }
 
@@ -141,7 +140,7 @@ class ChatChannel {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  once<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
+  once<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
     return this.emitter.once(event, listener);
   }
 
@@ -157,7 +156,7 @@ class ChatChannel {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  removeListener<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
+  removeListener<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
     return this.off(event, listener);
   }
 
@@ -166,7 +165,7 @@ class ChatChannel {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  addListener<K extends keyof ChatEvents>(event: K, listener: ChatEvents[K]) {
+  addListener<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
     return this.on(event, listener);
   }
 
@@ -222,9 +221,28 @@ export class Chat {
     this.apiKey = token;
   }
 
-  channel(user = '') {
+  /**
+   * 获取私聊频道
+   * @param user 私聊用户名
+   * @returns 私聊频道
+   */
+  channel(user: string) {
     if (!this.chats[user]) this.chats[user] = new ChatChannel(user, this.apiKey);
     return this.chats[user];
+  }
+
+  /**
+   * 关闭私聊频道
+   * @param user 私聊用户名
+   */
+  close(user: string='') {
+    if (user) {
+      this.chats[user]?.close();
+      delete this.chats[user];
+      return;
+    }
+    Object.values(this.chats).forEach((c) => c.close());
+    this.chats = {};
   }
 
   /**
@@ -237,7 +255,7 @@ export class Chat {
   }
 
   /**
-   * 获取有私聊用户列表第一条消息
+   * 获取有私聊用户列表以及第一条消息
    * @returns 私聊消息列表
    */
   async list(): Promise<IChatData[]> {

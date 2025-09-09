@@ -23,7 +23,7 @@ import {
   IRedpacket,
 } from './';
 
-interface ChatRoomEvents {
+interface IChatRoomEvents {
   /**
    * 在线用户变更
    * @param onlines 在线用户
@@ -538,7 +538,7 @@ export class ChatRoom {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  on<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
+  on<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
     if (this.status == 'close') {
       this.reconnect();
     }
@@ -550,7 +550,7 @@ export class ChatRoom {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  off<K extends keyof ChatRoomEvents>(event?: K, listener?: ChatRoomEvents[K]) {
+  off<K extends keyof IChatRoomEvents>(event?: K, listener?: IChatRoomEvents[K]) {
     if (!event) return this.emitter.removeAllListeners();
     if (!listener) return this.emitter.removeAllListeners(event);
     return this.emitter.off(event, listener);
@@ -561,14 +561,14 @@ export class ChatRoom {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  once<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
+  once<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
     return this.emitter.once(event, listener);
   }
 
   /**
    * 清除聊天室监听
    */
-  clearListener(event?: keyof ChatRoomEvents) {
+  clearListener(event?: keyof IChatRoomEvents) {
     this.emitter.removeAllListeners(event);
   }
 
@@ -577,7 +577,7 @@ export class ChatRoom {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  removeListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
+  removeListener<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
     return this.off(event, listener);
   }
 
@@ -586,7 +586,7 @@ export class ChatRoom {
    * @param event 聊天室事件
    * @param listener 监听器
    */
-  addListener<K extends keyof ChatRoomEvents>(event: K, listener: ChatRoomEvents[K]) {
+  addListener<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
     return this.on(event, listener);
   }
 }

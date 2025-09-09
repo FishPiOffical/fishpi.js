@@ -38,11 +38,12 @@ export class BreezemoonCli extends BaseCli {
   async render(page = 1) {
     this.terminal.clear();
     this.terminal.log(this.terminal.Bold.green.raw('清风明月'));
-    this.fishpi.breezemoon.list(page, 10).then((breezes) => {
+    const size = this.terminal.info.height - 3;
+    this.fishpi.breezemoon.list(page, size).then((breezes) => {
       this.page = page;
       breezes.forEach((breeze, i) => {
         this.terminal.log(
-          this.terminal.yellow.raw(`${(page - 1) * 10 + i}. `),
+          this.terminal.yellow.raw(`${i}. `),
           '[',
           this.terminal.blue.raw(breeze.timeAgo),
           '] ',

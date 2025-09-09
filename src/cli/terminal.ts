@@ -345,6 +345,10 @@ class TerminalOutput {
     if (this.screen) this.screen.render();
   }
 
+  getTip() {
+    return this.tip.getContent();
+  }
+
   pageUp() {
     this.output.scroll(-this.output.height);
     if (this.screen) this.screen.render();
@@ -606,6 +610,10 @@ export class Terminal extends TerminalStyle {
 
   setTip(tip: string) {
     this.output.setTip(tip);
+  }
+
+  getTip() {
+    return this.output.getTip();
   }
 
   clear() {

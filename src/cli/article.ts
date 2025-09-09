@@ -36,7 +36,8 @@ export class ArticleCli extends BaseCli {
 
   renderList(page: number) {
     this.currentPostId = undefined;
-    this.fishpi.article.list({ page, size: 10, type: ArticleListType.Recent }).then(res => {
+    const size = this.terminal.info.height - 3;
+    this.fishpi.article.list({ page, size, type: ArticleListType.Recent }).then(res => {
       this.currentList = res.articles;
       this.currentPage = page;
       this.terminal.clear();
