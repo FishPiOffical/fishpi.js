@@ -7,7 +7,12 @@ export class AccountCli extends BaseCli {
   me: UserInfo | undefined;
 
   constructor(fishpi: FishPi, terminal: Terminal) {
-    super(fishpi, terminal)
+    super(fishpi, terminal);
+    this.commands = [
+      { commands: ['user', 'u'], description: '查看个人信息，示例：u imlinhanchao', call: this.load.bind(this) },
+      { commands: ['article', 'a'], description: '查看用户文章，示例：a imlinhanchao', call: this.load.bind(this) },
+      { commands: ['breezemoon', 'b'], description: '查看用户清风明月，示例：b imlinhanchao', call: this.load.bind(this) },
+    ]
   }
 
   async isLogin() {
@@ -39,11 +44,51 @@ export class AccountCli extends BaseCli {
     return true;
   }
 
-  async load() {
+  async load(user: string = '') {
     super.load();
+    this.render(user);
+    this.terminal.setTip('u - 查看用户，a - 查看用户文章， b - 查看用户清风明月，help - 帮助，exit - 退出');
   }
 
   async unload() {
     super.unload();
+  }
+
+  async render(user: string) {
+    let info = this.me?.userName === user || !user ? this.me : await this.fishpi.user(user);
+    if (!info) {
+      this.log(this.terminal.red.raw('[错误] 用户 ' + user + ' 不存在.'));
+      return;
+    }
+
+    const username = info.userNickname ? `${info.userNickname}(${info.userName})` : info.userName;
+    this.terminal.clear();
+    this.log(
+      this.terminal.Bold.blue.raw(username),
+      ' - ',
+      info.userOnlineFlag ? this.terminal.green.raw('[在线]') : this.terminal.red.raw('[离线]'),
+    );
+    this.log('👤 ', ['黑客', '画家'][info.userAppRole], '\t', this.terminal.Bold.cyan.text(`No.${info.userNo}`));
+    this.log(`💲${info.userPoint}\t${!info.userCity ? '' : `📍${info.userCity}`}`);
+    if (info.userIntro) this.log(`📝 ${info.userIntro}`);
+    if (info.userURL) this.log('🔗 ', this.terminal.Bold.Underline.text(`${info.userURL}`));
+
+    let metals = '';
+    const maxLength = Math.max(3, ...info.sysMetal.map(s => s.name.length));
+    const size = Math.floor(this.terminal.info.width / (maxLength + 8)) - 1;
+    for (var i = 0; i < info.sysMetal.length; i++) {
+      metals += `🏅 ${info.sysMetal[i].name.padEnd(maxLength)}\t`;
+      if ((i + 1) % size == 0) metals += '\n';
+    }
+    if (info.sysMetal.length > 0) {
+      this.log('🏅 勋章');
+      this.log(this.terminal.yellow.text(metals));
+    }
+
+    this.log('');
+
+    if (info.userName == this.me?.userName) {
+      this.log(this.terminal.yellow.text('当前活跃度'), ': ', this.terminal.Bold.cyan.raw(`${await this.fishpi.account.liveness()}`));
+    }
   }
 }

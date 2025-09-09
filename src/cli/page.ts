@@ -45,7 +45,7 @@ export class Page {
       article: { cli: article, commands: ['article', 'a'], description: '文章' },
       breezemoon: { cli: breezemoon, commands: ['breezemoon', 'b'], description: '清风明月' },
       notice: { cli: notice, commands: ['notice', 'n'], description: '通知' },
-      account: { cli: this.account, commands: ['profile', 'p'], description: '个人页' },
+      account: { cli: this.account, commands: ['user', 'u'], description: '个人页' },
     }
     this.terminal.on('cmd', this.onCommand.bind(this));
     return true;

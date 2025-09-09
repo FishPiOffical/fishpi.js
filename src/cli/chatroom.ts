@@ -62,10 +62,11 @@ export class ChatRoomCli extends BaseCli {
     const users = await this.fishpi.chatroom.onlines;
     this.log(this.terminal.green.raw(`当前在线用户 ${users.length} 人：`));
     let onlines = '';
-    const maxLength = Math.max(...users.map(u => u.userName.length));
-    const size = Number(this.terminal.info.width) / (maxLength + 3);
+    const maxLength = Math.max(...users.map((u, i) => u.userName.length));
+    const indexLength = String(users.length).length;
+    const size = Math.floor(Number(this.terminal.info.width) / (maxLength + 4)) - 1;
     users.forEach((u: IOnlineInfo, i) => {
-      onlines += this.terminal.green.raw(`${i}.${u.userName.padEnd(maxLength, ' ')}   `);
+      onlines += this.terminal.yellow.text(`${i.toString().padStart(indexLength, ' ')}.`) + this.terminal.text(`${u.userName.padEnd(maxLength, ' ')}\t`);
       if ((i + 1) % size == 0) onlines += '\n';
     });
     this.log(onlines);

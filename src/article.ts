@@ -120,14 +120,16 @@ export class Article {
   async userArticles({
     userName,
     page = 1,
+    size = 20,
   }: {
     userName: string;
-    page: number;
+    page?: number;
+    size?: number;
   }): Promise<IArticleList> {
     let rsp;
     try {
       rsp = await request({
-        url: `api/articles/${userName}/articles?p=${page}&${
+        url: `api/user/${userName}/articles?p=${page}&size=${size}&${
           this.apiKey ? `apiKey=${this.apiKey}` : ''
         }`,
       });

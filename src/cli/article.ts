@@ -1,5 +1,5 @@
 import { Config } from './config';
-import { ArticleListType, BaseCli, CommentPost, FishPi, IArticleComment, IArticleDetail } from './lib';
+import { ArticleListType, BaseCli, CommentPost, FishPi, IArticleComment, IArticleDetail, IArticleList } from './lib';
 import { Terminal, TerminalInputMode } from './terminal';
 
 export class ArticleCli extends BaseCli {
@@ -9,26 +9,31 @@ export class ArticleCli extends BaseCli {
   currentPostComments: IArticleComment[] = [];
   currentPostCommentPage = 1;
   tag = '';
+  user = '';
   me: string | undefined;
   
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
     this.commands = [
+      { commands: ['article', 'a'], description: '返回文章列表，传递用户名可查看指定用户的文章，示例：a imlinhanchao', call: this.load.bind(this) },
+      { commands: ['tag', 'g'], description: '按标签查看文章，示例：tag 前端', call: this.tagArticles.bind(this) },
       { commands: ['next', 'n'], description: '下一页文章，在文章内则是下一页评论', call: this.next.bind(this) },
       { commands: ['prev', 'p'], description: '上一页文章，在文章内则是上一页评论', call: this.prev.bind(this) },
       { commands: ['vote', 'v'], description: '点赞文章', call: this.vote.bind(this) },
       { commands: ['reward', 'w'], description: '打赏文章', call: this.reward.bind(this) },
       { commands: ['thank', 't'], description: '感谢文章，加上序号则是感谢评论，示例：t 0', call: this.thank.bind(this) },
       { commands: ['comment', 'c'], description: '评论文章，加上序号则是回复评论，示例：c 这是一条评论，c 0 这是一条回复', call: this.comment.bind(this) },
-      { commands: ['tag', 'g'], description: '按标签查看文章，示例：tag 前端', call: this.tagArticles.bind(this) },
-      { commands: ['list', 'l'], description: '返回文章列表', call: this.list.bind(this) },
     ];
   }
 
-  async load() {
+  async load(user: string = '') {
     this.me = Config.get('username');
-    this.renderList(1);
     super.load();
+    if (user) {
+      this.renderUser(1, user);
+    } else {
+      this.renderRecent(1);
+    }
   }
 
   async unload() {
@@ -37,43 +42,59 @@ export class ArticleCli extends BaseCli {
 
   tagArticles(tag: string) {
     this.tag = tag;
-    this.renderList(1, tag);
+    this.renderRecent(1, tag);
   }
 
-  renderList(page: number, tag: string = '') {
+  renderUser(page: number, userName: string = '') {
     this.currentPostId = undefined;
+    this.user = userName;
     const size = this.terminal.info.height - 3;
-    this.fishpi.article.list({ page, size, type: ArticleListType.Recent, tag }).then(res => {
-      this.currentList = res.articles;
+    this.fishpi.article.userArticles({ page, userName, size }).then(res => {
       this.currentPage = page;
-      this.terminal.clear();
-      this.log(
-        this.terminal.Bold.blue.raw('文章列表'),
-        this.tag ? ' - ' + this.terminal.cyan.text(`#${this.tag}`) : '',
-        ` 第 ${page} 页 / 共 ${res.pagination.paginationPageCount} 页`
-      );
-      if (res.articles.length === 0) {
-        this.log(this.terminal.gray.raw('没有更多文章了...'));
-        return;
-      }
-      res.articles.forEach((article, i) => {
-        const author = article.articleAuthor.userNickname || article.articleAuthor.userName + 
-          (article.articleAuthor.userNickname ? `(${article.articleAuthor.userName})` : '');
-        this.log(
-          this.terminal.yellow.raw(i + '. '),
-          '[',
-          this.terminal.blue.raw(article.articleLatestCmtTimeStr),
-          '] ',
-          this.terminal.green.raw(author),
-          ' - ',
-          article.articleTitleEmoj,
-        );
-      });
-      this.terminal.setTip(`输入 <序号> 阅读, n 下一页, p 上一页, q 退出`);
-      this.terminal.setInputMode(TerminalInputMode.CMD);
+      this.renderArticles(res);
     }).catch(err => {
       this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
+  }
+
+  renderRecent(page: number, tag: string = '') {
+    this.currentPostId = undefined;
+    const size = this.terminal.info.height - 3;
+    this.fishpi.article.list({ page, size, type: ArticleListType.Recent, tag }).then(res => {
+      this.currentPage = page;
+      this.renderArticles(res);
+    }).catch(err => {
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
+    });
+  }
+
+  renderArticles(res: IArticleList) {
+    this.currentList = res.articles;
+    this.terminal.clear();
+    this.log(
+      this.terminal.Bold.blue.raw('文章列表'),
+      this.tag ? ' - ' + this.terminal.cyan.text(`#${this.tag}`) : '',
+      ` 第 ${this.currentPage} 页 / 共 ${res.pagination.paginationPageCount} 页`
+    );
+    if (res.articles.length === 0) {
+      this.log(this.terminal.gray.raw('没有更多文章了...'));
+      return;
+    }
+    res.articles.forEach((article, i) => {
+      const author = article.articleAuthor.userNickname || article.articleAuthor.userName + 
+        (article.articleAuthor.userNickname ? `(${article.articleAuthor.userName})` : '');
+      this.log(
+        this.terminal.yellow.raw(i + '. '),
+        '[',
+        this.terminal.blue.raw(article.articleLatestCmtTimeStr),
+        '] ',
+        this.terminal.green.raw(author),
+        ' - ',
+        article.articleTitleEmoj,
+      );
+    });
+    this.terminal.setTip(`输入 <序号> 阅读, n 下一页, p 上一页, q 退出`);
+    this.terminal.setInputMode(TerminalInputMode.CMD);
   }
   
   async help() {
@@ -102,8 +123,10 @@ export class ArticleCli extends BaseCli {
   next() {
     if (this.currentPostId) {
       this.renderPost(this.currentPostId, this.currentPostCommentPage + 1);
+    } else if (this.user) {
+      this.renderUser(this.currentPage + 1, this.user);
     } else {
-      this.renderList(this.currentPage + 1, this.tag);
+      this.renderRecent(this.currentPage + 1, this.tag);
     }
   }
 
@@ -112,9 +135,13 @@ export class ArticleCli extends BaseCli {
       if (this.currentPostCommentPage > 1) {
         this.renderPost(this.currentPostId, this.currentPostCommentPage - 1);
       }
+    } else if (this.user) {
+      if (this.currentPage > 1) {
+        this.renderUser(this.currentPage - 1, this.user);
+      }
     } else {
       if (this.currentPage > 1) {
-        this.renderList(this.currentPage - 1, this.tag);
+        this.renderRecent(this.currentPage - 1, this.tag);
       }
     }
   }
@@ -229,11 +256,6 @@ export class ArticleCli extends BaseCli {
     }).catch(err => {
       this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
-  }
-
-  list () {
-    this.tag = '';
-    this.renderList(this.currentPage);
   }
 
   renderPost(oId: string, page = 1) {

@@ -568,7 +568,7 @@ export interface IAuthor {
 
 export interface IPagination {
   /**
-   * 评论分页数
+   * 分页数
    */
   paginationPageCount: string;
   /**
