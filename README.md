@@ -1,7 +1,8 @@
-# 摸鱼派 API Package
+# Fishpi.js
+
 摸鱼派社区 (https://fishpi.cn/) 的 API Package，可以快速开发出一款应用支援社区功能。
 
-## 支援
+## 功能
 - 用户信息；
 - 聊天室；
   - 话题编辑；
@@ -44,7 +45,7 @@ let emojis = await fish.emoji.get();
 let defaultEmoji = fish.emoji.default;
 
 // 监听聊天室消息
-fish.chatroom.addListener(({ msg }) => console.dir(msg));
+fish.chatroom.on('msg', (msg) => console.dir(msg));
 // 向聊天室发送信息（需要登录）
 await fish.chatroom.send('Hello World!');
 // 向聊天室发送红包
@@ -59,31 +60,15 @@ await fish.chatroom.redpacket.send({
 // 私聊历史获取
 let chatHistory = await fish.chat.get({ user: 'username', autoRead: false })
 // 监听私聊新消息
-fishpi.chat.addListener(async ({ msg }: { msg: NoticeMsg }) => {
-    switch (msg.command) {
-        // 私聊未读数更新
-        case 'chatUnreadCountRefresh':
-            if(msg.count! > 0) {
-                let unreadMsgs = await fishpi.chat.unread();
-            }
-            break;
-        // 新私聊消息
-        case 'newIdleChatMessage':
-            // msg 就是新的私聊消息
-            console.log(msg.senderUserName, '说：', msg.preview);
-            break;
-        // 有新的消息通知
-        case 'refreshNotification':
-            console.log('你有新消息【', await fishpi.notice.count(), '】')
-            break;
-    }
+fishpi.notice.on('newIdleChatMessage', (msg: NoticeMsg) => {
+    console.log(msg.senderUserName, '说：', msg.preview);
 });
 // 监听指定用户的私聊消息
-fishpi.chat.addListener(({ msg }: { msg: ChatData }) => {
+fishpi.chat.channel('username').on('data', (msg: ChatData) => {
     console.log(msg.senderUserName, '[', msg.time, ']：', msg.content);
-}, 'username');
+);
 // 给指定用户发私聊消息
-fishpi.chat.send('username', 'Hi~');
+fishpi.chat.channel('username').send('Hi~');
 
 // 金手指
 import { Finger, FingerTo } from 'fishpi';
@@ -103,4 +88,12 @@ API 库使用 `fetch` 做 API 请求，浏览器环境可以直接使用。在 N
 ```typescript
 import fetch from 'node-fetch'
 globalThis.fetch = fetch as any;
+```
+
+## 命令行工具
+
+全局安装可以直接通过 `fishpi` 执行一个摸鱼派命令行工具，包含几乎所有功能。
+
+```
+npm i -g fishpi
 ```
