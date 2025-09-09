@@ -4,6 +4,7 @@ import { BaseCli, FishPi } from "./lib";
 import { ArticleCli } from "./article";
 import { BreezemoonCli } from "./breezemoon";
 import { NoticeCli } from "./notice";
+import { ChatCli } from "./chat";
 
 interface ICommand {
   cli: BaseCli,
@@ -36,9 +37,11 @@ export class Page {
     const article = new ArticleCli(this.fishpi, this.terminal);
     const breezemoon = new BreezemoonCli(this.fishpi, this.terminal);
     const notice = new NoticeCli(this.fishpi, this.terminal);
+    const chat = new ChatCli(this.fishpi, this.terminal);
     notice.addListener();
     this.commands = {
       chatroom: { cli: chatroom, commands: ['chatroom', 'cr'], description: '聊天室' },
+      chat: { cli: chat, commands: ['chat', 'c'], description: '私聊' },
       article: { cli: article, commands: ['article', 'a'], description: '文章' },
       breezemoon: { cli: breezemoon, commands: ['breezemoon', 'b'], description: '清风明月' },
       notice: { cli: notice, commands: ['notice', 'n'], description: '通知' },

@@ -176,7 +176,7 @@ export class FishPi {
         url: `user/${username}${this.apiKey ? `?apiKey=${this.apiKey}` : ''}`,
       });
 
-      if (rsp.code != 0) return;
+      if (rsp.code && rsp.code !== 0) return;
 
       rsp.sysMetal = toMetal(rsp.sysMetal);
       rsp.allMetalOwned = toMetal(rsp.allMetalOwned);

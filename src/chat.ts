@@ -10,11 +10,6 @@ interface IChatEvents {
    */
   data: (msg: IChatData) => void;
   /**
-   * 私聊通知消息
-   * @param msg 私聊通知
-   */
-  notice: (msg: IChatNotice) => void;
-  /**
    * 撤回消息
    * @param oId 消息 ID
    */
@@ -185,7 +180,7 @@ class ChatChannel {
 
       if (autoRead) this.markRead();
 
-      return rsp;
+      return rsp.data;
     } catch (e) {
       throw e;
     }

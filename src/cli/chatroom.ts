@@ -5,8 +5,8 @@ import { ITerminalKeyEvent, Terminal, TerminalInputMode } from './terminal';
 export class ChatRoomCli extends BaseCli {
   eventFn: Record<string, any> = {};
   me: string | undefined;
-  atList: IAtUser[] = [];
   redpacketIds: string[] = [];
+  atList: IAtUser[] = [];
   currentAt: number = 0;
   mode: 'cmd' | 'chat' = 'chat';
   msgList: any[] = [];
@@ -43,7 +43,7 @@ export class ChatRoomCli extends BaseCli {
   async toHistory(data: string, size: string) {
     this.mode = 'cmd';
     if (data.length && isNaN(Number(data))) {
-      this.terminal.log(this.terminal.red.raw(`[错误]: 参数必须是数字，表示要获取的历史消息页数或消息Id`));
+      this.log(this.terminal.red.raw(`[错误]: 参数必须是数字，表示要获取的历史消息页数或消息Id`));
       return;
     }
     let history: IChatRoomMessage[] = [];
@@ -60,7 +60,7 @@ export class ChatRoomCli extends BaseCli {
     this.mode = 'cmd';
     this.terminal.setInputMode(TerminalInputMode.CMD);
     const users = await this.fishpi.chatroom.onlines;
-    this.terminal.log(this.terminal.green.raw(`当前在线用户 ${users.length} 人：`));
+    this.log(this.terminal.green.raw(`当前在线用户 ${users.length} 人：`));
     let onlines = '';
     const maxLength = Math.max(...users.map(u => u.userName.length));
     const size = Number(this.terminal.info.width) / (maxLength + 3);
@@ -68,14 +68,14 @@ export class ChatRoomCli extends BaseCli {
       onlines += this.terminal.green.raw(`${i}.${u.userName.padEnd(maxLength, ' ')}   `);
       if ((i + 1) % size == 0) onlines += '\n';
     });
-    this.terminal.log(onlines);
+    this.log(onlines);
   }
 
   async reply(oId: string, content: string) {
     const msg = await this.fishpi.chatroom.get({ oId, size: 1, type: ChatContentType.Markdown })
     .then(msgs => msgs?.find(m => m.oId == oId)).catch(() => undefined);
     if (!msg) {
-      this.terminal.log(this.terminal.red.raw(`[错误]: 未找到要回复的消息 ${oId}`));
+      this.log(this.terminal.red.raw(`[错误]: 未找到要回复的消息 ${oId}`));
       return;
     }
     const replyContent = `${content}\n\n##### 引用 @${msg.userName}[↩](https://fishpi.cn/cr#chatroom${oId} "跳转至原消息")\n
@@ -98,13 +98,13 @@ export class ChatRoomCli extends BaseCli {
   async openRedpack(oId: string, gesture?: string) {
     if (oId == '.') {
       if (!this.redpacketIds.length) {
-        this.terminal.log(this.terminal.red.raw(`[错误]: 当前没有可用的红包 ID`));
+        this.log(this.terminal.red.raw(`[错误]: 当前没有可用的红包 ID`));
         return;
       }
       oId = this.redpacketIds[this.redpacketIds.length - 1];
     }
     this.fishpi.chatroom.redpacket.open(oId, gesture ? Number(gesture) : undefined)
-      .catch(err => this.terminal.log(this.terminal.red.raw(`[错误]: ${err.message}`)));
+      .catch(err => this.log(this.terminal.red.raw(`[错误]: ${err.message}`)));
   }
 
   async help() {
@@ -170,12 +170,12 @@ export class ChatRoomCli extends BaseCli {
 
   onDiscussChanged(msg: DiscussMsg) {
     if (this.mode != 'chat') return;
-    this.terminal.log(this.terminal.yellow.raw(`🎤#${msg}`));
+    this.log(this.terminal.yellow.raw(`🎤#${msg}`));
   }
 
   onBarrager(msg: IBarragerMsg) {
     if (this.mode != 'chat') return;
-    this.terminal.log(
+    this.log(
       this.terminal.fg(msg.barragerColor).raw('[') + 
       `${msg.barragerContent}` + 
       this.terminal.fg(msg.barragerColor).raw(']')
@@ -184,7 +184,7 @@ export class ChatRoomCli extends BaseCli {
 
   onCustom(msg: CustomMsg) {
     if (this.mode != 'chat') return;
-    this.terminal.log(this.terminal.gray.raw(`(${msg})`));
+    this.log(this.terminal.gray.raw(`(${msg})`));
   }
 
   onRevoke(msg: RevokeMsg) {
@@ -195,7 +195,7 @@ export class ChatRoomCli extends BaseCli {
 
   onInput(value: string) {
     this.fishpi.chatroom.send(value).catch(err => {
-      this.terminal.log(this.terminal.red.raw(`[错误]: ${err.message}`));
+      this.log(this.terminal.red.raw(`[错误]: ${err.message}`));
     });
     this.atList = [];
     this.currentAt = 0;
@@ -326,8 +326,8 @@ export class ChatRoomCli extends BaseCli {
     }
     const content = [
       this.terminal.red.raw(`[🧧${redpacketType[msg.content.type]}: ${msg.content.msg}]`),
-      this.terminal.white.raw(` - ${msg.content.count} 个，`),
-      this.terminal.white.raw(`${msg.content.money} 积分`),
+      this.terminal.white.raw(` - ${msg.content.count} 个 / `),
+      this.terminal.yellow.raw(`${msg.content.money} 积分`),
     ];
     this.log(time, ' ', nickname, ' ', oId, ' ', ...content);
   }

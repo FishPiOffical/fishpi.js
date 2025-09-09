@@ -41,12 +41,12 @@ export class BaseCli {
     if (command) {
       command.call(...cmds.slice(1));
     } else {
-      this.terminal.log(this.terminal.red.raw(`[未知命令]: ${cmds[0]}`));
+      this.log(this.terminal.red.raw(`[未知命令]: ${cmds[0]}`));
     }
   }
 
   help() {
-    this.terminal.log(this.terminal.blue.raw('可用指令：'));
+    this.log(this.terminal.blue.raw('可用指令：'));
     const maxLength = Math.max(...this.commands.map(cmd => cmd.commands.join(' / ').length), 8) + 4;
     this.terminal.tab(1, this.terminal.yellow.raw(`help / h`.padEnd(maxLength)), '\t', '查看帮助');
     this.terminal.tab(1, this.terminal.yellow.raw(`exit / q`.padEnd(maxLength)), '\t', '返回首页');
@@ -54,7 +54,7 @@ export class BaseCli {
       const descriptions = cmd.description.split('\n').map((d, i) => (i === 0 ? d : '\t' + ' '.repeat(maxLength) + '\t' + d));
       this.terminal.tab(1, this.terminal.yellow.raw(cmd.commands.join(' / ').padEnd(maxLength)), '\t', descriptions.join('\n'));
     });
-    this.terminal.log('');
+    this.log('');
   }
 }
 

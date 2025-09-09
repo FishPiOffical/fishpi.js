@@ -371,7 +371,7 @@ class TerminalInput {
   private input: blessed.Widgets.TextboxElement;
   private inputLabel: blessed.Widgets.BoxElement;
   private emitter: EventEmitter;
-  private inputMode: string = TerminalInputMode.CMD;
+  private inputMode: string = TerminalInputMode.SHORTSHOT;
 
   constructor(emitter: EventEmitter) {
     this.emitter = emitter;
@@ -466,6 +466,7 @@ class TerminalInput {
       this.inputMode = TerminalInputMode.SHORTSHOT;
       return;
     }
+    if (this.inputMode == mode) return;
     this.inputMode = mode;
     this.input.show();
     this.inputLabel.setContent(label ?? { cmd: ':', input: '>' }[mode] ?? '');

@@ -37,12 +37,12 @@ export class BreezemoonCli extends BaseCli {
 
   async render(page = 1) {
     this.terminal.clear();
-    this.terminal.log(this.terminal.Bold.green.raw('清风明月'));
+    this.log(this.terminal.Bold.green.raw('清风明月'));
     const size = this.terminal.info.height - 3;
     this.fishpi.breezemoon.list(page, size).then((breezes) => {
       this.page = page;
       breezes.forEach((breeze, i) => {
-        this.terminal.log(
+        this.log(
           this.terminal.yellow.raw(`${i}. `),
           '[',
           this.terminal.blue.raw(breeze.timeAgo),
@@ -70,13 +70,12 @@ export class BreezemoonCli extends BaseCli {
     if (this.page > 1) this.render(this.page - 1);
   }
 
-  send(...contents: string[]) {
-    let content = contents.join(' ');
+  send(content: string) {
     this.fishpi.breezemoon.send(content).then(() => {
-      this.terminal.log(this.terminal.Bold.green.raw('发送成功'));
+      this.log(this.terminal.Bold.green.raw('发送成功'));
       this.render(1);
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
     this.terminal.setInputMode(TerminalInputMode.CMD);
   }

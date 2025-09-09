@@ -173,9 +173,6 @@ export class ChatRoom {
           data[i].content = JSON.parse(d.content);
           if (data[i].content.recivers)
             data[i].content.recivers = JSON.parse(data[i].content.recivers);
-          if (data[i].content.msgType == 'redPacket') {
-            data[i].content.type = data[i].content.interface;
-          }
           data[i].type = data[i].content.msgType;
         } catch (e) {
         }
@@ -215,15 +212,15 @@ export class ChatRoom {
       }
 
       if (!rsp.data) return rsp;
-      let redpacket;
+      let content;
       (rsp.data as any[]).forEach((d, i, data) => {
         try {
           data[i].via = clientToVia(data[i].client);
           data[i].sysMetal = toMetal(data[i].sysMetal);
-          redpacket = JSON.parse(d.content);
-          if (redpacket.msgType !== 'redPacket') return rsp;
-          if (redpacket.recivers) redpacket.recivers = JSON.parse(redpacket.recivers);
-          data[i].content = redpacket;
+          content = JSON.parse(d.content);
+          if (content.msgType !== 'redPacket') return rsp;
+          if (content.recivers) content.recivers = JSON.parse(content.recivers);
+          data[i].content = content;
         } catch (e) {}
       });
 

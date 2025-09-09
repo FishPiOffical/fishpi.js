@@ -41,18 +41,18 @@ export class ArticleCli extends BaseCli {
       this.currentList = res.articles;
       this.currentPage = page;
       this.terminal.clear();
-      this.terminal.log(
+      this.log(
         this.terminal.Bold.blue.raw('文章列表'), 
         ` 第 ${page} 页 / 共 ${res.pagination.paginationPageCount} 页`
       );
       if (res.articles.length === 0) {
-        this.terminal.log(this.terminal.gray.raw('没有更多文章了...'));
+        this.log(this.terminal.gray.raw('没有更多文章了...'));
         return;
       }
       res.articles.forEach((article, i) => {
         const author = article.articleAuthor.userNickname || article.articleAuthor.userName + 
           (article.articleAuthor.userNickname ? `(${article.articleAuthor.userName})` : '');
-        this.terminal.log(
+        this.log(
           this.terminal.yellow.raw(i + '. '),
           '[',
           this.terminal.blue.raw(article.articleLatestCmtTimeStr),
@@ -65,7 +65,7 @@ export class ArticleCli extends BaseCli {
       this.terminal.setTip(`输入 r <序号> 阅读, n 下一页, p 上一页, q 退出`);
       this.terminal.setInputMode(TerminalInputMode.CMD);
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
   
@@ -78,7 +78,7 @@ export class ArticleCli extends BaseCli {
   read(index: string) {
     const oId = this.currentList[Number(index)]?.oId;
     if (!oId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请输入正确的文章序号'));
+      this.log(this.terminal.red.raw('[错误]: 请输入正确的文章序号'));
       return;
     }
     this.currentPostId = oId;
@@ -107,27 +107,27 @@ export class ArticleCli extends BaseCli {
 
   vote() {
     if (!this.currentPostId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再点赞'));
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再点赞'));
       return;
     }
     this.fishpi.article.vote(this.currentPostId, 'up').then(async () => {
       if (this.currentPostId) await this.renderPost(this.currentPostId, this.currentPostCommentPage);
-      this.terminal.log(this.terminal.green.raw(`[成功]: 文章已点赞`));
+      this.log(this.terminal.green.raw(`[成功]: 文章已点赞`));
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
   reward() {
     if (!this.currentPostId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再打赏'));
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再打赏'));
       return;
     }
     this.fishpi.article.reward(this.currentPostId).then(async () => {
       if (this.currentPostId) await this.renderPost(this.currentPostId, this.currentPostCommentPage);
-      this.terminal.log(this.terminal.green.raw(`[成功]: 文章已打赏`));
+      this.log(this.terminal.green.raw(`[成功]: 文章已打赏`));
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
@@ -136,14 +136,14 @@ export class ArticleCli extends BaseCli {
       return this.thankComment(index);
     }
     if (!this.currentPostId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再感谢'));
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再感谢'));
       return;
     }
     this.fishpi.article.thank(this.currentPostId).then(async () => {
       if (this.currentPostId) await this.renderPost(this.currentPostId, this.currentPostCommentPage);
-      this.terminal.log(this.terminal.green.raw(`[成功]: 文章已感谢`));
+      this.log(this.terminal.green.raw(`[成功]: 文章已感谢`));
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
@@ -155,11 +155,11 @@ export class ArticleCli extends BaseCli {
       return this.reply(index!, content);
     }
     if (!this.currentPostId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再评论'));
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再评论'));
       return;
     }
     if (!content) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请输入评论内容'));
+      this.log(this.terminal.red.raw('[错误]: 请输入评论内容'));
       return;
     }
     this.fishpi.comment.send(Object.assign(new CommentPost(), {
@@ -167,24 +167,24 @@ export class ArticleCli extends BaseCli {
       commentContent: content,
     })).then(async () => {
       if (this.currentPostId) await this.renderPost(this.currentPostId, 1);
-      this.terminal.log(this.terminal.green.raw(`[成功]: 评论已发布`));
+      this.log(this.terminal.green.raw(`[成功]: 评论已发布`));
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
   reply(index: string, content: string) {
     if (!this.currentPostId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再回复评论'));
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再回复评论'));
       return;
     }
     const comment = this.currentPostComments[Number(index)];
     if (!comment) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请输入正确的评论序号'));
+      this.log(this.terminal.red.raw('[错误]: 请输入正确的评论序号'));
       return;
     }
     if (!content) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请输入回复内容'));
+      this.log(this.terminal.red.raw('[错误]: 请输入回复内容'));
       return;
     }
     this.fishpi.comment.send(Object.assign(new CommentPost(), {
@@ -193,27 +193,27 @@ export class ArticleCli extends BaseCli {
       commentOriginalCommentId: comment.oId,
     })).then(async () => {
       if (this.currentPostId) await this.renderPost(this.currentPostId, this.currentPostCommentPage);
-      this.terminal.log(this.terminal.green.raw(`[成功]: 回复已发布`));
+      this.log(this.terminal.green.raw(`[成功]: 回复已发布`));
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
   thankComment(index: string) {
     if (!this.currentPostId) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请先查看文章再感谢评论'));
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再感谢评论'));
       return;
     }
     const comment = this.currentPostComments[Number(index)];
     if (!comment) {
-      this.terminal.log(this.terminal.red.raw('[错误]: 请输入正确的评论序号'));
+      this.log(this.terminal.red.raw('[错误]: 请输入正确的评论序号'));
       return;
     }
     this.fishpi.comment.thank(comment.oId).then(async () => {
       if (this.currentPostId) await this.renderPost(this.currentPostId, this.currentPostCommentPage);
-      this.terminal.log(this.terminal.green.raw(`[成功]: 评论已感谢`));
+      this.log(this.terminal.green.raw(`[成功]: 评论已感谢`));
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
@@ -226,8 +226,8 @@ export class ArticleCli extends BaseCli {
       this.currentPostCommentPage = page;
       this.currentPostComments = article.articleComments || [];
       this.terminal.clear();
-      this.terminal.log(this.terminal.Bold.blue.raw(article.articleTitleEmoj));
-      this.terminal.log(
+      this.log(this.terminal.Bold.blue.raw(article.articleTitleEmoj));
+      this.log(
         this.terminal.white.text('作者: '),
         this.terminal.green.raw(article.articleAuthor.userNickname || article.articleAuthor.userName),
         this.terminal.white.text(' 时间: '),
@@ -238,27 +238,27 @@ export class ArticleCli extends BaseCli {
         this.terminal.yellow.text(article.thankedCnt + ''),
         this.terminal.white.text(`)`),
       );
-      this.terminal.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
-      this.terminal.log(article.articleOriginalContent || '');
-      this.terminal.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
+      this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
+      this.log(article.articleOriginalContent || '');
+      this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
       if (article.articleRewardPoint) {
-        this.terminal.log(this.terminal.Bold.yellow.raw('打赏区'), this.terminal.text(`(已打赏 ${article.rewardedCnt} / ${article.articleRewardPoint} 积分)`));
+        this.log(this.terminal.Bold.yellow.raw('打赏区'), this.terminal.text(`(已打赏 ${article.rewardedCnt} / ${article.articleRewardPoint} 积分)`));
         if (article.rewarded) {
-          this.terminal.log(this.filterContent(article.articleRewardContent || ''));
+          this.log(this.filterContent(article.articleRewardContent || ''));
         } else {
-          this.terminal.log(this.terminal.gray.raw('您还没有打赏，打赏后可见打赏内容'));
+          this.log(this.terminal.gray.raw('您还没有打赏，打赏后可见打赏内容'));
         }
-        this.terminal.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
+        this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
       }
       if (!article.articleComments?.length) {
-        this.terminal.log(this.terminal.gray.raw('暂无评论'));
+        this.log(this.terminal.gray.raw('暂无评论'));
       } else {
-        this.terminal.log(this.terminal.Bold.blue.raw('评论区'), this.terminal.text(`(${article.articleComments.length})`));
+        this.log(this.terminal.Bold.blue.raw('评论区'), this.terminal.text(`(${article.articleComments.length})`));
         article.articleComments.forEach((comment, i) => {
           const commenter = (comment.commenter.userNickname || comment.commenter.userName) + 
           (comment.commenter.userNickname ? `(${comment.commenter.userName})` : '');
 
-          this.terminal.log(
+          this.log(
             this.terminal.yellow.text(i + '. '),
             '[',
             this.terminal.blue.text(comment.timeAgo),
@@ -277,7 +277,7 @@ export class ArticleCli extends BaseCli {
       this.terminal.setTip(`输入 n 下一页, p 上一页, v 点赞, w 打赏, t 感谢, c 评论, c <序号> 回复评论, t <序号> 感谢评论, l 返回列表`);
       this.terminal.setInputMode(TerminalInputMode.CMD);
     }).catch(err => {
-      this.terminal.log(this.terminal.red.raw('[错误]: ' + err.message));
+      this.log(this.terminal.red.raw('[错误]: ' + err.message));
     });
   }
 
