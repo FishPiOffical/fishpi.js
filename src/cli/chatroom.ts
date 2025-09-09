@@ -6,6 +6,7 @@ export class ChatRoomCli extends BaseCli {
   eventFn: Record<string, any> = {};
   me: string | undefined;
   atList: IAtUser[] = [];
+  redpacketIds: string[] = [];
   currentAt: number = 0;
   mode: 'cmd' | 'chat' = 'chat';
   msgList: any[] = [];
@@ -95,6 +96,13 @@ export class ChatRoomCli extends BaseCli {
   }
 
   async openRedpack(oId: string, gesture?: string) {
+    if (oId == '.') {
+      if (!this.redpacketIds.length) {
+        this.terminal.log(this.terminal.red.raw(`[错误]: 当前没有可用的红包 ID`));
+        return;
+      }
+      oId = this.redpacketIds[this.redpacketIds.length - 1];
+    }
     this.fishpi.chatroom.redpacket.open(oId, gesture ? Number(gesture) : undefined)
       .catch(err => this.terminal.log(this.terminal.red.raw(`[错误]: ${err.message}`)));
   }
@@ -307,6 +315,7 @@ export class ChatRoomCli extends BaseCli {
   }
   
   renderRedPacket(msg: IChatRoomMsg<IRedpacket>) {
+    this.redpacketIds.push(msg.oId);
     const { time, nickname, oId } = this.getRenderHeader(msg);
     const redpacketType = {
       random: '拼手气',
