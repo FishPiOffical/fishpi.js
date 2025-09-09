@@ -358,6 +358,11 @@ class TerminalOutput {
     this.output.scroll(Number(this.output.height));
     if (this.screen) this.screen.render();
   }
+
+  goTop() {
+    this.output.scrollTo(0);
+    if (this.screen) this.screen.render();
+  }
 }
 
 export enum TerminalInputMode {
@@ -615,6 +620,10 @@ export class Terminal extends TerminalStyle {
 
   getTip() {
     return this.output.getTip();
+  }
+
+  goTop() {
+    this.output.goTop();
   }
 
   clear() {

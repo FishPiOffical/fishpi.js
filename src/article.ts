@@ -99,7 +99,7 @@ export class Article {
     try {
       rsp = await request({
         url: `api/articles/${
-          tag !== undefined ? `tag/${tag}` : 'recent'
+          tag ? `tag/${tag}` : 'recent'
         }${type}?p=${page}&size=${size}&${this.apiKey ? `apiKey=${this.apiKey}` : ''}`,
       });
 

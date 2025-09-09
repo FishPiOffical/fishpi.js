@@ -8,18 +8,19 @@ export class ArticleCli extends BaseCli {
   currentPostId?: string;
   currentPostComments: IArticleComment[] = [];
   currentPostCommentPage = 1;
+  tag = '';
   me: string | undefined;
   
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
     this.commands = [
-      { commands: ['read', 'r'], description: '阅读文章，示例：r 0', call: this.read.bind(this) },
       { commands: ['next', 'n'], description: '下一页文章，在文章内则是下一页评论', call: this.next.bind(this) },
       { commands: ['prev', 'p'], description: '上一页文章，在文章内则是上一页评论', call: this.prev.bind(this) },
       { commands: ['vote', 'v'], description: '点赞文章', call: this.vote.bind(this) },
       { commands: ['reward', 'w'], description: '打赏文章', call: this.reward.bind(this) },
       { commands: ['thank', 't'], description: '感谢文章，加上序号则是感谢评论，示例：t 0', call: this.thank.bind(this) },
       { commands: ['comment', 'c'], description: '评论文章，加上序号则是回复评论，示例：c 这是一条评论，c 0 这是一条回复', call: this.comment.bind(this) },
+      { commands: ['tag', 'g'], description: '按标签查看文章，示例：tag 前端', call: this.tagArticles.bind(this) },
       { commands: ['list', 'l'], description: '返回文章列表', call: this.list.bind(this) },
     ];
   }
@@ -34,15 +35,21 @@ export class ArticleCli extends BaseCli {
     super.unload();
   }
 
-  renderList(page: number) {
+  tagArticles(tag: string) {
+    this.tag = tag;
+    this.renderList(1, tag);
+  }
+
+  renderList(page: number, tag: string = '') {
     this.currentPostId = undefined;
     const size = this.terminal.info.height - 3;
-    this.fishpi.article.list({ page, size, type: ArticleListType.Recent }).then(res => {
+    this.fishpi.article.list({ page, size, type: ArticleListType.Recent, tag }).then(res => {
       this.currentList = res.articles;
       this.currentPage = page;
       this.terminal.clear();
       this.log(
-        this.terminal.Bold.blue.raw('文章列表'), 
+        this.terminal.Bold.blue.raw('文章列表'),
+        this.tag ? ' - ' + this.terminal.cyan.text(`#${this.tag}`) : '',
         ` 第 ${page} 页 / 共 ${res.pagination.paginationPageCount} 页`
       );
       if (res.articles.length === 0) {
@@ -62,7 +69,7 @@ export class ArticleCli extends BaseCli {
           article.articleTitleEmoj,
         );
       });
-      this.terminal.setTip(`输入 r <序号> 阅读, n 下一页, p 上一页, q 退出`);
+      this.terminal.setTip(`输入 <序号> 阅读, n 下一页, p 上一页, q 退出`);
       this.terminal.setInputMode(TerminalInputMode.CMD);
     }).catch(err => {
       this.log(this.terminal.red.raw('[错误]: ' + err.message));
@@ -75,21 +82,28 @@ export class ArticleCli extends BaseCli {
     super.help();
   }
 
-  read(index: string) {
+  async command(cmd: string) {
+    if (this.currentPostId) return super.command(cmd);
+    const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
+    this.read(cmds[0]);
+  }
+
+  async read(index: string) {
     const oId = this.currentList[Number(index)]?.oId;
     if (!oId) {
       this.log(this.terminal.red.raw('[错误]: 请输入正确的文章序号'));
       return;
     }
     this.currentPostId = oId;
-    this.renderPost(oId);
+    await this.renderPost(oId);
+    setTimeout(() => this.terminal.goTop(), 10);
   }
 
   next() {
     if (this.currentPostId) {
       this.renderPost(this.currentPostId, this.currentPostCommentPage + 1);
     } else {
-      this.renderList(this.currentPage + 1);
+      this.renderList(this.currentPage + 1, this.tag);
     }
   }
 
@@ -100,7 +114,7 @@ export class ArticleCli extends BaseCli {
       }
     } else {
       if (this.currentPage > 1) {
-        this.renderList(this.currentPage - 1);
+        this.renderList(this.currentPage - 1, this.tag);
       }
     }
   }
@@ -218,6 +232,7 @@ export class ArticleCli extends BaseCli {
   }
 
   list () {
+    this.tag = '';
     this.renderList(this.currentPage);
   }
 
@@ -240,6 +255,9 @@ export class ArticleCli extends BaseCli {
       );
       this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
       this.log(article.articleOriginalContent || '');
+      this.log(
+        ...article.articleTagObjs.map(tag => this.terminal.blue.Inverse.text(`#${tag.tagTitle}`) + ' ')
+      );
       this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
       if (article.articleRewardPoint) {
         this.log(this.terminal.Bold.yellow.raw('打赏区'), this.terminal.text(`(已打赏 ${article.rewardedCnt} / ${article.articleRewardPoint} 积分)`));
