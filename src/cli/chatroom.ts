@@ -10,10 +10,11 @@ import {
   DiscussMsg,
   RevokeMsg,
   IBarragerMsg,
-  IChatMusic,
-  IChatWeather,
+  IMusicMessage,
+  IWeatherMessage,
   IRedpacket,
   CustomMsg,
+  ClientType,
 } from './lib';
 import { ITerminalKeyEvent, Terminal, TerminalInputMode } from './terminal';
 
@@ -28,7 +29,7 @@ export class ChatRoomCli extends BaseCli {
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
-    this.fishpi.chatroom.setVia('Node Cli', this.fishpi.version);
+    this.fishpi.chatroom.setVia(ClientType.Other, 'Node Cli@' + this.fishpi.version);
     this.commands = [
       { commands: ['back', 'bk'], description: '返回聊天室', call: this.toChat.bind(this) },
       {
@@ -210,12 +211,12 @@ export class ChatRoomCli extends BaseCli {
     this.render(msg);
   }
 
-  onMusic(msg: IChatRoomMsg<IChatMusic>) {
+  onMusic(msg: IChatRoomMsg<IMusicMessage>) {
     if (this.mode != 'chat') return;
     this.render(msg);
   }
 
-  onWeather(msg: IChatRoomMsg<IChatWeather>) {
+  onWeather(msg: IChatRoomMsg<IWeatherMessage>) {
     if (this.mode != 'chat') return;
     this.render(msg);
   }
@@ -348,13 +349,13 @@ export class ChatRoomCli extends BaseCli {
     this.log(time, ' ', nickname, ' ', oId, ' ', content);
   }
 
-  renderMusic(msg: IChatRoomMsg<IChatMusic>) {
+  renderMusic(msg: IChatRoomMsg<IMusicMessage>) {
     const { time, nickname, oId } = this.getRenderHeader(msg);
-    const content = this.terminal.white.raw(`[🎵${msg.content.title}]`);
+    const content = this.terminal.white.raw(`[🎵 ${msg.content.title}]`);
     this.log(time, ' ', nickname, ' ', oId, ' ', content);
   }
 
-  renderWeather(msg: IChatRoomMsg<IChatWeather>) {
+  renderWeather(msg: IChatRoomMsg<IWeatherMessage>) {
     const { time, nickname, oId } = this.getRenderHeader(msg);
 
     const weatherIcon = {
@@ -443,9 +444,9 @@ export class ChatRoomCli extends BaseCli {
       .replace(/^\s*>+\s*$/gm, '') // 过滤空引用
       .replaceAll(`@${this.me}`, `{bold}{yellow-fg}@${this.me}{/}{/}`) // 高亮@自己
       .replace(/@([^<]*?)( |$)/gm, '{green-fg}@$1$2{/}') // 高亮@别人
-      .replace(/<img\s+src="([^"]*?)"\s+alt="图片表情"([^>]*?>)/g, '[😀动画表情]')
-      .replace(/<audio[^>]*?>.*?<\/audio>/g, '[🎵音频]')
-      .replace(/<video[^>]*?>.*?<\/video>/g, '[🎬视频]')
+      .replace(/<img\s+src="([^"]*?)"\s+alt="图片表情"([^>]*?>)/g, '[😀 动画表情]')
+      .replace(/<audio[^>]*?>.*?<\/audio>/g, '[🎵 音频]')
+      .replace(/<video[^>]*?>.*?<\/video>/g, '[🎬 视频]')
       .replace(/<iframe[^>]*?src="([^"]*?)"[^>]*?>.*?<\/iframe>/g, '[内联网页]($1)')
       .replace(/<img\s+src="([^"]*?)"\s+([^>]*?>)/g, '[图片]($1)')
       .replace(/<(\w+)>(.*?)<\/\1>/gm, '$2')

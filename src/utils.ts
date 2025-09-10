@@ -63,7 +63,7 @@ function analyzeMetalAttr(m: any): Metal {
   return m;
 }
 
-function toMetal(sysMetal: string): IMetal[] {
+function toMetal(sysMetal: string): Metal[] {
   try {
     let metal: { list: Array<any> } = JSON.parse(sysMetal);
     metal.list.forEach((m, i, list) => {

@@ -494,3 +494,21 @@ export interface ILog {
    */
   type: string;
 }
+
+export class Pagination {
+  /**
+   * 分页数
+   */
+  pageCount = 0;
+  /**
+   * 建议分页页码
+   */
+  pageNums: number[] = [];
+
+  static from(data: any) {
+    const p = new Pagination();
+    p.pageCount = data.paginationPageCount;
+    p.pageNums = data.paginationPageNums;
+    return p;
+  }
+}

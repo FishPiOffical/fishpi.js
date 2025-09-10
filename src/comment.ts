@@ -1,4 +1,4 @@
-import { CommentPost, VoteType } from './';
+import { CommentPost, ICommentPost, VoteType } from './';
 import { request } from './utils';
 
 export class Comment {
@@ -23,14 +23,14 @@ export class Comment {
    * 发布评论
    * @param data 评论信息
    */
-  async send(data: CommentPost): Promise<void> {
+  async send(data: ICommentPost): Promise<void> {
     let rsp;
     try {
       rsp = await request({
         url: `comment`,
         method: 'post',
         data: {
-          ...data,
+          ...CommentPost.from(data).toJson(),
           apiKey: this.apiKey,
         },
       });
@@ -46,14 +46,14 @@ export class Comment {
    * @param id 评论 Id
    * @param data 评论信息
    */
-  async update(id: string, data: CommentPost): Promise<string> {
+  async update(id: string, data: ICommentPost): Promise<string> {
     let rsp;
     try {
       rsp = await request({
         url: `comment/${id}`,
         method: 'put',
         data: {
-          ...data,
+          ...CommentPost.from(data).toJson(),
           apiKey: this.apiKey,
         },
       });

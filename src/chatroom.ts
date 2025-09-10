@@ -13,8 +13,8 @@ import {
   IBarragerMsg,
   IChatRoomMsg,
   IRedPacketInfo,
-  IChatMusic,
-  IChatWeather,
+  IMusicMessage,
+  IWeatherMessage,
   IRedPacketStatusMsg,
   CustomMsg,
   IChatRoomMessage,
@@ -58,12 +58,12 @@ interface IChatRoomEvents {
    * 音乐消息
    * @param music 音乐消息内容
    */
-  music: (music: IChatRoomMsg<IChatMusic>) => void;
+  music: (music: IChatRoomMsg<IMusicMessage>) => void;
   /**
    * 天气消息
    * @param weather 天气消息内容
    */
-  weather: (weather: IChatRoomMsg<IChatWeather>) => void;
+  weather: (weather: IChatRoomMsg<IWeatherMessage>) => void;
   /**
    * 红包领取
    * @param status 红包领取状态

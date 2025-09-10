@@ -33,7 +33,7 @@ export class User {
 
       if (rsp.data) rsp.data.sysMetal = toMetal(rsp.data.sysMetal);
 
-      return rsp.data;
+      return UserInfo.from(rsp.data);
     } catch (e) {
       throw e;
     }

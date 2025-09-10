@@ -25,7 +25,7 @@
     "clear": "rimraf lib",
     "clear:types": "rimraf lib/types",
     "format": "prettier --write src/",
-    "prebuild": "npm run clear && npm run build:types",
+    "prebuild": "npm run clear && npm run format && npm run build:types",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir ./lib/types",
     "build": "rollup -c && npm run clear:types"
   },

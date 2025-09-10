@@ -1,5 +1,6 @@
+import { from } from 'form-data';
 import { UserAppRole } from '.';
-import { domain } from '../utils';
+import { domain, toMetal } from '../utils';
 
 /**
  * 用户信息
@@ -24,35 +25,35 @@ export class UserInfo {
   /**
    * 首页地址
    */
-  userURL: string = '';
+  URL: string = '';
   /**
    * 所在城市
    */
-  userCity: string = '';
+  city: string = '';
   /**
    * 签名
    */
-  userIntro: string = '';
+  intro: string = '';
   /**
    * 是否在线
    */
-  userOnlineFlag: boolean = false;
+  online: boolean = false;
   /**
    * 用户积分
    */
-  userPoint: number = 0;
+  points: number = 0;
   /**
    * 用户组
    */
-  userRole: string = '';
+  role: string = '';
   /**
    * 角色
    */
-  userAppRole: UserAppRole = UserAppRole.Hack;
+  appRole: UserAppRole = UserAppRole.Hack;
   /**
    * 用户头像地址
    */
-  userAvatarURL: string = '';
+  avatar: string = '';
   /**
    * 用户卡片背景
    */
@@ -60,11 +61,11 @@ export class UserInfo {
   /**
    * 用户关注数
    */
-  followingUserCount: number = 0;
+  following: number = 0;
   /**
    * 用户被关注数
    */
-  followerCount: number = 0;
+  follower: number = 0;
   /**
    * 在线时长，单位分钟
    */
@@ -76,12 +77,46 @@ export class UserInfo {
   /**
    * 用户所有勋章列表，包含未佩戴
    */
-  allMetalOwned: Metal[] = [];
+  ownedMetal: Metal[] = [];
 
   /**
    * 用户勋章列表
    */
   sysMetal: Metal[] = [];
+  /**
+   * MBTI 性格类型
+   */
+  mbti: string = '';
+
+  get name(): string {
+    return this.userNickname ? `${this.userNickname}(${this.userName})` : this.userName;
+  }
+
+  static from(user: Record<string, any>) {
+    const data = new UserInfo();
+    data.oId = user.oId;
+    data.userNo = user.userNo;
+    data.userName = user.userName;
+    data.userNickname = user.userNickname;
+    data.URL = user.userURL;
+    data.city = user.userCity;
+    data.intro = user.userIntro;
+    data.online = user.userOnlineFlag;
+    data.points = user.userPoint;
+    data.role = user.userRole;
+    data.appRole = user.userAppRole;
+    data.avatar = user.userAvatarURL;
+    data.cardBg = user.cardBg;
+    data.following = user.followingUserCount;
+    data.follower = user.followerCount;
+    data.onlineMinute = user.onlineMinute;
+    data.canFollow = user.canFollow;
+    data.ownedMetal = toMetal(user.allMetalOwned);
+    data.sysMetal = toMetal(user.sysMetal);
+    data.mbti = user.mbti;
+
+    return data;
+  }
 }
 
 /**
@@ -177,89 +212,6 @@ export class AtUser {
    * 全小写用户名
    */
   userNameLowerCase: string = '';
-}
-
-/**
- * 用户信息
- */
-export interface IUserInfo {
-  /**
-   * 用户 id
-   */
-  oId: string;
-  /**
-   * 用户编号
-   */
-  userNo: string;
-  /**
-   * 用户名
-   */
-  userName: string;
-  /**
-   * 昵称
-   */
-  userNickname: string;
-  /**
-   * 首页地址
-   */
-  userURL: string;
-  /**
-   * 所在城市
-   */
-  userCity: string;
-  /**
-   * 签名
-   */
-  userIntro: string;
-  /**
-   * 是否在线
-   */
-  userOnlineFlag: boolean;
-  /**
-   * 用户积分
-   */
-  userPoint: number;
-  /**
-   * 用户组
-   */
-  userRole: string;
-  /**
-   * 角色
-   */
-  userAppRole: UserAppRole;
-  /**
-   * 用户头像地址
-   */
-  userAvatarURL: string;
-  /**
-   * 用户卡片背景
-   */
-  cardBg: string;
-  /**
-   * 用户关注数
-   */
-  followingUserCount: number;
-  /**
-   * 用户被关注数
-   */
-  followerCount: number;
-  /**
-   * 在线时长，单位分钟
-   */
-  onlineMinute: number;
-  /**
-   * 是否已经关注，未登录则为 `hide`
-   */
-  canFollow: 'hide' | 'no' | 'yes';
-  /**
-   * 用户所有勋章列表，包含未佩戴
-   */
-  allMetalOwned: Metal[];
-
-  /**
-   * 用户勋章列表
-   */
-  sysMetal: Metal[];
 }
 
 /**

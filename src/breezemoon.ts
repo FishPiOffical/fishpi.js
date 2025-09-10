@@ -1,4 +1,4 @@
-import { IBreezemoonContent } from '.';
+import { BreezemoonContent, BreezemoonList } from '.';
 import { request } from './utils';
 
 export class Breezemoon {
@@ -24,7 +24,7 @@ export class Breezemoon {
    * @param page 消息页码
    * @param size 每页个数
    */
-  async list(page = 1, size = 20): Promise<IBreezemoonContent[]> {
+  async list(page = 1, size = 20): Promise<BreezemoonContent[]> {
     try {
       let rsp = await request({
         url: `api/breezemoons?p=${page}&size=${size}`,
@@ -32,7 +32,7 @@ export class Breezemoon {
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      return rsp.breezemoons;
+      return rsp.breezemoons.map((b: any) => BreezemoonContent.from(b));
     } catch (e) {
       throw e;
     }
@@ -44,13 +44,15 @@ export class Breezemoon {
    * @param page 消息页码
    * @param size 每页个数
    */
-  async listByUser(user: string, page = 1, size = 20): Promise<IBreezemoonContent[]> {
+  async listByUser(user: string, page = 1, size = 20): Promise<BreezemoonList> {
     try {
       let rsp = await request({
         url: `api/user/${user}/breezemoons?p=${page}&size=${size}&apiKey=${this.apiKey}`,
       });
 
-      return rsp.data;
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return BreezemoonList.from(rsp.data);
     } catch (e) {
       throw e;
     }

@@ -203,7 +203,7 @@ export interface IChatRoomMessage {
   /**
    * 消息内容
    */
-  content: string | IRedPacketMessage;
+  content: string | IRedPacketMessage | IMusicMessage | IWeatherMessage;
   /**
    * Markdown 内容
    */
@@ -357,7 +357,7 @@ type WeatherCode =
 /**
  * 聊天天气消息详情
  */
-export interface IChatWeatherData {
+export interface IWeatherData {
   /**
    * 日期
    */
@@ -379,7 +379,7 @@ export interface IChatWeatherData {
 /**
  * 聊天天气消息
  */
-export interface IChatWeather {
+export interface IWeatherMessage {
   /**
    * 城市
    */
@@ -391,13 +391,13 @@ export interface IChatWeather {
   /**
    * 最近几天天气数据
    */
-  data: IChatWeatherData[];
+  data: IWeatherData[];
 }
 
 /**
  * 聊天音乐消息
  */
-export interface IChatMusic {
+export interface IMusicMessage {
   type: 'music';
   /**
    * 音乐源

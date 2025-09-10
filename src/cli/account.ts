@@ -80,17 +80,17 @@ export class AccountCli extends BaseCli {
     this.log(
       this.terminal.Bold.blue.raw(username),
       ' - ',
-      info.userOnlineFlag ? this.terminal.green.raw('[在线]') : this.terminal.red.raw('[离线]'),
+      info.online ? this.terminal.green.raw('[在线]') : this.terminal.red.raw('[离线]'),
     );
     this.log(
       '👤 ',
-      ['黑客', '画家'][info.userAppRole],
+      ['黑客', '画家'][info.appRole],
       '\t',
       this.terminal.Bold.cyan.text(`No.${info.userNo}`),
     );
-    this.log(`💲${info.userPoint}\t${!info.userCity ? '' : `📍${info.userCity}`}`);
-    if (info.userIntro) this.log(`📝 ${info.userIntro}`);
-    if (info.userURL) this.log('🔗 ', this.terminal.Bold.Underline.text(`${info.userURL}`));
+    this.log(`💲${info.points}\t${!info.city ? '' : `📍${info.city}`}`);
+    if (info.intro) this.log(`📝 ${info.intro}`);
+    if (info.URL) this.log('🔗 ', this.terminal.Bold.Underline.text(`${info.URL}`));
 
     let metals = '';
     const maxLength = Math.max(3, ...info.sysMetal.map((s) => s.name.length));

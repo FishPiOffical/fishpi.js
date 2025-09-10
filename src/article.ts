@@ -4,9 +4,10 @@ import {
   ArticleListType,
   ArticlePost,
   ArticleType,
-  IArticleDetail,
-  IArticleList,
+  ArticleDetail,
+  ArticleList,
   VoteType,
+  IArticlePost,
 } from './';
 
 export class Article {
@@ -32,14 +33,14 @@ export class Article {
    * @param data 文章信息
    * @returns 发布成功返回文章Id (articleId)
    */
-  async post(data: ArticlePost): Promise<string> {
+  async post(data: IArticlePost): Promise<string> {
     let rsp;
     try {
       rsp = await request({
         url: `article`,
         method: 'post',
         data: {
-          ...data,
+          ...ArticlePost.from(data).toJson(),
           apiKey: this.apiKey,
         },
       });
@@ -58,14 +59,14 @@ export class Article {
    * @param data 文章信息
    * @returns 更新成功返回文章Id (articleId)
    */
-  async update(id: string, data: ArticlePost): Promise<string> {
+  async update(id: string, data: IArticlePost): Promise<string> {
     let rsp;
     try {
       rsp = await request({
         url: `article/${id}`,
         method: 'put',
         data: {
-          ...data,
+          ...ArticlePost.from(data).toJson(),
           apiKey: this.apiKey,
         },
       });
@@ -94,7 +95,7 @@ export class Article {
     page?: number;
     size?: number;
     tag?: string;
-  }): Promise<IArticleList> {
+  }): Promise<ArticleList> {
     let rsp;
     try {
       rsp = await request({
@@ -105,7 +106,7 @@ export class Article {
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      return rsp.data;
+      return ArticleList.from(rsp.data);
     } catch (e) {
       throw e;
     }
@@ -125,7 +126,7 @@ export class Article {
     userName: string;
     page?: number;
     size?: number;
-  }): Promise<IArticleList> {
+  }): Promise<ArticleList> {
     let rsp;
     try {
       rsp = await request({
@@ -136,7 +137,7 @@ export class Article {
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      return rsp.data;
+      return ArticleList.from(rsp.data);
     } catch (e) {
       throw e;
     }
@@ -147,7 +148,7 @@ export class Article {
    * @param id 文章id
    * @returns 文章详情
    */
-  async detail(id: string, p = 1): Promise<IArticleDetail> {
+  async detail(id: string, p = 1): Promise<ArticleDetail> {
     let rsp;
     try {
       rsp = await request({
@@ -156,23 +157,7 @@ export class Article {
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      rsp.data.article.articleAuthor.sysMetal = analyzeMetalAttr(
-        rsp.data.article.articleAuthor.sysMetal,
-      );
-
-      for (let i = 0; i < rsp.data.article.articleComments.length; i++) {
-        rsp.data.article.articleComments[i].sysMetal = analyzeMetalAttr(
-          rsp.data.article.articleComments[i].sysMetal,
-        );
-      }
-
-      for (let i = 0; i < rsp.data.article.articleNiceComments.length; i++) {
-        rsp.data.article.articleNiceComments[i].sysMetal = analyzeMetalAttr(
-          rsp.data.article.articleNiceComments[i].sysMetal,
-        );
-      }
-
-      return rsp.data.article;
+      return ArticleDetail.from(rsp.data.article);
     } catch (e) {
       throw e;
     }

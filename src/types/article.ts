@@ -1,4 +1,4 @@
-import { IMetal } from '.';
+import { IMetal, Pagination } from '.';
 
 /**
  * 发帖信息
@@ -7,47 +7,67 @@ export class ArticlePost implements IArticlePost {
   /**
    * 帖子标题
    */
-  articleTitle: string = '';
+  title: string = '';
   /**
    * 帖子内容
    */
-  articleContent: string = '';
+  content: string = '';
   /**
    * 帖子标签
    */
-  articleTags: string = '';
+  tags: string = '';
   /**
    * 是否允许评论
    */
-  articleCommentable: boolean = true;
+  commentable: boolean = true;
   /**
    * 是否帖子关注者
    */
-  articleNotifyFollowers: boolean = false;
+  isNotifyFollowers: boolean = false;
   /**
    * 帖子类型
    */
-  articleType: ArticleType = ArticleType.Normal;
+  type: ArticleType = ArticleType.Normal;
   /**
    * 是否在列表展示
    */
-  articleShowInList: 0 | 1 = 1;
+  isShowInList = true;
   /**
    * 打赏内容
    */
-  articleRewardContent?: string;
+  rewardContent?: string;
   /**
    * 打赏积分
    */
-  articleRewardPoint?: string;
+  rewardPoint?: string;
   /**
    * 是否匿名
    */
-  articleAnonymous?: boolean;
+  isAnonymous?: boolean;
   /**
    * 提问悬赏积分
    */
-  articleQnAOfferPoint?: number;
+  offerPoint?: number;
+
+  static from(article: IArticlePost) {
+    return Object.assign(new ArticlePost(), article);
+  }
+
+  toJson() {
+    return {
+      articleTitle: this.title,
+      articleContent: this.content,
+      articleTags: this.tags,
+      articleCommentable: this.commentable,
+      articleNotifyFollowers: this.isNotifyFollowers,
+      articleType: this.type,
+      articleShowInList: this.isShowInList ? 1 : 0,
+      articleRewardContent: this.rewardContent,
+      articleRewardPoint: this.rewardPoint,
+      articleAnonymous: this.isAnonymous,
+      articleQnAOfferPoint: this.offerPoint,
+    };
+  }
 }
 
 export class CommentPost implements ICommentPost {
@@ -58,19 +78,33 @@ export class CommentPost implements ICommentPost {
   /**
    * 是否匿名评论
    */
-  commentAnonymous: boolean = false;
+  isAnonymous: boolean = false;
   /**
-   * 评论是否楼主可见
+   * 评论是否公共可见
    */
-  commentVisible: boolean = true;
+  isVisible: boolean = true;
   /**
    * 评论内容
    */
-  commentContent: string = '';
+  content: string = '';
   /**
    * 回复评论 Id
    */
-  commentOriginalCommentId?: string;
+  originalId?: string;
+
+  static from(comment: ICommentPost) {
+    return Object.assign(new CommentPost(), comment);
+  }
+
+  toJson() {
+    return {
+      articleId: this.articleId,
+      commentAnonymous: this.isAnonymous ? 1 : 0,
+      commentVisible: this.isVisible ? 1 : 0,
+      commentContent: this.content,
+      commentOriginalCommentId: this.originalId,
+    };
+  }
 }
 
 /**
@@ -183,832 +217,823 @@ export interface IArticlePost {
   /**
    * 帖子标题
    */
-  articleTitle: string;
+  title: string;
   /**
    * 帖子内容
    */
-  articleContent: string;
+  content: string;
   /**
    * 帖子标签
    */
-  articleTags: string;
-  /**
-   * 是否允许评论
-   */
-  articleCommentable: boolean;
-  /**
-   * 是否帖子关注者
-   */
-  articleNotifyFollowers: boolean;
+  tags: string;
   /**
    * 帖子类型
    */
-  articleType: ArticleType;
+  type?: ArticleType;
+  /**
+   * 是否允许评论
+   */
+  commentable?: boolean;
+  /**
+   * 是否帖子关注者
+   */
+  isNotifyFollowers?: boolean;
   /**
    * 是否在列表展示
    */
-  articleShowInList: 0 | 1;
+  isShowInList?: boolean;
   /**
    * 打赏内容
    */
-  articleRewardContent?: string;
+  rewardContent?: string;
   /**
    * 打赏积分
    */
-  articleRewardPoint?: string;
+  rewardPoint?: string;
   /**
    * 是否匿名
    */
-  articleAnonymous?: boolean;
+  isAnonymous?: boolean;
   /**
    * 提问悬赏积分
    */
-  articleQnAOfferPoint?: number;
+  offerPoint?: number;
 }
 
 /**
  * 文章标签
  */
-export interface IArticleTag {
+export class ArticleTag {
   /**
    * 标签 id
    */
-  oId: string;
+  oId: string = '';
   /**
    * 标签名
    */
-  tagTitle: string;
+  title: string = '';
   /**
    * 标签描述
    */
-  tagDescription: string;
+  description: string = '';
   /**
    * icon 地址
    */
-  tagIconPath: string;
+  iconPath: string = '';
   /**
    * 标签地址
    */
-  tagURI: string;
+  URI: string = '';
   /**
    * 标签自定义 CSS
    */
-  tagCSS: string;
+  CSS: string = '';
   /**
    * 反对数
    */
-  tagBadCnt: number;
+  badCnt: number = 0;
   /**
    * 标签回帖计数
    */
-  tagCommentCount: number;
+  commentCount: number = 0;
   /**
    * 关注数
    */
-  tagFollowerCount: number;
+  followerCount: number = 0;
   /**
    * 点赞数
    */
-  tagGoodCnt: number;
+  goodCnt: number = 0;
   /**
    * 引用计数
    */
-  tagReferenceCount: number;
+  referenceCount: number = 0;
   /**
    * 标签相关链接计数
    */
-  tagLinkCount: number;
+  linkCount: number = 0;
   /**
    * 标签 SEO 描述
    */
-  tagSeoDesc: string;
+  seoDesc: string = '';
   /**
    * 标签关键字
    */
-  tagSeoKeywords: string;
+  seoKeywords: string = '';
   /**
    * 标签 SEO 标题
    */
-  tagSeoTitle: string;
+  seoTitle: string = '';
   /**
    * 标签广告内容
    */
-  tagAd: string;
+  ad: string = '';
   /**
    * 是否展示广告
    */
-  tagShowSideAd: 0 | 1;
+  isShowSideAd = true;
   /**
    * 标签状态
    */
-  tagStatus: 0 | 1;
-  /**
-   * 标签随机数
-   */
-  tagRandomDouble: number;
+  status: 0 | 1 = 1;
+
+  static from(tag: Record<string, any>) {
+    const data = new ArticleTag();
+    data.oId = tag.oId;
+    data.title = tag.tagTitle;
+    data.description = tag.tagDescription;
+    data.iconPath = tag.tagIconPath;
+    data.URI = tag.tagURI;
+    data.CSS = tag.tagCSS;
+    data.badCnt = tag.tagBadCnt;
+    data.commentCount = tag.tagCommentCount;
+    data.followerCount = tag.tagFollowerCount;
+    data.goodCnt = tag.tagGoodCnt;
+    data.referenceCount = tag.tagReferenceCount;
+    data.linkCount = tag.tagLinkCount;
+    data.seoDesc = tag.tagSeoDesc;
+    data.seoKeywords = tag.tagSeoKeywords;
+    data.seoTitle = tag.tagSeoTitle;
+    data.ad = tag.tagAd;
+    data.isShowSideAd = tag.tagShowSideAd == 1;
+    data.status = tag.tagStatus;
+
+    return data;
+  }
 }
 
 /**
  * 文章作者信息
  */
-export interface IAuthor {
+export class Author {
   /**
    * 用户是否在线
    */
-  userOnlineFlag: boolean;
+  online: boolean = false;
   /**
    * 用户在线时长
    */
-  onlineMinute: number;
-  /**
-   * 是否公开积分列表
-   */
-  userPointStatus: PublicStatus;
-  /**
-   * 是否公开关注者列表
-   */
-  userFollowerStatus: PublicStatus;
-  /**
-   * 用户完成新手指引步数
-   */
-  userGuideStep: number;
-  /**
-   * 是否公开在线状态
-   */
-  userOnlineStatus: PublicStatus;
+  onlineMinute: number = 0;
   /**
    * 上次登录日期
    */
-  userCurrentCheckinStreakStart: number;
-  /**
-   * 是否聊天室图片自动模糊
-   */
-  chatRoomPictureStatus: boolean;
+  currentCheckinStreakStart: number = 0;
   /**
    * 用户标签
    */
-  userTags: string;
-  /**
-   * 是否公开回帖列表
-   */
-  userCommentStatus: PublicStatus;
+  tags: string = '';
   /**
    * 用户时区
    */
-  userTimezone: string;
+  timezone: string = '';
   /**
    * 用户个人主页
    */
-  userURL: string;
-  /**
-   * 是否启用站外链接跳转页面
-   */
-  userForwardPageStatus: boolean;
-  /**
-   * 是否公开 UA 信息
-   */
-  userUAStatus: PublicStatus;
-  /**
-   * 自定义首页跳转地址
-   */
-  userIndexRedirectURL: string;
+  URL: string = '';
   /**
    * 最近发帖时间
    */
-  userLatestArticleTime: number;
-  /**
-   * 标签计数
-   */
-  userTagCount: number;
+  latestArticleTime: number = 0;
   /**
    * 昵称
    */
-  userNickname: string;
-  /**
-   * 回帖浏览模式
-   */
-  userListViewMode: 0 | 1;
+  nickname: string = '';
   /**
    * 最长连续签到
    */
-  userLongestCheckinStreak: number;
-  /**
-   * 用户头像类型
-   */
-  userAvatarType: number;
-  /**
-   * 用户确认邮件发送时间
-   */
-  userSubMailSendTime: number;
+  longestCheckinStreak: number = 0;
   /**
    * 用户最后更新时间
    */
-  userUpdateTime: number;
-  /**
-   * userSubMailStatus
-   */
-  userSubMailStatus: YesNoStatus;
-  /**
-   * 是否加入积分排行
-   */
-  userJoinPointRank: YesNoStatus;
+  updateTime: number = 0;
   /**
    * 用户最后登录时间
    */
-  userLatestLoginTime: number;
+  latestLoginTime: number = 0;
   /**
    * 应用角色
    */
-  userAppRole: number;
-  /**
-   * 头像查看模式
-   */
-  userAvatarViewMode: number;
+  appRole: number = 0;
   /**
    * 用户状态
    */
-  userStatus: number;
+  status: number = 0;
   /**
    * 用户上次最长连续签到日期
    */
-  userLongestCheckinStreakEnd: number;
-  /**
-   * 是否公开关注帖子列表
-   */
-  userWatchingArticleStatus: PublicStatus;
+  longestCheckinStreakEnd: number = 0;
   /**
    * 上次回帖时间
    */
-  userLatestCmtTime: number;
+  latestCmtTime: number = 0;
   /**
    * 用户省份
    */
-  userProvince: string;
+  province: string = '';
   /**
    * 用户当前连续签到计数
    */
-  userCurrentCheckinStreak: number;
+  currentCheckinStreak: number = 0;
   /**
    * 用户编号
    */
-  userNo: number;
+  userNo: number = 0;
   /**
    * 用户头像
    */
-  userAvatarURL: string;
-  /**
-   * 是否公开关注标签列表
-   */
-  userFollowingTagStatus: PublicStatus;
+  avatarURL: string = '';
   /**
    * 用户语言
    */
-  userLanguage: string;
-  /**
-   * 是否加入消费排行
-   */
-  userJoinUsedPointRank: YesNoStatus;
-  /**
-   * 上次签到日期
-   */
-  userCurrentCheckinStreakEnd: number;
-  /**
-   * 是否公开收藏帖子列表
-   */
-  userFollowingArticleStatus: PublicStatus;
-  /**
-   * 是否启用键盘快捷键
-   */
-  userKeyboardShortcutsStatus: YesNoStatus;
-  /**
-   * 是否回帖后自动关注帖子
-   */
-  userReplyWatchArticleStatus: YesNoStatus;
-  /**
-   * 回帖浏览模式
-   */
-  userCommentViewMode: number;
-  /**
-   * 是否公开清风明月列表
-   */
-  userBreezemoonStatus: PublicStatus;
+  language: string = '';
   /**
    * 用户上次签到时间
    */
-  userCheckinTime: number;
+  checkinTime: number = 0;
   /**
    * 用户消费积分
    */
-  userUsedPoint: number;
-  /**
-   * 是否公开帖子列表
-   */
-  userArticleStatus: PublicStatus;
+  usedPoint: number = 0;
   /**
    * 用户积分
    */
-  userPoint: number;
+  points: number = 0;
   /**
    * 用户回帖数量
    */
-  userCommentCount: number;
+  commentCount: number = 0;
   /**
    * 用户个性签名
    */
-  userIntro: string;
+  intro: string = '';
   /**
-   * 移动端主题
+   * 用户 Id
    */
-  userMobileSkin: string;
-  /**
-   * 分页每页条目
-   */
-  userListPageSize: number;
-  /**
-   * 文章 Id
-   */
-  oId: string;
+  oId: string = '';
   /**
    * 用户名
    */
-  userName: string;
-  /**
-   * 是否公开 IP 地理信息
-   */
-  userGeoStatus: PublicStatus;
-  /**
-   * 最长连续签到起始日
-   */
-  userLongestCheckinStreakStart: number;
-  /**
-   * 用户主题
-   */
-  userSkin: string;
-  /**
-   * 是否启用 Web 通知
-   */
-  userNotifyStatus: YesNoStatus;
-  /**
-   * 公开关注用户列表
-   */
-  userFollowingUserStatus: PublicStatus;
+  userName: string = '';
   /**
    * 文章数
    */
-  userArticleCount: number;
+  articleCount: number = 0;
   /**
    * 用户角色
    */
-  userRole: string;
+  role: string = '';
   /**
    * 徽章
    */
   sysMetal?: IMetal[];
-}
+  /**
+   * MBTI 性格类型
+   */
+  mbti: string = '';
 
-export interface IPagination {
-  /**
-   * 分页数
-   */
-  paginationPageCount: string;
-  /**
-   * 建议分页页码
-   */
-  paginationPageNums: Array<number>;
+  static from(user: Record<string, any>) {
+    const data = new Author();
+    data.online = user.userOnlineFlag;
+    data.onlineMinute = user.onlineMinute;
+    data.currentCheckinStreakStart = user.userCurrentCheckinStreakStart;
+    data.tags = user.userTags;
+    data.timezone = user.userTimezone;
+    data.URL = user.userURL;
+    data.latestArticleTime = user.userLatestArticleTime;
+    data.nickname = user.userNickname;
+    data.longestCheckinStreak = user.userLongestCheckinStreak;
+    data.updateTime = user.userUpdateTime;
+    data.latestLoginTime = user.userLatestLoginTime;
+    data.appRole = user.userAppRole;
+    data.status = user.userStatus;
+    data.longestCheckinStreakEnd = user.userLongestCheckinStreakEnd;
+    data.latestCmtTime = user.userLatestCmtTime;
+    data.province = user.userProvince;
+    data.currentCheckinStreak = user.userCurrentCheckinStreak;
+    data.userNo = user.userNo;
+    data.avatarURL = user.userAvatarURL;
+    data.language = user.userLanguage;
+    data.checkinTime = user.userCheckinTime;
+    data.usedPoint = user.userUsedPoint;
+    data.points = user.userPoint;
+    data.commentCount = user.userCommentCount;
+    data.intro = user.userIntro;
+    data.oId = user.oId;
+    data.userName = user.userName;
+    data.articleCount = user.userArticleCount;
+    data.role = user.userRole;
+    if (user.sysMetal) data.sysMetal = user.sysMetal;
+    data.mbti = user.mbti;
+
+    return data;
+  }
 }
 
 /**
  * 文章详情
  */
-export interface IArticleDetail {
+export class ArticleDetail {
   /**
    * 是否在列表展示
    */
-  articleShowInList: boolean;
-  /**
-   * 文章创建时间
-   */
-  articleCreateTime: string;
+  isShowInList: boolean = true;
   /**
    * 发布者Id
    */
-  articleAuthorId: string;
+  authorId: string = '';
   /**
    * 反对数
    */
-  articleBadCnt: number;
+  badCnt: number = 0;
   /**
    * 文章最后修改时间
    */
-  articleLatestCmtTime: string;
+  latestCmtTime: string = '';
   /**
    * 赞同数
    */
-  articleGoodCnt: number;
+  goodCnt: number = 0;
   /**
    * 悬赏积分
    */
-  articleQnAOfferPoint: number;
+  offerPoint: number = 0;
   /**
-   * 作者头像缩略图
+   * 文章首图缩略图
    */
-  articleThumbnailURL: string;
+  thumbnailURL: string = '';
   /**
    * 置顶序号
    */
-  articleStickRemains: number;
+  stickRemains: number = 0;
   /**
    * 发布时间简写
    */
-  timeAgo: string;
+  timeAgo: string = '';
   /**
    * 文章更新时间
    */
-  articleUpdateTimeStr: string;
+  updateTime: string = '';
   /**
    * 作者用户名
    */
-  articleAuthorName: string;
+  authorName: string = '';
   /**
    * 文章类型
    */
-  articleType: ArticleType;
+  type: ArticleType = ArticleType.Normal;
   /**
    * 是否悬赏
    */
-  offered: boolean;
+  isOffered: boolean = false;
   /**
    * 文章创建时间字符串
    */
-  articleCreateTimeStr: string;
+  createTime: string = '';
   /**
    * 文章浏览数
    */
-  articleViewCount: number;
+  viewCount: number = 0;
   /**
    * 作者头像缩略图
    */
-  articleAuthorThumbnailURL20: string;
+  authorThumbnail20: string = '';
   /**
    * 关注数
    */
-  articleWatchCnt: number;
+  watchCnt: number = 0;
   /**
    * 文章预览内容
    */
-  articlePreviewContent: string;
+  previewContent: string = '';
   /**
    * 文章标题
    */
-  articleTitleEmoj: string;
+  titleEmoj: string = '';
   /**
    * 文章标题
    */
-  articleTitleEmojUnicode: string;
+  titleEmojUnicode: string = '';
   /**
    * 文章标题
    */
-  articleTitle: string;
+  title: string = '';
   /**
    * 作者头像缩略图
    */
-  articleAuthorThumbnailURL48: string;
-  /**
-   * 文章评论数
-   */
-  articleCommentCount: number;
+  authorThumbnail48: string = '';
   /**
    * 收藏数
    */
-  articleCollectCnt: number;
+  collectCnt: number = 0;
   /**
    * 文章最后评论者
    */
-  articleLatestCmterName: string;
+  latestCmter: string = '';
   /**
    * 文章标签
    */
-  articleTags: string;
+  tagsContent: string = '';
   /**
    * 文章 id
    */
-  oId: string;
+  oId: string = '';
   /**
    * 最后评论时间简写
    */
-  cmtTimeAgo: string;
+  cmtTimeAgo: string = '';
   /**
    * 是否置顶
    */
-  articleStick: number;
+  stick: number = 0;
   /**
    * 文章标签信息
    */
-  articleTagObjs: Array<IArticleTag>;
-  /**
-   * 文章最后评论时间
-   */
-  articleLatestCmtTimeStr: string;
+  tags: ArticleTag[] = [];
   /**
    * 是否匿名
    */
-  articleAnonymous: boolean;
+  isAnonymous: boolean = false;
   /**
    * 文章感谢数
    */
-  articleThankCnt: number;
-  /**
-   * 文章更新时间
-   */
-  articleUpdateTime: string;
+  thankCnt: number = 0;
   /**
    * 文章状态
    */
-  articleStatus: ArticleStatus;
+  status: ArticleStatus = ArticleStatus.Normal;
   /**
    * 文章点击数
    */
-  articleHeat: number;
+  heat: number = 0;
   /**
    * 文章是否优选
    */
-  articlePerfect: boolean;
+  isPerfect: boolean = false;
   /**
    * 作者头像缩略图
    */
-  articleAuthorThumbnailURL210: string;
+  authorThumbnail210: string = '';
   /**
    * 文章固定链接
    */
-  articlePermalink: string;
+  permalink: string = '';
   /**
    * 作者用户信息
    */
-  articleAuthor: IAuthor;
+  author: Author = new Author();
   /**
    * 文章感谢数
    */
-  thankedCnt?: number;
+  thankedCnt?: number = 0;
   /**
    * 文章匿名浏览量
    */
-  articleAnonymousView?: number;
+  anonymousView?: number = 0;
   /**
    * 文章浏览量简写
    */
-  articleViewCntDisplayFormat?: string;
+  viewCntDisplay?: string = '';
   /**
    * 文章是否启用评论
    */
-  articleCommentable?: boolean;
+  commentable?: boolean = true;
   /**
    * 是否已打赏
    */
-  rewarded?: boolean;
+  isRewarded?: boolean = false;
   /**
    * 打赏人数
    */
-  rewardedCnt?: number;
+  rewardedCnt?: number = 0;
   /**
    * 文章打赏积分
    */
-  articleRewardPoint?: number;
+  rewardPoint?: number = 0;
   /**
    * 是否已收藏
    */
-  isFollowing?: boolean;
+  isFollowing?: boolean = false;
   /**
    * 是否已关注
    */
-  isWatching?: boolean;
+  isWatching?: boolean = false;
   /**
    * 是否是我的文章
    */
-  isMyArticle?: boolean;
+  isMyArticle?: boolean = false;
   /**
    * 是否已感谢
    */
-  thanked?: boolean;
-  /**
-   * 编辑器类型
-   */
-  articleEditorType?: number;
+  isThanked?: boolean = false;
   /**
    * 文章音频地址
    */
-  articleAudioURL?: string;
+  audioURL?: string = '';
   /**
    * 文章目录 HTML
    */
-  articleToC?: string;
+  tableOfContents?: string = '';
   /**
    * 文章内容 HTML
    */
-  articleContent?: string;
+  content?: string = '';
   /**
    * 文章内容 Markdown
    */
-  articleOriginalContent?: string;
+  originalContent?: string = '';
   /**
-   * 文章缩略图
+   * 文章首图
    */
-  articleImg1URL?: string;
+  img1URL?: string = '';
   /**
    * 文章点赞状态
    */
-  articleVote?: VoteStatus;
-  /**
-   * 文章随机数
-   */
-  articleRandomDouble?: number;
+  vote?: VoteStatus = VoteStatus.normal;
   /**
    * 作者签名
    */
-  articleAuthorIntro?: string;
+  authorIntro?: string = '';
   /**
    * 发布城市
    */
-  articleCity?: string;
-  /**
-   * 发布者 IP
-   */
-  articleIP?: string;
+  city?: string = '';
   /**
    * 作者首页地址
    */
-  articleAuthorURL?: string;
-  /**
-   * 推送 Email 推送顺序
-   */
-  articlePushOrder?: number;
+  authorURL?: string = '';
   /**
    * 打赏内容
    */
-  articleRewardContent?: string;
-  /**
-   * reddit分数
-   */
-  redditScore?: string;
+  rewardContent?: string = '';
   /**
    * 评论分页信息
    */
-  pagination?: IPagination;
+  pagination?: Pagination;
   /**
    * 评论是否可见
    */
-  discussionViewable: boolean;
+  discussionViewable: boolean = true;
   /**
    * 文章修改次数
    */
-  articleRevisionCount: number;
+  revisionCount: number = 0;
   /**
    * 文章的评论
    */
-  articleComments?: Array<IArticleComment>;
+  comments?: Array<ArticleComment>;
   /**
    * 文章最佳评论
    */
-  articleNiceComments?: Array<IArticleComment>;
+  niceComments?: Array<ArticleComment>;
+
+  static from(post: Record<string, any>) {
+    const data = new ArticleDetail();
+    data.isShowInList = post.articleShowInList;
+    data.authorId = post.articleAuthorId;
+    data.badCnt = post.articleBadCnt;
+    data.goodCnt = post.articleGoodCnt;
+    data.offerPoint = post.articleQnAOfferPoint;
+    data.thumbnailURL = post.articleThumbnailURL;
+    data.stickRemains = post.articleStickRemains;
+    data.timeAgo = post.timeAgo;
+    data.updateTime = post.articleUpdateTimeStr;
+    data.authorName = post.articleAuthorName;
+    data.type = post.articleType;
+    data.isOffered = post.articleQnAOfferPoint > 0;
+    data.createTime = post.articleCreateTimeStr;
+    data.viewCount = post.articleViewCount;
+    data.authorThumbnail20 = post.articleAuthorThumbnailURL20;
+    data.watchCnt = post.articleWatchCnt;
+    data.previewContent = post.articlePreviewContent;
+    data.titleEmoj = post.articleTitleEmoj;
+    data.titleEmojUnicode = post.articleTitleEmojUnicode;
+    data.title = post.articleTitle;
+    data.authorThumbnail48 = post.articleAuthorThumbnailURL48;
+    data.collectCnt = post.articleCollectCnt;
+    data.latestCmter = post.articleLatestCmterName;
+    data.tagsContent = post.articleTags;
+    data.oId = post.oId;
+    data.cmtTimeAgo = post.cmtTimeAgo;
+    data.stick = post.articleStick;
+    data.tags = post.articleTagObjs?.map((t: any) => ArticleTag.from(t)) || [];
+    data.latestCmtTime = post.articleLatestCmtTimeStr;
+    data.isAnonymous = post.articleAnonymous;
+    data.thankCnt = post.articleThankCnt;
+    data.status = post.articleStatus;
+    data.heat = post.articleHeat;
+    data.isPerfect = post.articlePerfect;
+    data.authorThumbnail210 = post.articleAuthorThumbnailURL210;
+    data.permalink = post.articlePermalink;
+    if (post.articleAuthor) data.author = Author.from(post.articleAuthor);
+    data.thankedCnt = post.thankedCnt;
+    data.anonymousView = post.articleAnonymousView;
+    data.viewCntDisplay = post.articleViewCntDisplayFormat;
+    data.commentable = post.articleCommentable;
+    data.isRewarded = post.rewarded;
+    data.rewardedCnt = post.rewardedCnt;
+    data.rewardPoint = post.articleRewardPoint;
+    data.isFollowing = post.isFollowing;
+    data.isWatching = post.isWatching;
+    data.isMyArticle = post.isMyArticle;
+    data.isThanked = post.thanked;
+    data.audioURL = post.articleAudioURL;
+    data.tableOfContents = post.articleToC;
+    data.content = post.articleContent;
+    data.originalContent = post.articleOriginalContent;
+    data.img1URL = post.articleImg1URL;
+    data.vote = post.articleVote;
+    data.authorIntro = post.articleAuthorIntro;
+    data.city = post.articleCity;
+    data.authorURL = post.articleAuthorURL;
+    data.rewardContent = post.articleRewardContent;
+    if (post.pagination) data.pagination = Pagination.from(post.pagination);
+    data.discussionViewable = post.discussionViewable;
+    data.revisionCount = post.articleRevisionCount;
+    data.comments = post.articleComments
+      ? post.articleComments.map((c: any) => ArticleComment.from(c))
+      : undefined;
+    data.niceComments = post.articleNiceComments
+      ? post.articleNiceComments.map((c: any) => ArticleComment.from(c))
+      : undefined;
+    return data;
+  }
 }
 
 /**
  * 文章评论
  */
-export interface IArticleComment {
+export class ArticleComment {
   /**
    * 是否优评
    */
-  commentNice: boolean;
+  isNice: boolean = false;
   /**
    * 评论创建时间字符串
    */
-  commentCreateTimeStr: string;
+  createTime: string = '';
   /**
    * 评论作者 id
    */
-  commentAuthorId: string;
+  authorId: string = '';
   /**
    * 评论分数
    */
-  commentScore: number;
-  /**
-   * 评论创建时间
-   */
-  commentCreateTime: string;
+  score: number = 0;
   /**
    * 评论作者头像
    */
-  commentAuthorURL: string;
+  authorURL: string = '';
   /**
    * 评论状态
    */
-  commentVote: VoteStatus;
+  vote: VoteStatus = VoteStatus.normal;
   /**
    * 评论引用数
    */
-  commentRevisionCount: number;
+  revisionCount: number = 0;
   /**
    * 评论经过时间
    */
-  timeAgo: string;
+  timeAgo: string = '';
   /**
    * 回复评论 id
    */
-  commentOriginalCommentId: string;
+  originalId: string = '';
   /**
    * 徽章
    */
-  sysMetal: IMetal[];
+  sysMetal: IMetal[] = [];
   /**
    * 点赞数
    */
-  commentGoodCnt: number;
+  goodCnt: number = 0;
   /**
    * 评论是否可见
    */
-  commentVisible: YesNoStatus;
+  visible: YesNoStatus = YesNoStatus.Yes;
   /**
    * 文章 id
    */
-  commentOnArticleId: string;
+  articleId: string = '';
   /**
    * 评论感谢数
    */
-  rewardedCnt: number;
+  rewardedCnt: number = 0;
   /**
    * 评论地址
    */
-  commentSharpURL: string;
+  sharpURL: string = '';
   /**
    * 是否匿名
    */
-  commentAnonymous: boolean;
+  isAnonymous: boolean = false;
   /**
    * 评论回复数
    */
-  commentReplyCnt: number;
+  replyCnt: number = 0;
   /**
    * 评论 id
    */
-  oId: string;
+  oId: string = '';
   /**
    * 评论内容
    */
-  commentContent: string;
+  content: string = '';
   /**
    * 评论状态
    */
-  commentStatus: ArticleStatus;
+  status: ArticleStatus = ArticleStatus.Normal;
   /**
    * 评论作者
    */
-  commenter: IAuthor;
+  commenter: Author = new Author();
   /**
    * 评论作者用户名
    */
-  commentAuthorName: string;
+  authorName: string = '';
   /**
    * 评论感谢数
    */
-  commentThankCnt: number;
+  thankCnt: number = 0;
   /**
    * 评论点踩数
    */
-  commentBadCnt: number;
+  badCnt: number = 0;
   /**
    * 是否已感谢
    */
-  rewarded: boolean;
+  rewarded: boolean = false;
   /**
    * 评论作者头像
    */
-  commentAuthorThumbnailURL: string;
+  authorThumbnailURL: string = '';
   /**
    * 评论音频地址
    */
-  commentAudioURL: string;
+  audioURL: string = '';
   /**
    * 评论是否采纳，1 表示采纳
    */
-  commentQnAOffered: number;
+  isOffered: boolean = false;
+
+  static from(cmt: Record<string, any>) {
+    const data = new ArticleComment();
+    data.isNice = cmt.commentNice;
+    data.createTime = cmt.commentCreateTimeStr;
+    data.authorId = cmt.commentAuthorId;
+    data.score = cmt.commentScore;
+    data.authorURL = cmt.commentAuthorURL;
+    data.vote = cmt.commentVote;
+    data.revisionCount = cmt.commentRevisionCount;
+    data.timeAgo = cmt.timeAgo;
+    data.originalId = cmt.commentOriginalCommentId;
+    if (cmt.sysMetal) data.sysMetal = cmt.sysMetal;
+    data.goodCnt = cmt.commentGoodCnt;
+    data.visible = cmt.commentVisible;
+    data.articleId = cmt.commentOnArticleId;
+    data.rewardedCnt = cmt.rewardedCnt;
+    data.sharpURL = cmt.commentSharpURL;
+    data.isAnonymous = cmt.commentAnonymous;
+    data.replyCnt = cmt.commentReplyCnt;
+    data.oId = cmt.oId;
+    data.content = cmt.commentContent;
+    data.status = cmt.commentStatus;
+    if (cmt.commenter) data.commenter = Author.from(cmt.commenter);
+    data.authorName = cmt.commentAuthorName;
+    data.thankCnt = cmt.commentThankCnt;
+    data.badCnt = cmt.commentBadCnt;
+    data.rewarded = cmt.rewarded;
+    data.authorThumbnailURL = cmt.commentAuthorThumbnailURL;
+    data.audioURL = cmt.commentAudioURL;
+    data.isOffered = cmt.commentQnAOffered == 1;
+    return data;
+  }
 }
 
 /**
  * 文章列表
  */
-export interface IArticleList {
+export class ArticleList {
   /**
    * 文章列表
    */
-  articles: IArticleDetail[];
+  articles: ArticleDetail[] = [];
   /**
    * 分页信息
    */
-  pagination: IPagination;
+  pagination: Pagination = new Pagination();
   /**
    * 标签信息，仅查询标签下文章列表有效
    */
-  tag?: IArticleTag;
+  tag?: ArticleTag;
+
+  static from(list: Record<string, any>) {
+    const data = new ArticleList();
+    data.articles = list.articles.map((a: any) => ArticleDetail.from(a));
+    data.pagination = Pagination.from(list.pagination);
+    if (list.tag) data.tag = ArticleTag.from(list.tag);
+    return data;
+  }
 }
 
 export interface ICommentPost {
@@ -1019,17 +1044,17 @@ export interface ICommentPost {
   /**
    * 是否匿名评论
    */
-  commentAnonymous: boolean;
+  isAnonymous?: boolean;
   /**
    * 评论是否楼主可见
    */
-  commentVisible: boolean;
+  isVisible?: boolean;
   /**
    * 评论内容
    */
-  commentContent: string;
+  content: string;
   /**
    * 回复评论 Id
    */
-  commentOriginalCommentId?: string;
+  originalId?: string;
 }

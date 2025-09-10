@@ -178,10 +178,7 @@ export class FishPi {
 
       if (rsp.code && rsp.code !== 0) return;
 
-      rsp.sysMetal = toMetal(rsp.sysMetal);
-      rsp.allMetalOwned = toMetal(rsp.allMetalOwned);
-
-      return rsp;
+      return UserInfo.from(rsp);
     } catch (e) {
       throw e;
     }

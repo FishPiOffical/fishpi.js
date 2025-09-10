@@ -4,17 +4,17 @@ import {
   BaseCli,
   CommentPost,
   FishPi,
-  IArticleComment,
-  IArticleDetail,
-  IArticleList,
+  ArticleComment,
+  ArticleDetail,
+  ArticleList,
 } from './lib';
 import { Terminal, TerminalInputMode } from './terminal';
 
 export class ArticleCli extends BaseCli {
-  currentList: IArticleDetail[] = [];
+  currentList: ArticleDetail[] = [];
   currentPage: number = 1;
   currentPostId?: string;
-  currentPostComments: IArticleComment[] = [];
+  currentPostComments: ArticleComment[] = [];
   currentPostCommentPage = 1;
   tag = '';
   user = '';
@@ -106,13 +106,13 @@ export class ArticleCli extends BaseCli {
       });
   }
 
-  renderArticles(res: IArticleList) {
+  renderArticles(res: ArticleList) {
     this.currentList = res.articles;
     this.terminal.clear();
     this.log(
       this.terminal.Bold.blue.raw('文章列表'),
       this.tag ? ' - ' + this.terminal.cyan.text(`#${this.tag}`) : '',
-      ` 第 ${this.currentPage} 页 / 共 ${res.pagination.paginationPageCount} 页`,
+      ` 第 ${this.currentPage} 页 / 共 ${res.pagination.pageCount} 页`,
     );
     if (res.articles.length === 0) {
       this.log(this.terminal.gray.raw('没有更多文章了...'));
@@ -120,17 +120,16 @@ export class ArticleCli extends BaseCli {
     }
     res.articles.forEach((article, i) => {
       const author =
-        article.articleAuthor.userNickname ||
-        article.articleAuthor.userName +
-          (article.articleAuthor.userNickname ? `(${article.articleAuthor.userName})` : '');
+        article.author.nickname ||
+        article.author.userName + (article.author.nickname ? `(${article.author.userName})` : '');
       this.log(
         this.terminal.yellow.raw(i + '. '),
         '[',
-        this.terminal.blue.raw(article.articleLatestCmtTimeStr),
+        this.terminal.blue.raw(article.latestCmtTime),
         '] ',
         this.terminal.green.raw(author),
         ' - ',
-        article.articleTitleEmoj,
+        article.titleEmoj,
       );
     });
     this.terminal.setTip(`输入 <序号> 阅读, n 下一页, p 上一页, q 退出`);
@@ -146,7 +145,8 @@ export class ArticleCli extends BaseCli {
   async command(cmd: string) {
     if (this.currentPostId) return super.command(cmd);
     const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
-    this.read(cmds[0]);
+    if (!isNaN(Number(cmds[0]))) this.read(cmds[0]);
+    else return super.command(cmd);
   }
 
   async read(index: string) {
@@ -256,12 +256,10 @@ export class ArticleCli extends BaseCli {
       return;
     }
     this.fishpi.comment
-      .send(
-        Object.assign(new CommentPost(), {
-          articleId: this.currentPostId,
-          commentContent: content,
-        }),
-      )
+      .send({
+        articleId: this.currentPostId,
+        content: content,
+      })
       .then(async () => {
         if (this.currentPostId) await this.renderPost(this.currentPostId, 1);
         this.log(this.terminal.green.raw(`[成功]: 评论已发布`));
@@ -286,13 +284,11 @@ export class ArticleCli extends BaseCli {
       return;
     }
     this.fishpi.comment
-      .send(
-        Object.assign(new CommentPost(), {
-          articleId: this.currentPostId!,
-          commentContent: content,
-          commentOriginalCommentId: comment.oId,
-        }),
-      )
+      .send({
+        articleId: this.currentPostId!,
+        content: content,
+        originalId: comment.oId,
+      })
       .then(async () => {
         if (this.currentPostId)
           await this.renderPost(this.currentPostId, this.currentPostCommentPage);
@@ -330,65 +326,60 @@ export class ArticleCli extends BaseCli {
       .detail(oId, page)
       .then((article) => {
         this.currentPostCommentPage = page;
-        this.currentPostComments = article.articleComments || [];
+        this.currentPostComments = article.comments || [];
         this.terminal.clear();
-        this.log(this.terminal.Bold.blue.raw(article.articleTitleEmoj));
+        this.log(article.isPerfect ? '✨' : '', this.terminal.Bold.blue.raw(article.titleEmoj));
         this.log(
           this.terminal.white.text('作者: '),
-          this.terminal.green.raw(
-            article.articleAuthor.userNickname || article.articleAuthor.userName,
-          ),
+          this.terminal.green.raw(article.author.nickname || article.author.userName),
           this.terminal.white.text(' 时间: '),
           this.terminal.blue.raw(article.timeAgo),
-          this.terminal.white.text(`(👀: `) +
-            this.terminal.yellow.text(article.articleViewCount + ''),
+          this.terminal.white.text(` ( 👀: `) + this.terminal.yellow.text(article.viewCount + ''),
           this.terminal.white.text(` ❤️️ : `) + this.terminal.yellow.text(article.thankedCnt + ''),
-          this.terminal.white.text(`)`),
+          this.terminal.white.text(` ️👍: `) + this.terminal.yellow.text(article.goodCnt + ''),
+          article.isOffered ? ` 💰: ${this.terminal.yellow.text(article.offerPoint + '')}` : '',
+          this.terminal.white.text(` )`),
         );
         this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
-        this.log(article.articleOriginalContent || '');
+        this.log(article.originalContent || '');
         this.log(
-          ...article.articleTagObjs.map(
-            (tag) => this.terminal.blue.Inverse.text(`#${tag.tagTitle}`) + ' ',
-          ),
+          ...article.tags.map((tag) => this.terminal.blue.Inverse.text(`#${tag.title}`) + ' '),
         );
         this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
-        if (article.articleRewardPoint) {
+        if (article.rewardPoint) {
           this.log(
             this.terminal.Bold.yellow.raw('打赏区'),
-            this.terminal.text(
-              `(已打赏 ${article.rewardedCnt} / ${article.articleRewardPoint} 积分)`,
-            ),
+            this.terminal.text(`(已打赏 ${article.rewardedCnt} / ${article.rewardPoint} 积分)`),
           );
-          if (article.rewarded) {
-            this.log(this.filterContent(article.articleRewardContent || ''));
+          if (article.isRewarded) {
+            this.log(this.filterContent(article.rewardContent || ''));
           } else {
             this.log(this.terminal.gray.raw('您还没有打赏，打赏后可见打赏内容'));
           }
           this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
         }
-        if (!article.articleComments?.length) {
+        if (!article.comments?.length) {
           this.log(this.terminal.gray.raw('暂无评论'));
         } else {
           this.log(
-            this.terminal.Bold.blue.raw('评论区'),
-            this.terminal.text(`(${article.articleComments.length})`),
+            this.terminal.Bold.blue.raw('💬 评论区 '),
+            this.terminal.text(`(${article.comments.length})`),
           );
-          article.articleComments.forEach((comment, i) => {
+          article.comments.forEach((comment, i) => {
             const commenter =
-              (comment.commenter.userNickname || comment.commenter.userName) +
-              (comment.commenter.userNickname ? `(${comment.commenter.userName})` : '');
+              (comment.commenter.nickname || comment.commenter.userName) +
+              (comment.commenter.nickname ? `(${comment.commenter.userName})` : '');
 
             this.log(
               this.terminal.yellow.text(i + '. '),
               '[',
               this.terminal.blue.text(comment.timeAgo),
               '] ',
-              '(👍:' + this.terminal.yellow.text(comment.commentGoodCnt + ''),
+              '(👍:' + this.terminal.yellow.text(comment.goodCnt + ''),
               ' ❤️️ :' + this.terminal.yellow.text(comment.rewardedCnt + ''),
-              `)  ` + (comment.commentNice ? '🌟 ' : ''),
+              `)  ` + (comment.isNice ? '🌟 ' : ''),
               this.terminal.green.text(commenter) + ': ',
-              this.filterContent(comment.commentContent),
+              this.filterContent(comment.content),
               '    ',
             );
           });

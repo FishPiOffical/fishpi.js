@@ -1,5 +1,5 @@
 import { Config } from './config';
-import { BaseCli, FishPi, IBreezemoonContent } from './lib';
+import { BaseCli, FishPi, BreezemoonContent } from './lib';
 import { Terminal, TerminalInputMode } from './terminal';
 
 export class BreezemoonCli extends BaseCli {
@@ -56,7 +56,7 @@ export class BreezemoonCli extends BaseCli {
     const size = this.terminal.info.height - 3;
     this.fishpi.breezemoon.listByUser(user, page, size).then((breezes) => {
       this.page = page;
-      this.render(breezes);
+      this.render(breezes.breezemoons);
     });
   }
 
@@ -70,17 +70,17 @@ export class BreezemoonCli extends BaseCli {
     });
   }
 
-  render(breezes: IBreezemoonContent[]) {
+  render(breezes: BreezemoonContent[]) {
     breezes.forEach((breeze, i) => {
       this.log(
         this.terminal.yellow.raw(`${i}. `),
         '[',
         this.terminal.blue.raw(breeze.timeAgo),
         '] ',
-        this.terminal.green.raw(breeze.breezemoonAuthorName),
-        breeze.breezemoonCity ? this.terminal.cyan.raw(` (${breeze.breezemoonCity})`) : '',
+        this.terminal.green.raw(breeze.authorName),
+        breeze.city ? this.terminal.cyan.raw(` (${breeze.city})`) : '',
         ': ',
-        breeze.breezemoonContent.replace(/<\/*p>/g, ''),
+        breeze.content.replace(/<\/*p>/g, ''),
       );
     });
     this.terminal.setTip(`输入 n 下一页, p 上一页, s 发送清风明月，输入模式下可直接发送清风明月`);

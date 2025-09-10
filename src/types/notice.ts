@@ -1,4 +1,4 @@
-import { DataType, IArticleTag } from '.';
+import { DataType, ArticleTag } from '.';
 
 /**
  * 通知类型
@@ -266,7 +266,7 @@ export interface INoticeArticle {
   /**
    * 文章标签列表
    */
-  articleTagObjs: IArticleTag[];
+  articleTagObjs: ArticleTag[];
   /**
    * 文章标签
    */
