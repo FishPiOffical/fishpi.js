@@ -1,8 +1,6 @@
-import { FishPi } from '..';
+import { FishPi } from '../cli';
 import { Terminal, TerminalInputMode, TerminalLine } from './terminal';
-
-export * from '..';
-export { default as FishPi } from '..';
+export * from '../cli';
 
 export class BaseCli {
   fishpi: FishPi;

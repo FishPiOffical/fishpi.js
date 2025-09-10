@@ -1,5 +1,6 @@
 import { Config, Page, Terminal } from './cli/index';
-import { FishPi } from './cli/lib';
+import { FishPi } from '.';
+export * from '.';
 
 async function main() {
   Config.load();

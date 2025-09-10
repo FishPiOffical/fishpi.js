@@ -120,5 +120,3 @@ lib/
 
 # debug config
 config.json
-
-src/cli

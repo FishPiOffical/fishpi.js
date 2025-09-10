@@ -85,7 +85,6 @@ await finger.queryLatestLoginIP('username');
 ## 注意事项
 
 API 库使用 `fetch` 做 API 请求，浏览器环境可以直接使用。在 Node 环境需要安装 `node-fetch` 2.x 版本的库。执行如下代码设置 `fetch` 函数：
-
 ```typescript
 import fetch from 'node-fetch'
 globalThis.fetch = fetch as any;
@@ -93,8 +92,8 @@ globalThis.fetch = fetch as any;
 
 ## 命令行工具
 
-全局安装[`fishpi.js`](./cli)，执行 `fishpi` 可以使用一个摸鱼派命令行工具，包含几乎所有功能。
+全局安装可以直接通过 `fishpi` 执行一个摸鱼派命令行工具，包含几乎所有功能。
 
 ```
-npm i -g fishpi.js
+npm i -g fishpi
 ```

@@ -52,7 +52,7 @@ export default [
     input: cliFileName,
     output: [
       {
-        file: pkg.bin.fishpi,
+        file: 'lib/cli.cjs',
         format: 'cjs',
         sourcemap: true,
         banner: `#!/usr/bin/env node
