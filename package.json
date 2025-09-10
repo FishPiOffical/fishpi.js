@@ -27,7 +27,8 @@
     "format": "prettier --write src/",
     "prebuild": "npm run clear && npm run format && npm run build:types",
     "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir ./lib/types",
-    "build": "rollup -c && npm run clear:types"
+    "build": "rollup -c && npm run clear:types",
+    "prepare": "npm run build"
   },
   "keywords": [
     "fishpi",
