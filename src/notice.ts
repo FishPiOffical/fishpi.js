@@ -1,5 +1,13 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { INoticeBreezemoon, INoticeCount, INoticeIdleChat, INoticeUnReadCount, INoticeWarnBroadcast, NoticeList, NoticeType } from './';
+import {
+  INoticeBreezemoon,
+  INoticeCount,
+  INoticeIdleChat,
+  INoticeUnReadCount,
+  INoticeWarnBroadcast,
+  NoticeList,
+  NoticeType,
+} from './';
 import { domain, request, WebSocket } from './utils';
 import EventEmitter from 'events';
 
@@ -155,7 +163,6 @@ export class Notice {
     });
   }
 
-  
   /**
    * 聊天室监听
    * @param event 聊天室事件

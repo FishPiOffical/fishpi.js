@@ -230,7 +230,7 @@ export class Chat {
    * 关闭私聊频道
    * @param user 私聊用户名
    */
-  close(user: string='') {
+  close(user: string = '') {
     if (user) {
       this.chats[user]?.close();
       delete this.chats[user];

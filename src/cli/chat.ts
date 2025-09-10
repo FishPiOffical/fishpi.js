@@ -204,12 +204,18 @@ export class ChatCli extends BaseCli {
   onKeyDown(key: ITerminalKeyEvent) {
     if (this.atList.length) {
       switch (key.full) {
-        case 'left': this.currentAt = (this.currentAt - 1 + this.atList.length) % this.atList.length; this.renderAtUsers(); break;
-        case 'right': this.currentAt = (this.currentAt + 1) % this.atList.length; this.renderAtUsers(); break;
+        case 'left':
+          this.currentAt = (this.currentAt - 1 + this.atList.length) % this.atList.length;
+          this.renderAtUsers();
+          break;
+        case 'right':
+          this.currentAt = (this.currentAt + 1) % this.atList.length;
+          this.renderAtUsers();
+          break;
       }
     }
   }
-  
+
   renderAtUsers() {
     this.terminal.setTip(
       this.atList

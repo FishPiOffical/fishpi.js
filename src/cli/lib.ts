@@ -9,21 +9,28 @@ export class BaseCli {
   terminal: Terminal;
   commands: ICommand[] = [];
   private eventCalls: any = {};
-  
+
   constructor(fishpi: FishPi, terminal: Terminal) {
     this.fishpi = fishpi;
     this.terminal = terminal;
   }
 
   async load(...args: any): Promise<void> {
-    this.terminal.on('complete', this.eventCalls.complete = (text: string, mode: string, callback: (val: string) => void): void => {
-      if (mode == TerminalInputMode.CMD) {
-        const command = this.commands.find(c => c.commands.some(cmd => cmd.startsWith(text)));
-        if (command) {
-          callback(command.commands[0] + ' ');
+    this.terminal.on(
+      'complete',
+      (this.eventCalls.complete = (
+        text: string,
+        mode: string,
+        callback: (val: string) => void,
+      ): void => {
+        if (mode == TerminalInputMode.CMD) {
+          const command = this.commands.find((c) => c.commands.some((cmd) => cmd.startsWith(text)));
+          if (command) {
+            callback(command.commands[0] + ' ');
+          }
         }
-      }
-    })
+      }),
+    );
   }
 
   async unload(): Promise<void> {
@@ -37,7 +44,7 @@ export class BaseCli {
   async command(cmd: string) {
     const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
     if (cmds.length === 0) return;
-    const command = this.commands.find(c => c.commands.includes(cmds[0]));
+    const command = this.commands.find((c) => c.commands.includes(cmds[0]));
     if (command) {
       command.call(...cmds.slice(1));
     } else {
@@ -47,12 +54,20 @@ export class BaseCli {
 
   help() {
     this.log(this.terminal.blue.raw('可用指令：'));
-    const maxLength = Math.max(...this.commands.map(cmd => cmd.commands.join(' / ').length), 8) + 4;
+    const maxLength =
+      Math.max(...this.commands.map((cmd) => cmd.commands.join(' / ').length), 8) + 4;
     this.terminal.tab(1, this.terminal.yellow.raw(`help / h`.padEnd(maxLength)), '\t', '查看帮助');
     this.terminal.tab(1, this.terminal.yellow.raw(`exit / q`.padEnd(maxLength)), '\t', '返回首页');
-    this.commands.forEach(cmd => {
-      const descriptions = cmd.description.split('\n').map((d, i) => (i === 0 ? d : '\t' + ' '.repeat(maxLength) + '\t' + d));
-      this.terminal.tab(1, this.terminal.yellow.raw(cmd.commands.join(' / ').padEnd(maxLength)), '\t', descriptions.join('\n'));
+    this.commands.forEach((cmd) => {
+      const descriptions = cmd.description
+        .split('\n')
+        .map((d, i) => (i === 0 ? d : '\t' + ' '.repeat(maxLength) + '\t' + d));
+      this.terminal.tab(
+        1,
+        this.terminal.yellow.raw(cmd.commands.join(' / ').padEnd(maxLength)),
+        '\t',
+        descriptions.join('\n'),
+      );
     });
     this.log('');
   }

@@ -174,8 +174,7 @@ export class ChatRoom {
           if (data[i].content.recivers)
             data[i].content.recivers = JSON.parse(data[i].content.recivers);
           data[i].type = data[i].content.msgType;
-        } catch (e) {
-        }
+        } catch (e) {}
       });
 
       return rsp.data;
@@ -426,7 +425,7 @@ export class ChatRoom {
       });
 
       this.ws.onopen = (e) => {
-      this.status = 'connected';
+        this.status = 'connected';
         if (this.wsTimer) {
           clearInterval(this.wsTimer);
         }

@@ -7,14 +7,22 @@ export class BreezemoonCli extends BaseCli {
   eventFns: any = {};
   page: number = 1;
   user?: string;
-  
+
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
     this.commands = [
-      { commands: ['breezemoon', 'b'], description: '查看清风明月，传递用户名可查看指定用户的清风明月，示例：b imlinhanchao', call: this.load.bind(this) },
+      {
+        commands: ['breezemoon', 'b'],
+        description: '查看清风明月，传递用户名可查看指定用户的清风明月，示例：b imlinhanchao',
+        call: this.load.bind(this),
+      },
       { commands: ['next', 'n'], description: '下一页清风明月', call: this.next.bind(this) },
       { commands: ['prev', 'p'], description: '上一页清风明月', call: this.prev.bind(this) },
-      { commands: ['send', 's'], description: '发送清风明月，示例：s 今天天气真好！', call: this.send.bind(this) },
+      {
+        commands: ['send', 's'],
+        description: '发送清风明月，示例：s 今天天气真好！',
+        call: this.send.bind(this),
+      },
     ];
   }
 
@@ -27,7 +35,7 @@ export class BreezemoonCli extends BaseCli {
     } else {
       this.list();
     }
-    this.terminal.on('input', this.eventFns.input = this.onInput.bind(this));
+    this.terminal.on('input', (this.eventFns.input = this.onInput.bind(this)));
     super.load();
   }
 
@@ -49,7 +57,7 @@ export class BreezemoonCli extends BaseCli {
     this.fishpi.breezemoon.listByUser(user, page, size).then((breezes) => {
       this.page = page;
       this.render(breezes);
-    })
+    });
   }
 
   async list(page = 1) {
@@ -59,7 +67,7 @@ export class BreezemoonCli extends BaseCli {
     this.fishpi.breezemoon.list(page, size).then((breezes) => {
       this.page = page;
       this.render(breezes);
-    })
+    });
   }
 
   render(breezes: IBreezemoonContent[]) {
@@ -88,16 +96,20 @@ export class BreezemoonCli extends BaseCli {
   }
 
   prev() {
-    if (this.page > 1) this.user ? this.userList(this.user, this.page - 1) : this.list(this.page - 1);
+    if (this.page > 1)
+      this.user ? this.userList(this.user, this.page - 1) : this.list(this.page - 1);
   }
 
   send(content: string) {
-    this.fishpi.breezemoon.send(content).then(() => {
-      this.log(this.terminal.Bold.green.raw('发送成功'));
-      this.list(1);
-    }).catch(err => {
-      this.log(this.terminal.red.raw('[错误]: ' + err.message));
-    });
+    this.fishpi.breezemoon
+      .send(content)
+      .then(() => {
+        this.log(this.terminal.Bold.green.raw('发送成功'));
+        this.list(1);
+      })
+      .catch((err) => {
+        this.log(this.terminal.red.raw('[错误]: ' + err.message));
+      });
     this.terminal.setInputMode(TerminalInputMode.CMD);
   }
 }

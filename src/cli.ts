@@ -8,7 +8,7 @@ async function main() {
   const fishpi = new FishPi();
   const page = new Page(terminal, fishpi);
 
-  if (!await page.init()) return;
+  if (!(await page.init())) return;
 
   await page.load();
 }

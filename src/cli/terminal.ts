@@ -1,6 +1,5 @@
-import blessed from "blessed";
+import blessed from 'blessed';
 import { EventEmitter } from 'events';
-
 
 export interface ITerminalStyle {
   fg?: string;
@@ -21,7 +20,7 @@ export type TerminalLine = ITerminalContent[];
 
 export class TerminalContent {
   static toString(line: TerminalLine) {
-    return line.map(l => new TerminalStyle(l.style).text(l.content)).join('');
+    return line.map((l) => new TerminalStyle(l.style).text(l.content)).join('');
   }
 }
 
@@ -38,43 +37,43 @@ export class TerminalStyle {
     return this.style;
   }
 
-  fg(color: string, text: string='') {
+  fg(color: string, text: string = '') {
     this.style.fg = color;
     if (!text) return this;
     return this.render(text);
   }
 
-  bg(color: string, text: string='') {
+  bg(color: string, text: string = '') {
     this.style.bg = color;
     if (!text) return this;
     return this.render(text);
   }
 
-  bold(text: string='') {
+  bold(text: string = '') {
     this.style.bold = true;
     if (!text) return this;
     return this.render(text);
   }
 
-  underline(text: string='') {
+  underline(text: string = '') {
     this.style.underline = true;
     if (!text) return this;
     return this.render(text);
   }
 
-  blink(text: string='') {
+  blink(text: string = '') {
     this.style.blink = true;
     if (!text) return this;
     return this.render(text);
   }
 
-  inverse(text: string='') {
+  inverse(text: string = '') {
     this.style.inverse = true;
     if (!text) return this;
     return this.render(text);
   }
 
-  invisible(text: string='') {
+  invisible(text: string = '') {
     this.style.invisible = true;
     if (!text) return this;
     return this.render(text);
@@ -118,7 +117,7 @@ export class TerminalStyle {
     this.srcs.push({
       style: this.style,
       content: text,
-    })
+    });
     this.style = {};
     this.contents.push(content);
     return this;
@@ -126,7 +125,7 @@ export class TerminalStyle {
 
   text(text: string = '') {
     if (text) this.render(text);
-    text = this.contents.join(' ')
+    text = this.contents.join(' ');
     this.contents = [];
     return text;
   }
@@ -140,7 +139,7 @@ export class TerminalStyle {
   }
 
   toString() {
-     return this.text();
+    return this.text();
   }
 
   get Srcs() {
@@ -167,7 +166,7 @@ export class TerminalStyle {
     return new TerminalStyle({ ...this.style, fg: 'red' });
   }
 
-  get orangered () {
+  get orangered() {
     return new TerminalStyle({ ...this.style, fg: 'orangered' });
   }
 
@@ -218,9 +217,9 @@ class TerminalOutput {
     this.output = blessed.log({
       top: 0,
       left: 0,
-      width: "100%",
-      height: "100%-1",
-      content: "",
+      width: '100%',
+      height: '100%-1',
+      content: '',
       tags: true,
       keyable: true,
       scrollable: true,
@@ -230,20 +229,20 @@ class TerminalOutput {
       scrollbar: {
         ch: ' ',
         track: {
-          bg: 'default'
+          bg: 'default',
         },
         style: {
-          inverse: true
-        }
+          inverse: true,
+        },
       },
       style: {
-        scrollbar: { bg: 'blue' }
+        scrollbar: { bg: 'blue' },
       },
     });
     this.tip = blessed.box({
       bottom: 1,
       left: 0,
-      width: "100%",
+      width: '100%',
       height: 1,
       content: '',
       tags: true,
@@ -251,7 +250,7 @@ class TerminalOutput {
       mouse: false,
       style: {
         fg: 'cyan',
-      }
+      },
     });
   }
 
@@ -306,10 +305,12 @@ class TerminalOutput {
   }
 
   log(...args: (TerminalLine | string)[]) {
-    const line = args.map((a) => {
+    const line = args
+      .map((a) => {
         if (typeof a === 'string') return [{ style: {}, content: a }];
         return a;
-      }).flat();
+      })
+      .flat();
     if (this.lock) {
       this.todoAppend.push(line);
       return;
@@ -336,11 +337,11 @@ class TerminalOutput {
   setTip(tip: string) {
     if (!tip) {
       this.tip.hide();
-      this.output.height = "100%-1";
+      this.output.height = '100%-1';
     } else {
       this.tip.setContent(tip);
       this.tip.show();
-      this.output.height = "100%-2";
+      this.output.height = '100%-2';
     }
     if (this.screen) this.screen.render();
   }
@@ -383,7 +384,7 @@ class TerminalInput {
     this.input = blessed.textbox({
       bottom: 0,
       left: 2,
-      width: "100%",
+      width: '100%',
       height: 1,
       inputOnFocus: true,
       mouse: false,
@@ -391,7 +392,7 @@ class TerminalInput {
     this.inputLabel = blessed.box({
       bottom: 0,
       left: 0,
-      width: "100%",
+      width: '100%',
       height: 1,
       content: '',
       tags: true,
@@ -400,7 +401,7 @@ class TerminalInput {
       style: {
         bold: true,
         fg: 'yellow',
-      }
+      },
     });
   }
 
@@ -460,7 +461,7 @@ class TerminalInput {
 
     this.input.on('keypress', (_ch, ev) => {
       this.emitter.emit('keydown', ev);
-    })
+    });
   }
 
   setInputMode(mode: string, label?: string) {
@@ -542,7 +543,7 @@ export class Terminal extends TerminalStyle {
       width: Number(this.screen.width),
       height: Number(this.screen.height),
       inputMode: this.input.mode,
-    }
+    };
   }
 
   setInputMode(mode: string, label?: string) {
@@ -560,7 +561,7 @@ export class Terminal extends TerminalStyle {
     const screen = blessed.screen({
       smartCSR: true,
       fullUnicode: true,
-      title: "FishPi Terminal",
+      title: 'FishPi Terminal',
       useBCE: true,
     });
     const output = new TerminalOutput(this.emitter);
@@ -571,15 +572,17 @@ export class Terminal extends TerminalStyle {
     this.screen = screen;
     this.screen.program.disableMouse();
     return {
-      screen, input, output
-    }
+      screen,
+      input,
+      output,
+    };
   }
 
   onListen(screen: blessed.Widgets.Screen) {
     screen.key(['C-c'], () => {
       this.emitter.emit('quit');
     });
-    
+
     screen.key(['/'], () => {
       this.input.setInputMode(TerminalInputMode.INPUT);
     });
@@ -590,12 +593,12 @@ export class Terminal extends TerminalStyle {
 
     screen.on('keypress', (_ch, ev) => {
       this.emitter.emit('keydown', ev);
-    })
+    });
 
     this.emitter.once('quit', (code = 0) => {
-      this.log('Bye~')
+      this.log('Bye~');
       return setTimeout(() => process.exit(code), 500);
-    })
+    });
   }
 
   update(content: TerminalLine, row: number) {

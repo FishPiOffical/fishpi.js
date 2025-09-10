@@ -91,25 +91,16 @@ export class NoticeCli extends BaseCli {
         '(comment): ' + unread.unreadCommentedNotificationCnt,
       );
     if (unread.unreadReplyNotificationCnt)
-      this.log(
-        this.terminal.blue.raw('收到回复'),
-        '(reply): ' + unread.unreadReplyNotificationCnt,
-      );
+      this.log(this.terminal.blue.raw('收到回复'), '(reply): ' + unread.unreadReplyNotificationCnt);
     if (unread.unreadAtNotificationCnt)
-      this.log(
-        this.terminal.blue.raw('提及我的'),
-        '(at): ' + unread.unreadAtNotificationCnt,
-      );
+      this.log(this.terminal.blue.raw('提及我的'), '(at): ' + unread.unreadAtNotificationCnt);
     if (unread.unreadFollowingNotificationCnt)
       this.log(
         this.terminal.blue.raw('我关注的'),
         '(following): ' + unread.unreadFollowingNotificationCnt,
       );
     if (unread.unreadPointNotificationCnt)
-      this.log(
-        this.terminal.blue.raw('积分通知'),
-        '(point): ' + unread.unreadPointNotificationCnt,
-      );
+      this.log(this.terminal.blue.raw('积分通知'), '(point): ' + unread.unreadPointNotificationCnt);
     if (unread.unreadBroadcastNotificationCnt)
       this.log(
         this.terminal.blue.raw('同城通知'),
