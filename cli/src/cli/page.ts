@@ -75,8 +75,9 @@ export class Page {
     Object.keys(this.commands).forEach((page) => {
       program
         .command(page)
-        .description('启动并进入' + this.commands[page].description + '，可传递参数执行子命令')
+        .description('启动并进入' + this.commands[page].description + '，可传递参数执行页面指令')
         .arguments('[commands...]')
+        .addHelpText('after', this.commands[page].cli.helpText())
         .action((args: string[]) => {
           this.defaultPage = page;
           this.defaultCommand = args.join(' ');

@@ -71,8 +71,8 @@ export class ChatRoomCli extends BaseCli {
         commands: ['redpack', 'rp'],
         description: `打开红包，参数为红包 ID。
 可以使用 . 表示最后一个发出的红包，
-而猜拳红包可以使用 1/2/3 指代 石头/剪刀/布，
-例如： rp 1757055214050 或 rp . 1`,
+而猜拳红包可以使用 0/1/2 指代 石头/剪刀/布，
+例如： rp 1757055214050 或 rp . 0`,
         call: this.openRedpack.bind(this),
       },
       {

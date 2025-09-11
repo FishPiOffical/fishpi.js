@@ -80,6 +80,19 @@ export class BaseCli {
     });
     this.log('');
   }
+
+  helpText() {
+    let helpText = '\n可用指令：\n';
+    const maxLength =
+      Math.max(...this.commands.map((cmd) => cmd.commands.join(' / ').length), 8);
+    this.commands.forEach((cmd) => {
+      const descriptions = cmd.description
+        .split('\n')
+        .map((d, i) => (i === 0 ? d : '  ' + ' '.repeat(maxLength) + '\t' + d));
+      helpText += `  ${cmd.commands.join(' / ').padEnd(maxLength)}\t${descriptions.join('\n')}\n`;
+    });
+    return helpText;
+  }
 }
 
 export interface ICommand {
