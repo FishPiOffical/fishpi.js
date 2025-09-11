@@ -41,13 +41,13 @@ export class ChatCli extends BaseCli {
   }
 
   async load(username: string = '') {
-    super.load();
+    await super.load();
     this.me = Config.get('username');
     this.terminal.on('input', (this.eventFns.input = this.onInput.bind(this)));
     this.terminal.on('complete', (this.eventFns.complete = this.onComplete.bind(this)));
     this.terminal.on('keydown', (this.eventFns.keyDown = this.onKeyDown.bind(this)));
     if (username && username != this.me && (await this.toChat(username))) return;
-    this.render();
+    await this.render();
     if (username) {
       this.log(this.terminal.red.raw('用户 ' + username + ' 不存在.'));
     }

@@ -26,7 +26,7 @@ export class AccountCli extends BaseCli {
       },
     ];
   }
-  
+
   async isLogin() {
     const token = Config.get('token');
     if (!token) return false;

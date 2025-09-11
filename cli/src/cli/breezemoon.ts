@@ -31,12 +31,12 @@ export class BreezemoonCli extends BaseCli {
     this.terminal.setInputMode(TerminalInputMode.CMD);
     this.user = user;
     if (user) {
-      this.userList(user);
+      await this.userList(user);
     } else {
-      this.list();
+      await this.list();
     }
     this.terminal.on('input', (this.eventFns.input = this.onInput.bind(this)));
-    super.load();
+    return super.load();
   }
 
   async unload() {

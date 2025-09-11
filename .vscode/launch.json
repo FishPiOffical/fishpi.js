@@ -9,7 +9,7 @@
       "preLaunchTask": "npm: build",
       "outFiles": ["${workspaceFolder}/lib/**/*.cjs"],
       "console": "integratedTerminal",
-      "args": ["article", "0"]
+      "args": ["notice", "list", "at"]
     }
   ]
 }

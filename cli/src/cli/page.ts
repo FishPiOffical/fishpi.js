@@ -73,8 +73,10 @@ export class Page {
         }
       });
     Object.keys(this.commands).forEach((page) => {
-      program.command(page).description('启动并进入' + this.commands[page].description)
-        .arguments('[args...]')
+      program
+        .command(page)
+        .description('启动并进入' + this.commands[page].description + '，可传递参数执行子命令')
+        .arguments('[commands...]')
         .action((args: string[]) => {
           this.defaultPage = page;
           this.defaultCommand = args.join(' ');

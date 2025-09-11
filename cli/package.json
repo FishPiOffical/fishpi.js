@@ -1,6 +1,6 @@
 {
   "name": "fishpi-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A fishpi command line tool.",
   "type": "module",
   "bin": {
@@ -13,7 +13,7 @@
   "scripts": {
     "cli": "node lib/cli.cjs",
     "start": "npm run build && npm run cli",
-    "clear": "rimraf lib",
+    "clear": "rimraf lib/*.map lib/*.d.ts lib/*.cjs",
     "format": "prettier --write src/",
     "prebuild": "npm run clear && npm run format",
     "build": "rollup -c",
@@ -40,7 +40,7 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "commander": "^14.0.0",
-    "fishpi": "^0.1.0",
+    "fishpi": "^0.1.3",
     "inquirer": "^12.9.4",
     "node-fetch": "^2.7.0"
   },

@@ -10,7 +10,6 @@ interface IConfig {
 export class Config {
   static data: IConfig;
   static load() {
-    console.log(cfgPath);
     if (existsSync(cfgPath)) {
       this.data = JSON.parse(readFileSync(cfgPath, 'utf-8'));
     } else {

@@ -1,3 +1,4 @@
+import { Command } from 'commander';
 import { Config } from './config';
 import {
   ChatContentType,
@@ -17,6 +18,14 @@ import {
   ClientType,
 } from './lib';
 import { ITerminalKeyEvent, Terminal, TerminalInputMode } from './terminal';
+
+const redpacketType: any = {
+  random: '拼手气',
+  average: '平分',
+  specify: '专属',
+  heartbeat: '心跳',
+  rockPaperScissors: '猜拳',
+};
 
 export class ChatRoomCli extends BaseCli {
   eventFn: Record<string, any> = {};
@@ -201,8 +210,8 @@ export class ChatRoomCli extends BaseCli {
     this.terminal.on('input', (this.eventFn.input = this.onInput.bind(this)));
     this.terminal.on('complete', (this.eventFn.complete = this.onComplete.bind(this)));
     this.terminal.on('keydown', (this.eventFn.key = this.onKeyDown.bind(this)));
-    this.toChat();
-    super.load();
+    await this.toChat();
+    return super.load();
   }
 
   async unload() {
@@ -218,6 +227,55 @@ export class ChatRoomCli extends BaseCli {
     this.terminal.off('complete', this.eventFn.complete);
     this.terminal.off('keydown', this.eventFn.key);
     super.unload();
+  }
+
+  commander(program: Command): Promise<string> {
+    return new Promise((resolve) =>
+      program
+        .command('redpacket')
+        .description('发送红包')
+        .argument('<message>', '红包留言')
+        .requiredOption(
+          '--type <type>',
+          '红包类型, ' +
+            Object.keys(redpacketType)
+              .map((r) => `${r} ${redpacketType[r]}`)
+              .join('，'),
+        )
+        .option('-p, --point <money>', '红包金额', (v) => Number(v), 1)
+        .option('-c, --count <count>', '红包个数', (v) => Number(v), 1)
+        .option(
+          '-r, --recivers <recivers>',
+          '红包接收者，多个使用逗号隔开，仅专属红包有效',
+          (v) => v.split(',').map((u) => u.trim()),
+          [],
+        )
+        .option(
+          '-g, --gesture <gesture>',
+          '猜拳红包出拳，0/1/2 分别代表 石头/剪刀/布',
+          (v) => Number(v),
+          1,
+        )
+        .action(async (message: string, options: any) => {
+          if (options.type == 'specify' && options.recivers.length == 0) {
+            console.error('error: 专属红包必须指定接收者');
+            process.exit(1);
+          }
+          if (options.type == 'rockPaperScissors' && ![0, 1, 2].includes(options.gesture)) {
+            console.error('error: 猜拳红包出拳只能是 0/1/2，分别代表 石头/剪刀/布');
+            process.exit(1);
+          }
+          await this.fishpi.chatroom.redpacket.send({
+            type: options.type,
+            msg: message,
+            money: options.point,
+            count: options.count,
+            recivers: options.recivers,
+            gesture: options.gesture,
+          });
+          resolve('cr');
+        }),
+    );
   }
 
   onMessage(msg: IChatRoomMsg) {
@@ -405,13 +463,6 @@ export class ChatRoomCli extends BaseCli {
   renderRedPacket(msg: IChatRoomMsg<IRedpacket>) {
     this.redpacketIds.push(msg.oId);
     const { time, nickname, oId } = this.getRenderHeader(msg);
-    const redpacketType = {
-      random: '拼手气',
-      average: '平分',
-      specify: '专属',
-      heartbeat: '心跳',
-      rockPaperScissors: '猜拳',
-    };
     const content = [
       this.terminal.red.raw(`[🧧${redpacketType[msg.content.type]}: ${msg.content.msg}]`),
       this.terminal.white.raw(` - ${msg.content.count} 个 / `),

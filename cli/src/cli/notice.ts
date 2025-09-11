@@ -54,8 +54,8 @@ export class NoticeCli extends BaseCli {
     this.terminal.setTip(
       'list <类型> - 查看通知，unread - 查看未读消息，read [类型] - 标记为已读，类型不传则全部标记已读，help - 帮助，exit - 退出',
     );
-    this.render();
-    super.load();
+    await this.render();
+    return super.load();
   }
 
   async unload() {
@@ -88,7 +88,7 @@ export class NoticeCli extends BaseCli {
     if (unread.unreadCommentedNotificationCnt)
       this.log(
         this.terminal.blue.raw('收到回贴'),
-        '(comment): ' + unread.unreadCommentedNotificationCnt,
+        '(commented): ' + unread.unreadCommentedNotificationCnt,
       );
     if (unread.unreadReplyNotificationCnt)
       this.log(this.terminal.blue.raw('收到回复'), '(reply): ' + unread.unreadReplyNotificationCnt);

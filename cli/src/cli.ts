@@ -6,7 +6,6 @@ export * from '.';
 const program = new Command();
 
 async function main() {
-
   Config.load();
 
   const terminal = new Terminal();
@@ -20,7 +19,8 @@ async function main() {
   page.command(program);
 
   const filename = path.basename(__filename);
-  const hasCommand = process.argv.findIndex((arg) => arg.endsWith(filename)) < process.argv.length - 1;
+  const hasCommand =
+    process.argv.findIndex((arg) => arg.endsWith(filename)) < process.argv.length - 1;
   if (hasCommand) program.parse();
 
   if (!(await page.init())) return;

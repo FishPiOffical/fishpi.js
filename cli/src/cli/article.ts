@@ -66,7 +66,7 @@ export class ArticleCli extends BaseCli {
 
   async load(user: string = '') {
     this.me = Config.get('username');
-    super.load();
+    await super.load();
     if (user == '.') user = this.me || '';
     if (user) {
       await this.renderUser(1, user);
@@ -88,61 +88,70 @@ export class ArticleCli extends BaseCli {
   }
 
   commander(program: Command): Promise<string> {
-    return new Promise((resolve) => program.command('post')
-      .description('发布文章')
-      .argument('<file>', '文章文件路径，支持 Markdown')
-      .requiredOption('-t, --title <title>', '文章标题')
-      .requiredOption('--tags <tags>', '文章标签，多个标签用逗号分隔')
-      .option('--type <type>', '文章类型，normal 普通文章，private 机要，broadcast 同城广播，qna 问答', 'normal')
-      .option('--reward <point>', '开启打赏，需传递大于0的数字')
-      .option('--reward-content <content>', '打赏内容，若开启打赏则必填')
-      .option('--offer <point>', '悬赏积分，若 type 为 qna 则必填')
-      .option('-c, --commentable', '是否允许评论', true)
-      .option('--show', '是否在文章列表显示', true)
-      .option('--notify', '是否通知帖子关注者', false)
-      .option('--anonymous', '是否匿名发布', false)
-      .action(async (file, options) => {
-        const content = readFileSync(file, 'utf-8');
-        const articleType: any = {
-          normal: 0,
-          private: 1,
-          broadcast: 2,
-          qna: 5,
-        }
-        if (options.type == 'qna' && !options.offer) {
-          console.error('error: 问答文章必须设置悬赏积分！');
-          process.exit(1);
-        }
-        if (options.reward) {
-          const rewardPoint = Number(options.reward);
-          if (isNaN(rewardPoint) || rewardPoint <= 0) {
-            console.error('error: 打赏积分必须是大于0的数字！');
+    return new Promise((resolve) =>
+      program
+        .command('post')
+        .description('发布文章')
+        .argument('<file>', '文章文件路径，支持 Markdown')
+        .requiredOption('-t, --title <title>', '文章标题')
+        .requiredOption('--tags <tags>', '文章标签，多个标签用逗号分隔')
+        .option(
+          '--type <type>',
+          '文章类型，normal 普通文章，private 机要，broadcast 同城广播，qna 问答',
+          'normal',
+        )
+        .option('--reward <point>', '开启打赏，需传递大于0的数字')
+        .option('--reward-content <content>', '打赏内容，若开启打赏则必填')
+        .option('--offer <point>', '悬赏积分，若 type 为 qna 则必填')
+        .option('-c, --commentable', '是否允许评论', true)
+        .option('--show', '是否在文章列表显示', true)
+        .option('--notify', '是否通知帖子关注者', false)
+        .option('--anonymous', '是否匿名发布', false)
+        .action(async (file, options) => {
+          const content = readFileSync(file, 'utf-8');
+          const articleType: any = {
+            normal: 0,
+            private: 1,
+            broadcast: 2,
+            qna: 5,
+          };
+          if (options.type == 'qna' && !options.offer) {
+            console.error('error: 问答文章必须设置悬赏积分！');
             process.exit(1);
           }
-          if (!options.rewardContent) {
-            console.error('error: 打赏内容不能为空！');
+          if (options.reward) {
+            const rewardPoint = Number(options.reward);
+            if (isNaN(rewardPoint) || rewardPoint <= 0) {
+              console.error('error: 打赏积分必须是大于0的数字！');
+              process.exit(1);
+            }
+            if (!options.rewardContent) {
+              console.error('error: 打赏内容不能为空！');
+              process.exit(1);
+            }
+          }
+          if (options.rewardContent && !options.reward) {
+            console.error('error: 打赏内容必须设置打赏积分！');
             process.exit(1);
           }
-        }
-        if (options.rewardContent && !options.reward) {
-          console.error('error: 打赏内容必须设置打赏积分！');
-          process.exit(1);
-        }
-        this.fishpi.article.post({
-          title: options.title,
-          content,
-          tags: options.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
-          type: articleType[options.type] ?? 0,
-          rewardPoint: options.reward ? Number(options.reward[0]) : undefined,
-          rewardContent: options.reward ? options.reward[1] : undefined,
-          offerPoint: options.offer ? Number(options.offer) : undefined,
-          commentable: options.commentable,
-          isShowInList: options.show,
-          isNotifyFollowers: options.notify,
-          isAnonymous: options.anonymous,
-        })
-        resolve('a .');
-      })
+          this.fishpi.article.post({
+            title: options.title,
+            content,
+            tags: options.tags
+              .split(',')
+              .map((t: string) => t.trim())
+              .filter((t: string) => t),
+            type: articleType[options.type] ?? 0,
+            rewardPoint: options.reward ? Number(options.reward[0]) : undefined,
+            rewardContent: options.reward ? options.reward[1] : undefined,
+            offerPoint: options.offer ? Number(options.offer) : undefined,
+            commentable: options.commentable,
+            isShowInList: options.show,
+            isNotifyFollowers: options.notify,
+            isAnonymous: options.anonymous,
+          });
+          resolve('a .');
+        }),
     );
   }
 
