@@ -71,6 +71,11 @@ export class Notice {
 
       if (rsp.code !== 0) throw new Error(rsp.msg);
 
+      rsp.data.forEach((n: any) => {
+        if (!n.description && n.content) n.description = n.content;
+        return n;
+      });
+
       return rsp.data;
     } catch (e) {
       throw e;
