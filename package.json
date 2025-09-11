@@ -31,8 +31,7 @@
   "keywords": [
     "fishpi",
     "club",
-    "api",
-    "cli"
+    "api"
   ],
   "bugs": {
     "url": "https://github.com/FishPiOffical/fishpi.js/issues"
