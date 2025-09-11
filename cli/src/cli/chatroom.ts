@@ -233,6 +233,7 @@ export class ChatRoomCli extends BaseCli {
     return new Promise((resolve) =>
       program
         .command('redpacket')
+        .alias('rp')
         .description('发送红包')
         .argument('<message>', '红包留言')
         .requiredOption(
@@ -241,8 +242,10 @@ export class ChatRoomCli extends BaseCli {
             Object.keys(redpacketType)
               .map((r) => `${r} ${redpacketType[r]}`)
               .join('，'),
+          (v) => v.match(/^(random|average|specify|heartbeat|rockPaperScissors)$/)?.[0],
+          'random',
         )
-        .option('-p, --point <money>', '红包金额', (v) => Number(v), 1)
+        .option('-p, --point <money>', '红包金额', (v) => Number(v), 32)
         .option('-c, --count <count>', '红包个数', (v) => Number(v), 1)
         .option(
           '-r, --recivers <recivers>',

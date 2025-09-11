@@ -50,6 +50,7 @@ export class Page {
   commander(program: Command) {
     program
       .command('login')
+      .alias('l')
       .description('登录/切换账号')
       .argument('[username]', '指定登录的用户名')
       .option('-t --token <token>', '使用 Token 登录')
@@ -75,6 +76,7 @@ export class Page {
     Object.keys(this.commands).forEach((page) => {
       program
         .command(page)
+        .alias(this.commands[page].commands[1])
         .description('启动并进入' + this.commands[page].description + '，可传递参数执行页面指令')
         .arguments('[commands...]')
         .addHelpText('after', this.commands[page].cli.helpText())

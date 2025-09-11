@@ -83,8 +83,7 @@ export class BaseCli {
 
   helpText() {
     let helpText = '\n可用指令：\n';
-    const maxLength =
-      Math.max(...this.commands.map((cmd) => cmd.commands.join(' / ').length), 8);
+    const maxLength = Math.max(...this.commands.map((cmd) => cmd.commands.join(' / ').length), 8);
     this.commands.forEach((cmd) => {
       const descriptions = cmd.description
         .split('\n')

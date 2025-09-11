@@ -91,6 +91,7 @@ export class ArticleCli extends BaseCli {
     return new Promise((resolve) =>
       program
         .command('post')
+        .alias('pt')
         .description('发布文章')
         .argument('<file>', '文章文件路径，支持 Markdown')
         .requiredOption('-t, --title <title>', '文章标题')
@@ -98,15 +99,16 @@ export class ArticleCli extends BaseCli {
         .option(
           '--type <type>',
           '文章类型，normal 普通文章，private 机要，broadcast 同城广播，qna 问答',
+          (v) => v.match(/^(normal|private|broadcast|qna)$/)?.[0],
           'normal',
         )
-        .option('--reward <point>', '开启打赏，需传递大于0的数字')
-        .option('--reward-content <content>', '打赏内容，若开启打赏则必填')
-        .option('--offer <point>', '悬赏积分，若 type 为 qna 则必填')
         .option('-c, --commentable', '是否允许评论', true)
         .option('--show', '是否在文章列表显示', true)
         .option('--notify', '是否通知帖子关注者', false)
         .option('--anonymous', '是否匿名发布', false)
+        .option('--offer <point>', '悬赏积分，若 type 为 qna 则必填', (v) => Number(v))
+        .option('--reward <point>', '开启打赏，需传递大于 0 的数字', (v) => Number(v))
+        .option('--reward-content <content>', '打赏内容，若开启打赏则必填')
         .action(async (file, options) => {
           const content = readFileSync(file, 'utf-8');
           const articleType: any = {
