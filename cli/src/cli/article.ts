@@ -93,7 +93,7 @@ export class ArticleCli extends BaseCli {
         .command('post')
         .alias('pt')
         .description('发布文章')
-        .argument('<file>', '文章文件路径，支持 Markdown')
+        .argument('<file>', '文章文件路径，文件内容支持 Markdown')
         .requiredOption('-t, --title <title>', '文章标题')
         .requiredOption('--tags <tags>', '文章标签，多个标签用逗号分隔')
         .option(
