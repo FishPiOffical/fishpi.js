@@ -280,7 +280,6 @@ export class FishPi {
       files.forEach((f) =>
         data.append('file[]', fs.readFileSync(f.toString()), path.basename(f.toString())),
       );
-      // #endif
     }
 
     data.append('apiKey', this.apiKey);

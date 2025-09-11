@@ -66,6 +66,11 @@ export class ChatRoomCli extends BaseCli {
 例如： rp 1757055214050 或 rp . 1`,
         call: this.openRedpack.bind(this),
       },
+      {
+        commands: ['upload', 'up'],
+        description: '上传文件，参数为文件绝对路径，例如 upload C:/test.png，支持多个文件',
+        call: this.updateFile.bind(this),
+      },
     ];
   }
 
@@ -145,6 +150,15 @@ export class ChatRoomCli extends BaseCli {
 
   async revoke(oId: string) {
     this.fishpi.chatroom.revoke(oId);
+  }
+
+  async updateFile(...paths: string[]) {
+    const { succMap } = await this.fishpi.upload(paths);
+    Object.keys(succMap).forEach((k) => {
+      const content = `![${k}](${succMap[k]})`;
+      this.terminal.setInputMode(TerminalInputMode.INPUT);
+      this.terminal.insert(content);
+    });
   }
 
   async openRedpack(oId: string, gesture?: string) {

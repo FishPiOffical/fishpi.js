@@ -121,4 +121,6 @@ lib/
 # debug config
 config.json
 
+# CLI Link
 src/cli
+src/cli.ts

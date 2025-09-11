@@ -1,14 +1,15 @@
+import { Command } from 'commander';
 import { Config } from './config';
 import {
   ArticleListType,
   BaseCli,
-  CommentPost,
   FishPi,
   ArticleComment,
   ArticleDetail,
   ArticleList,
 } from './lib';
 import { Terminal, TerminalInputMode } from './terminal';
+import { readFileSync } from 'fs';
 
 export class ArticleCli extends BaseCli {
   currentList: ArticleDetail[] = [];
@@ -25,8 +26,13 @@ export class ArticleCli extends BaseCli {
     this.commands = [
       {
         commands: ['article', 'a'],
-        description: '返回文章列表，传递用户名可查看指定用户的文章，示例：a imlinhanchao',
+        description: '查看文章列表，传递用户名可查看指定用户的文章，示例：a imlinhanchao',
         call: this.load.bind(this),
+      },
+      {
+        commands: ['list', 'l'],
+        description: '返回文章列表，仅在文章内有效',
+        call: this.list.bind(this),
       },
       {
         commands: ['tag', 'g'],
@@ -61,15 +67,83 @@ export class ArticleCli extends BaseCli {
   async load(user: string = '') {
     this.me = Config.get('username');
     super.load();
+    if (user == '.') user = this.me || '';
     if (user) {
-      this.renderUser(1, user);
+      await this.renderUser(1, user);
     } else {
-      this.renderRecent(1);
+      await this.renderRecent(1);
     }
   }
 
   async unload() {
     super.unload();
+  }
+
+  async list() {
+    if (this.user) {
+      return this.renderUser(this.currentPage, this.user);
+    } else {
+      return this.renderRecent(this.currentPage, this.tag);
+    }
+  }
+
+  commander(program: Command): Promise<string> {
+    return new Promise((resolve) => program.command('post')
+      .description('发布文章')
+      .argument('<file>', '文章文件路径，支持 Markdown')
+      .requiredOption('-t, --title <title>', '文章标题')
+      .requiredOption('--tags <tags>', '文章标签，多个标签用逗号分隔')
+      .option('--type <type>', '文章类型，normal 普通文章，private 机要，broadcast 同城广播，qna 问答', 'normal')
+      .option('--reward <point>', '开启打赏，需传递大于0的数字')
+      .option('--reward-content <content>', '打赏内容，若开启打赏则必填')
+      .option('--offer <point>', '悬赏积分，若 type 为 qna 则必填')
+      .option('-c, --commentable', '是否允许评论', true)
+      .option('--show', '是否在文章列表显示', true)
+      .option('--notify', '是否通知帖子关注者', false)
+      .option('--anonymous', '是否匿名发布', false)
+      .action(async (file, options) => {
+        const content = readFileSync(file, 'utf-8');
+        const articleType: any = {
+          normal: 0,
+          private: 1,
+          broadcast: 2,
+          qna: 5,
+        }
+        if (options.type == 'qna' && !options.offer) {
+          console.error('error: 问答文章必须设置悬赏积分！');
+          process.exit(1);
+        }
+        if (options.reward) {
+          const rewardPoint = Number(options.reward);
+          if (isNaN(rewardPoint) || rewardPoint <= 0) {
+            console.error('error: 打赏积分必须是大于0的数字！');
+            process.exit(1);
+          }
+          if (!options.rewardContent) {
+            console.error('error: 打赏内容不能为空！');
+            process.exit(1);
+          }
+        }
+        if (options.rewardContent && !options.reward) {
+          console.error('error: 打赏内容必须设置打赏积分！');
+          process.exit(1);
+        }
+        this.fishpi.article.post({
+          title: options.title,
+          content,
+          tags: options.tags.split(',').map((t: string) => t.trim()).filter((t: string) => t),
+          type: articleType[options.type] ?? 0,
+          rewardPoint: options.reward ? Number(options.reward[0]) : undefined,
+          rewardContent: options.reward ? options.reward[1] : undefined,
+          offerPoint: options.offer ? Number(options.offer) : undefined,
+          commentable: options.commentable,
+          isShowInList: options.show,
+          isNotifyFollowers: options.notify,
+          isAnonymous: options.anonymous,
+        })
+        resolve('a .');
+      })
+    );
   }
 
   tagArticles(tag: string) {
@@ -81,7 +155,7 @@ export class ArticleCli extends BaseCli {
     this.currentPostId = undefined;
     this.user = userName;
     const size = this.terminal.info.height - 3;
-    this.fishpi.article
+    return this.fishpi.article
       .userArticles({ page, userName, size })
       .then((res) => {
         this.currentPage = page;
@@ -95,9 +169,11 @@ export class ArticleCli extends BaseCli {
   renderRecent(page: number, tag: string = '') {
     this.currentPostId = undefined;
     const size = this.terminal.info.height - 3;
-    this.fishpi.article
+    return this.fishpi.article
       .list({ page, size, type: ArticleListType.Recent, tag })
       .then((res) => {
+        this.user = '';
+        this.tag = tag;
         this.currentPage = page;
         this.renderArticles(res);
       })
@@ -132,7 +208,7 @@ export class ArticleCli extends BaseCli {
         article.titleEmoj,
       );
     });
-    this.terminal.setTip(`输入 <序号> 阅读, n 下一页, p 上一页, q 退出`);
+    this.terminal.setTip(`输入 <序号/Id> 阅读, n 下一页, p 上一页, q 退出`);
     this.terminal.setInputMode(TerminalInputMode.CMD);
   }
 
@@ -144,20 +220,24 @@ export class ArticleCli extends BaseCli {
 
   async command(cmd: string) {
     if (this.currentPostId) return super.command(cmd);
-    const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
+    const cmds = cmd.trim().replace(/\s+/g, ' ').split(' ');
     if (!isNaN(Number(cmds[0]))) this.read(cmds[0]);
     else return super.command(cmd);
   }
 
-  async read(index: string) {
-    const oId = this.currentList[Number(index)]?.oId;
-    if (!oId) {
-      this.log(this.terminal.red.raw('[错误]: 请输入正确的文章序号'));
+  async read(cmd: string) {
+    const index = Number(cmd);
+    let oId = '';
+    if (index < this.currentList.length) {
+      oId = this.currentList[index]?.oId;
+    } else if (cmd.length == 13) {
+      oId = cmd;
+    } else {
+      this.log(this.terminal.red.raw('[错误]: 请输入正确的文章序号或Id'));
       return;
     }
     this.currentPostId = oId;
     await this.renderPost(oId);
-    setTimeout(() => this.terminal.goTop(), 10);
   }
 
   next() {
@@ -388,6 +468,7 @@ export class ArticleCli extends BaseCli {
           `输入 n 下一页, p 上一页, v 点赞, w 打赏, t 感谢, c 评论, c <序号> 回复评论, t <序号> 感谢评论, l 返回列表`,
         );
         this.terminal.setInputMode(TerminalInputMode.CMD);
+        setTimeout(() => this.terminal.goTop(), 10);
       })
       .catch((err) => {
         this.log(this.terminal.red.raw('[错误]: ' + err.message));

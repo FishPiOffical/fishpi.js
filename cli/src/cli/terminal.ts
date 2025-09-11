@@ -488,6 +488,11 @@ class TerminalInput {
   clear() {
     this.input.clearValue();
   }
+
+  append(text: string) {
+    this.input.setValue(this.input.getValue() + text);
+    this.screen?.render();
+  }
 }
 
 interface TerminalEvents {
@@ -525,32 +530,28 @@ interface TerminalEvents {
 export type ITerminalKeyEvent = blessed.Widgets.Events.IKeyEventArg;
 
 export class Terminal extends TerminalStyle {
-  private screen: blessed.Widgets.Screen;
-  private input: TerminalInput;
-  private output: TerminalOutput;
+  private screen?: blessed.Widgets.Screen;
+  private input?: TerminalInput;
+  private output?: TerminalOutput;
   private emitter: EventEmitter = new EventEmitter();
 
   constructor() {
     super();
-    const { screen, input, output } = this.register();
-    this.screen = screen;
-    this.input = input;
-    this.output = output;
   }
 
   get info() {
     return {
-      width: Number(this.screen.width),
-      height: Number(this.screen.height),
-      inputMode: this.input.mode,
+      width: Number(this.screen?.width || 0),
+      height: Number(this.screen?.height || 0),
+      inputMode: this.input?.mode || TerminalInputMode.SHORTSHOT,
     };
   }
 
   setInputMode(mode: string, label?: string) {
-    this.input.setInputMode(mode, label);
+    this.input?.setInputMode(mode, label);
   }
 
-  reBuild() {
+  init() {
     const { screen, input, output } = this.register();
     this.screen = screen;
     this.input = input;
@@ -563,6 +564,8 @@ export class Terminal extends TerminalStyle {
       fullUnicode: true,
       title: 'FishPi Terminal',
       useBCE: true,
+      input: process.stdin,
+      output: process.stdout,
     });
     const output = new TerminalOutput(this.emitter);
     const input = new TerminalInput(this.emitter);
@@ -584,11 +587,11 @@ export class Terminal extends TerminalStyle {
     });
 
     screen.key(['/'], () => {
-      this.input.setInputMode(TerminalInputMode.INPUT);
+      this.input?.setInputMode(TerminalInputMode.INPUT);
     });
 
     screen.key([':'], () => {
-      this.input.setInputMode(TerminalInputMode.CMD);
+      this.input?.setInputMode(TerminalInputMode.CMD);
     });
 
     screen.on('keypress', (_ch, ev) => {
@@ -602,15 +605,19 @@ export class Terminal extends TerminalStyle {
   }
 
   update(content: TerminalLine, row: number) {
-    this.output.update(content, row);
+    this.output?.update(content, row);
   }
 
   append(content: TerminalLine, refresh = true): void {
-    this.output.append(content, refresh);
+    this.output?.append(content, refresh);
   }
 
   log(...args: (TerminalLine | string)[]) {
-    this.output.log(...args);
+    this.output?.log(...args);
+  }
+
+  insert(text: string) {
+    this.input?.append(text);
   }
 
   tab(size: number, ...args: (TerminalLine | string)[]) {
@@ -618,28 +625,28 @@ export class Terminal extends TerminalStyle {
   }
 
   setTip(tip: string) {
-    this.output.setTip(tip);
+    this.output?.setTip(tip);
   }
 
   getTip() {
-    return this.output.getTip();
+    return this.output?.getTip();
   }
 
   goTop() {
-    this.output.goTop();
+    this.output?.goTop();
   }
 
   clear() {
-    this.output.clear();
-    this.input.clear();
+    this.output?.clear();
+    this.input?.clear();
   }
 
   refresh(): void {
-    this.screen.render();
+    this.screen?.render();
   }
 
   close(): void {
-    this.screen.destroy();
+    this.screen?.destroy();
   }
 
   on<K extends keyof TerminalEvents>(event: K, listener: TerminalEvents[K]) {

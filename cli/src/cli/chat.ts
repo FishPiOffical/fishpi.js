@@ -168,7 +168,7 @@ export class ChatCli extends BaseCli {
 
   async command(cmd: string) {
     if (this.chatUser) return super.command(cmd);
-    const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
+    const cmds = cmd.trim().replace(/\s+/g, ' ').split(' ');
     const index = Number(cmds[0]);
     if (!isNaN(index) && index >= 0 && index < this.list.length) {
       const chat = this.list[index];

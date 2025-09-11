@@ -1,10 +1,11 @@
 import { threadId } from 'worker_threads';
-import { AccountCli, ChatRoomCli, Terminal } from '.';
+import { AccountCli, ChatRoomCli, Config, Terminal } from '.';
 import { BaseCli, FishPi } from './lib';
 import { ArticleCli } from './article';
 import { BreezemoonCli } from './breezemoon';
 import { NoticeCli } from './notice';
 import { ChatCli } from './chat';
+import { Command } from 'commander';
 
 interface ICommand {
   cli: BaseCli;
@@ -17,45 +18,113 @@ export class Page {
   fishpi: FishPi;
   commands: Record<string, ICommand> = {};
   account: AccountCli;
+  notice: NoticeCli;
   currentPage?: BaseCli;
+  defaultPage: string = '';
+  defaultCommand: string = '';
 
   constructor(terminal: Terminal, fishpi: FishPi) {
     this.terminal = terminal;
     this.fishpi = fishpi;
     this.account = new AccountCli(this.fishpi, this.terminal);
-  }
-
-  async init() {
-    const isLoggedIn = await this.account.isLogin();
-    if (!isLoggedIn) {
-      console.info('您尚未登录，请先登录！');
-    }
-    if (
-      !isLoggedIn &&
-      !(await this.account.login().catch((err) => console.error('登录失败：' + err.message)))
-    ) {
-      return false;
-    }
+    this.notice = new NoticeCli(this.fishpi, this.terminal);
     const chatroom = new ChatRoomCli(this.fishpi, this.terminal);
     const article = new ArticleCli(this.fishpi, this.terminal);
     const breezemoon = new BreezemoonCli(this.fishpi, this.terminal);
-    const notice = new NoticeCli(this.fishpi, this.terminal);
     const chat = new ChatCli(this.fishpi, this.terminal);
-    notice.addListener();
+
     this.commands = {
       chatroom: { cli: chatroom, commands: ['chatroom', 'cr'], description: '聊天室' },
       chat: { cli: chat, commands: ['chat', 'c'], description: '私聊' },
       article: { cli: article, commands: ['article', 'a'], description: '文章' },
       breezemoon: { cli: breezemoon, commands: ['breezemoon', 'b'], description: '清风明月' },
-      notice: { cli: notice, commands: ['notice', 'n'], description: '通知' },
+      notice: { cli: this.notice, commands: ['notice', 'o'], description: '通知' },
       account: { cli: this.account, commands: ['user', 'u'], description: '个人页' },
     };
+  }
+
+  get version() {
+    return this.account.version;
+  }
+
+  commander(program: Command) {
+    program
+      .command('login')
+      .description('登录/切换账号')
+      .argument('[username]', '指定登录的用户名')
+      .option('-t --token <token>', '使用 Token 登录')
+      .action(async (username, options) => {
+        Config.set('token', '');
+        if (options.token) {
+          this.fishpi.setToken(options.token);
+          const info = await this.fishpi.account.info().catch(() => undefined);
+          if (!info) {
+            console.error('error: Token 无效，登录失败！');
+            process.exit(1);
+          }
+          if (username && info.userName !== username) {
+            console.error('error: Token 与用户名不匹配，请检查或不传递用户名！');
+            process.exit(1);
+          }
+          Config.set('token', options.token);
+          Config.set('username', info.userName);
+        } else if (username) {
+          Config.set('username', username);
+        }
+      });
+    Object.keys(this.commands).forEach((page) => {
+      program.command(page).description('启动并进入' + this.commands[page].description)
+        .arguments('[args...]')
+        .action((args: string[]) => {
+          this.defaultPage = page;
+          this.defaultCommand = args.join(' ');
+        });
+    });
+  }
+
+  command(program: Command) {
+    this.commander(program);
+    Object.keys(this.commands).forEach((page) => {
+      const command = this.commands[page];
+      command.cli.commander(program).then((command) => {
+        if (command) this.defaultCommand = command;
+      });
+    });
+  }
+
+  async init(relogin: boolean = false) {
+    const isLoggedIn = await this.account.isLogin();
+    if (!isLoggedIn) {
+      console.info('您尚未登录，请先登录！');
+    }
+    if (
+      (!isLoggedIn || relogin) &&
+      !(await this.account.login().catch((err) => console.error('登录失败：' + err.message)))
+    ) {
+      return false;
+    }
+
+    process.stdin.removeAllListeners('data');
+
+    this.terminal.init();
+    this.notice.addListener();
     this.terminal.on('cmd', this.onCommand.bind(this));
+
+    if (this.defaultPage) {
+      const command = this.commands[this.defaultPage];
+      if (command) {
+        this.currentPage = command.cli;
+        await this.currentPage.load();
+        this.currentPage.command(this.defaultCommand);
+      }
+    } else if (this.defaultCommand) {
+      this.onCommand(this.defaultCommand);
+    }
     return true;
   }
 
   async onCommand(cmd: string) {
-    const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
+    const cmds = cmd.trim().replace(/\s+/g, ' ').split(' ');
     if (cmds.length === 0) return;
     switch (cmds[0]) {
       case 'help':
@@ -69,10 +138,11 @@ export class Page {
           this.currentPage.unload();
           this.currentPage = undefined;
           this.help();
-        } else {
-          this.terminal.log('Bye~');
-          setTimeout(() => process.exit(0), 500);
+          break;
         }
+      case 'quit':
+        this.terminal.log(this.terminal.Bold.blue.text('Bye~'));
+        setTimeout(() => process.exit(0), 500);
         break;
       default: {
         const page = Object.keys(this.commands).find((c) =>

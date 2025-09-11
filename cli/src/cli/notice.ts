@@ -12,13 +12,13 @@ import {
 import { Terminal, TerminalInputMode } from './terminal';
 
 const noticeName = {
-  [NoticeType.Point]: '积分',
-  [NoticeType.Comment]: '评论',
-  [NoticeType.Reply]: '回复',
-  [NoticeType.At]: '提及我的',
-  [NoticeType.Following]: '我关注的',
-  [NoticeType.Broadcast]: '同城',
-  [NoticeType.System]: '系统',
+  point: '积分',
+  commented: '评论',
+  reply: '回复',
+  at: '提及我的',
+  following: '我关注的',
+  broadcast: '同城',
+  'sys-announce': '系统',
 };
 
 export class NoticeCli extends BaseCli {
@@ -124,7 +124,7 @@ export class NoticeCli extends BaseCli {
     }
   }
 
-  read(type = '') {
+  async read(type = '') {
     if (type && !Object.values(NoticeType).includes(type as NoticeType)) {
       this.log(this.terminal.red.raw('[错误]: 无效的通知类型'));
       this.log(
@@ -135,25 +135,13 @@ export class NoticeCli extends BaseCli {
       );
       return;
     }
-    if (!type) {
-      this.fishpi.notice
-        .readAll()
-        .then(() => {
-          this.render();
-        })
-        .catch((err) => {
-          this.log(this.terminal.red.raw('[错误]: ' + err.message));
-        });
-      return;
+    try {
+      if (!type) await this.fishpi.notice.readAll();
+      else await this.fishpi.notice.makeRead(type as NoticeType);
+      this.render();
+    } catch (err) {
+      this.log(this.terminal.red.raw('[错误]: ' + (err as Error).message));
     }
-    this.fishpi.notice
-      .makeRead(type as NoticeType)
-      .then(() => {
-        this.render();
-      })
-      .catch((err) => {
-        this.log(this.terminal.red.raw('[错误]: ' + err.message));
-      });
   }
 
   list(type: string) {

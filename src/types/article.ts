@@ -21,7 +21,7 @@ export class ArticlePost implements IArticlePost {
    */
   commentable: boolean = true;
   /**
-   * 是否帖子关注者
+   * 是否通知帖子关注者
    */
   isNotifyFollowers: boolean = false;
   /**
@@ -39,7 +39,7 @@ export class ArticlePost implements IArticlePost {
   /**
    * 打赏积分
    */
-  rewardPoint?: string;
+  rewardPoint?: number;
   /**
    * 是否匿名
    */
@@ -115,7 +115,7 @@ export enum ArticleType {
   Private,
   Broadcast,
   Thought,
-  Question,
+  Question = 5,
 }
 
 /**
@@ -249,7 +249,7 @@ export interface IArticlePost {
   /**
    * 打赏积分
    */
-  rewardPoint?: string;
+  rewardPoint?: number;
   /**
    * 是否匿名
    */

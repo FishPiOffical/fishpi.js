@@ -1,5 +1,8 @@
+import { Command } from 'commander';
 import { FishPi } from '../cli';
 import { Terminal, TerminalInputMode, TerminalLine } from './terminal';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 export * from '../cli';
 
 export class BaseCli {
@@ -11,6 +14,14 @@ export class BaseCli {
   constructor(fishpi: FishPi, terminal: Terminal) {
     this.fishpi = fishpi;
     this.terminal = terminal;
+  }
+
+  get version() {
+    return JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8')).version;
+  }
+
+  commander(program: Command): Promise<string> {
+    return Promise.resolve('');
   }
 
   async load(...args: any): Promise<void> {
@@ -40,7 +51,7 @@ export class BaseCli {
   }
 
   async command(cmd: string) {
-    const cmds = cmd.trim().replace(/\s+/, ' ').split(' ');
+    const cmds = cmd.trim().replace(/\s+/g, ' ').split(' ');
     if (cmds.length === 0) return;
     const command = this.commands.find((c) => c.commands.includes(cmds[0]));
     if (command) {

@@ -19,7 +19,7 @@
   "scripts": {
     "cli": "node lib/cli.cjs",
     "start": "npm run build && npm run cli",
-    "clear": "rimraf lib",
+    "clear": "rimraf lib/*.map lib/*.d.ts lib/*.cjs",
     "clear:types": "rimraf lib/types",
     "format": "prettier --write src/",
     "link:cli": "node ./utils/cli-link.cjs",

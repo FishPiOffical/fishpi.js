@@ -26,7 +26,7 @@ export class AccountCli extends BaseCli {
       },
     ];
   }
-
+  
   async isLogin() {
     const token = Config.get('token');
     if (!token) return false;
@@ -43,7 +43,8 @@ export class AccountCli extends BaseCli {
 
   async login() {
     const account = new Account();
-    account.username = await input({ message: '用户名' });
+    const username = Config.get('username');
+    account.username = await input({ message: '用户名', default: username });
     account.passwd = await password({ message: '密码' });
     if (await confirm({ message: '是否有二次验证码？', default: false })) {
       account.mfaCode = await input({ message: '请输入二次验证码' });

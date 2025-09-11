@@ -8,7 +8,8 @@
       "program": "${workspaceFolder}/src/cli.ts",
       "preLaunchTask": "npm: build",
       "outFiles": ["${workspaceFolder}/lib/**/*.cjs"],
-      "console": "integratedTerminal"
+      "console": "integratedTerminal",
+      "args": ["article", "0"]
     }
   ]
 }
