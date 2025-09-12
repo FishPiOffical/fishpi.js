@@ -115,16 +115,6 @@ export class Page {
     this.notice.addListener();
     this.terminal.on('cmd', this.onCommand.bind(this));
 
-    if (this.defaultPage) {
-      const command = this.commands[this.defaultPage];
-      if (command) {
-        this.currentPage = command.cli;
-        await this.currentPage.load();
-        this.currentPage.command(this.defaultCommand);
-      }
-    } else if (this.defaultCommand) {
-      this.onCommand(this.defaultCommand);
-    }
     return true;
   }
 
@@ -167,7 +157,16 @@ export class Page {
   }
 
   async load() {
-    this.help();
+    if (this.defaultPage) {
+      const command = this.commands[this.defaultPage];
+      if (command) {
+        this.currentPage = command.cli;
+        await this.currentPage.load();
+        this.currentPage.command(this.defaultCommand);
+      }
+    } else if (this.defaultCommand) {
+      this.onCommand(this.defaultCommand);
+    } else this.help();
   }
 
   help() {
