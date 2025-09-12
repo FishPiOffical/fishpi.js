@@ -93,6 +93,9 @@ export class ChatCli extends BaseCli {
   }
 
   async toChat(username: string) {
+    if (!username) {
+      return this.log(this.terminal.red.raw('[错误]: 请传递用户名'));
+    }
     const user = await this.fishpi.user(username);
     if (!user) return false;
     this.terminal.setInputMode(TerminalInputMode.INPUT);
@@ -116,6 +119,13 @@ export class ChatCli extends BaseCli {
   }
 
   async history(page: number | string = 1) {
+    if (!this.chatUser) {
+      return this.log(this.terminal.red.raw('[错误]: 请先进入某个聊天'));
+    }
+    if (typeof page === 'string') {
+      page = Number(page);
+      if (isNaN(page) || page < 1) page = 1;
+    }
     page = Number(page);
     this.page = page;
     this.fishpi.chat
@@ -153,10 +163,16 @@ export class ChatCli extends BaseCli {
   }
 
   revoke(oId: string) {
+    if (!oId) {
+      return this.log(this.terminal.red.raw('[错误]: 请传递消息 ID'));
+    }
     this.fishpi.chat.revoke(oId);
   }
 
   async reply(oId: string, content: string) {
+    if (!oId || !content) {
+      return this.log(this.terminal.red.raw('[错误]: 参数错误，必须传递消息 ID 和回复内容'));
+    }
     const msg = this.chats.find((m) => m.oId == oId);
     if (!msg) {
       this.log(this.terminal.red.raw(`[错误]: 未找到要回复的消息 ${oId}`));
@@ -193,7 +209,6 @@ export class ChatCli extends BaseCli {
     }
   }
 
-
   onComplete(text: string, mode: string, callback: (val: string) => void) {
     if (!this.chatUser) {
       this.userSearch(text, callback);
@@ -211,7 +226,7 @@ export class ChatCli extends BaseCli {
         callback(this.candidate.candidate);
         this.candidate.setCandidates([]);
       } else {
-        this.candidate.setCandidates(users.map(u => u.userName));
+        this.candidate.setCandidates(users.map((u) => u.userName));
       }
     });
   }
@@ -226,7 +241,7 @@ export class ChatCli extends BaseCli {
 
     function additionalFile(filePath: string, filename: string) {
       const tail = filePath.endsWith(path.sep) ? '' : path.basename(filePath);
-      let text = filePath.trim().replace(new RegExp(`${tail}$`), filename)
+      let text = filePath.trim().replace(new RegExp(`${tail}$`), filename);
       if (fs.lstatSync(text).isDirectory()) {
         text += path.sep;
       }
@@ -245,6 +260,7 @@ export class ChatCli extends BaseCli {
   }
 
   onInput(content: string) {
+    if (!content) return;
     if (!this.chatUser) {
       return this.command(content);
     }

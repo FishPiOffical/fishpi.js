@@ -378,6 +378,11 @@ class TerminalInput {
   private inputLabel: blessed.Widgets.BoxElement;
   private emitter: EventEmitter;
   private inputMode: string = TerminalInputMode.SHORTSHOT;
+  private inputHistory: Record<string, string[]> = {};
+  private inputHistoryIndex: Record<string, number> = {};
+  private isHistorying = false;
+  private labelBackup = '';
+  private historyIndex = -1;
 
   constructor(emitter: EventEmitter) {
     this.emitter = emitter;
@@ -423,6 +428,9 @@ class TerminalInput {
       this.input.clearValue();
       if (this.screen?.focused != this.input) this.input.focus();
       this.screen?.render();
+      this.inputHistory[this.inputMode] = this.inputHistory[this.inputMode] || [];
+      this.inputHistory[this.inputMode].push(value);
+      this.existSearch();
     });
 
     this.input.key(['C-c'], () => {
@@ -452,7 +460,45 @@ class TerminalInput {
       return false;
     });
 
+    this.input.key(['up'], () => {
+      const history = this.inputHistory[this.inputMode];
+      if (!history?.length) return;
+      const value = this.input.getValue();
+      let index = this.inputHistoryIndex[this.inputMode] || history.length;
+      index = (index - 1 + history.length) % history.length;
+      this.setValue(history[index]);
+      this.inputHistoryIndex[this.inputMode] = index;
+    });
+
+    this.input.key(['down'], () => {
+      const history = this.inputHistory[this.inputMode];
+      if (!history?.length) return;
+      let index = this.inputHistoryIndex[this.inputMode] ?? history.length;
+      index = (index + 1) % history.length;
+      const value = index === history.length ? '' : history[index];
+      this.inputHistoryIndex[this.inputMode] = index;
+      this.setValue(value);
+    });
+
+    this.input.key(['C-r'], () => {
+      this.isHistorying = true;
+      this.triggerSearch();
+    });
+
+    this.input.key(['tab'], () => {
+      if (!this.isHistorying || this.historyIndex < 0) return;
+      const value = this.inputHistory[this.inputMode][this.historyIndex];
+      this.isHistorying = false;
+      this.historyIndex = -1;
+      this.input.setValue(value);
+      this.setLabel(this.labelBackup);
+    });
+
     this.input.key(['escape'], () => {
+      if (this.isHistorying) {
+        this.existSearch();
+        return;
+      }
       this.inputLabel.setContent('');
       this.input.hide();
       this.screen?.render();
@@ -460,6 +506,8 @@ class TerminalInput {
     });
 
     this.input.on('keypress', (_ch, ev) => {
+      if (!['up', 'down'].includes(ev.full)) delete this.inputHistoryIndex[this.inputMode];
+      if (this.isHistorying && ev.full != 'escape') setTimeout(() => this.triggerSearch(), 10);
       this.emitter.emit('keydown', ev);
     });
   }
@@ -475,13 +523,25 @@ class TerminalInput {
     if (this.inputMode == mode) return;
     this.inputMode = mode;
     this.input.show();
-    this.inputLabel.setContent(label ?? { cmd: ':', input: '>' }[mode] ?? '');
-    const strWidth = this.inputLabel.strWidth(this.inputLabel.getContent());
-    this.input.left = strWidth + 1;
-    this.inputLabel.width = strWidth;
+    this.setLabel(label ?? { cmd: ':', input: '>' }[mode] ?? '');
+    this.labelBackup = this.inputLabel.getContent();
     this.inputLabel.focus();
     if (this.screen?.focused != this.input) this.input.focus();
     this.inputMode = mode;
+    this.screen?.render();
+  }
+
+  setLabel(content: string) {
+    this.inputLabel.setContent(content);
+    const strWidth = this.inputLabel.strWidth(this.inputLabel.getContent());
+    this.input.left = strWidth + 1;
+    this.inputLabel.width = strWidth;
+    this.screen?.render();
+  }
+
+  setValue(value: string) {
+    this.input.setValue(value);
+    if (this.screen?.focused != this.input) this.input.focus();
     this.screen?.render();
   }
 
@@ -492,6 +552,35 @@ class TerminalInput {
   append(text: string) {
     this.input.setValue(this.input.getValue() + text);
     this.screen?.render();
+  }
+
+  private existSearch() {
+    this.isHistorying = false;
+    this.historyIndex = -1;
+    this.setLabel(this.labelBackup);
+    if (this.screen?.focused != this.input) this.input.focus();
+    this.screen?.render();
+  }
+
+  private triggerSearch() {
+    const value = this.searchHistory(this.input.getValue());
+    this.setLabel('(历史) ' + (value ? `{bold}{blue-fg}${value}{/}{/} ` : '') + this.labelBackup);
+  }
+
+  private searchHistory(value: string) {
+    if (!value) return '';
+    const history = this.inputHistory[this.inputMode];
+    if (!history?.length) return;
+    if (this.historyIndex < 0) {
+      this.historyIndex = history.length;
+    }
+    for (let i = this.historyIndex - 1; i >= 0; i--) {
+      if (history[i].includes(value)) {
+        this.historyIndex = i;
+        return history[i];
+      }
+    }
+    this.historyIndex = -1;
   }
 }
 
@@ -647,6 +736,10 @@ export class Terminal extends TerminalStyle {
 
   close(): void {
     this.screen?.destroy();
+  }
+
+  emit<K extends keyof TerminalEvents>(event: K, ...args: Parameters<TerminalEvents[K]>) {
+    this.emitter.emit(event, ...args);
   }
 
   on<K extends keyof TerminalEvents>(event: K, listener: TerminalEvents[K]) {

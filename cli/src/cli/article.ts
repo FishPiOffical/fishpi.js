@@ -158,6 +158,9 @@ export class ArticleCli extends BaseCli {
   }
 
   tagArticles(tag: string) {
+    if (!tag) {
+      return this.log(this.terminal.red.raw('[错误]: 请输入标签名称'));
+    }
     this.tag = tag;
     this.renderRecent(1, tag);
   }
@@ -198,6 +201,7 @@ export class ArticleCli extends BaseCli {
     this.terminal.clear();
     this.log(
       this.terminal.Bold.blue.raw('文章列表'),
+      this.user ? ' - ' + this.terminal.green.text(`${this.user}`) : '',
       this.tag ? ' - ' + this.terminal.cyan.text(`#${this.tag}`) : '',
       ` 第 ${this.currentPage} 页 / 共 ${res.pagination.pageCount} 页`,
     );

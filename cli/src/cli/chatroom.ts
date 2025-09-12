@@ -101,13 +101,13 @@ export class ChatRoomCli extends BaseCli {
 
   async toHistory(data: string, size: string) {
     this.mode = 'cmd';
-    if (data.length && isNaN(Number(data))) {
+    if (data?.length && isNaN(Number(data))) {
       this.log(this.terminal.red.raw(`[错误]: 参数必须是数字，表示要获取的历史消息页数或消息Id`));
       return;
     }
     let history: IChatRoomMessage[] = [];
-    if (data.length != 13) {
-      history = await this.fishpi.chatroom.history(Number(data), ChatContentType.Markdown);
+    if (data?.length != 13) {
+      history = await this.fishpi.chatroom.history(Number(data || 1), ChatContentType.Markdown);
     } else {
       history = await this.fishpi.chatroom.get({
         oId: data,
@@ -138,6 +138,10 @@ export class ChatRoomCli extends BaseCli {
   }
 
   async reply(oId: string, content: string) {
+    if (!oId || !content) {
+      this.log(this.terminal.red.raw(`[错误]: 参数错误，必须传递消息 ID 和回复内容`));
+      return;
+    }
     const msg = await this.fishpi.chatroom
       .get({ oId, size: 1, type: ChatContentType.Markdown })
       .then((msgs) => msgs?.find((m) => m.oId == oId))
@@ -155,18 +159,34 @@ export class ChatRoomCli extends BaseCli {
   }
 
   async barrage(content: string, color?: string) {
+    if (!content) {
+      this.log(this.terminal.red.raw(`[错误]: 参数错误，必须传递弹幕内容`));
+      return;
+    }
     this.fishpi.chatroom.barrage(content, color);
   }
 
   discuss(content: string) {
+    if (!content) {
+      this.log(this.terminal.red.raw(`[错误]: 参数错误，必须传递新的话题内容`));
+      return;
+    }
     this.fishpi.chatroom.discusse = content;
   }
 
   async revoke(oId: string) {
+    if (!oId) {
+      this.log(this.terminal.red.raw(`[错误]: 参数错误，必须传递消息 ID`));
+      return;
+    }
     this.fishpi.chatroom.revoke(oId);
   }
 
   async updateFile(...paths: string[]) {
+    if (paths.length == 0) {
+      this.log(this.terminal.red.raw('[错误]: 请传递要上传的文件路径'));
+      return;
+    }
     const { succMap } = await this.fishpi.upload(paths);
     Object.keys(succMap).forEach((k) => {
       const content = `![${k}](${succMap[k]})`;
@@ -176,6 +196,10 @@ export class ChatRoomCli extends BaseCli {
   }
 
   async openRedpack(oId: string, gesture?: string) {
+    if (!oId) {
+      this.log(this.terminal.red.raw(`[错误]: 参数错误，必须传递红包 ID`));
+      return;
+    }
     if (oId == '.') {
       if (!this.redpacketIds.length) {
         this.log(this.terminal.red.raw(`[错误]: 当前没有可用的红包 ID`));
@@ -332,6 +356,7 @@ export class ChatRoomCli extends BaseCli {
   }
 
   onInput(value: string) {
+    if (!value) return;
     this.fishpi.chatroom.send(value).catch((err) => {
       this.log(this.terminal.red.raw(`[错误]: ${err.message}`));
     });
@@ -359,11 +384,14 @@ export class ChatRoomCli extends BaseCli {
         callback(text.replace(/@(\S{1,})$/, '@' + this.candidate.candidate + ' '));
         this.candidate.setCandidates([]);
       } else {
-        this.candidate.setCandidates(users.map(u => u.userName), '@');
+        this.candidate.setCandidates(
+          users.map((u) => u.userName),
+          '@',
+        );
       }
     });
   }
-  
+
   discussMatch(text: string, callback: (val: string) => void) {
     const mat = text.match(/#$/);
     if (mat) {
@@ -388,7 +416,7 @@ export class ChatRoomCli extends BaseCli {
 
     function additionalFile(filePath: string, filename: string) {
       const tail = filePath.endsWith(path.sep) ? '' : path.basename(filePath);
-      let text = filePath.trim().replace(new RegExp(`${tail}$`), filename)
+      let text = filePath.trim().replace(new RegExp(`${tail}$`), filename);
       if (fs.lstatSync(text).isDirectory()) {
         text += path.sep;
       }

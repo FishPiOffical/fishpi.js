@@ -5,6 +5,7 @@ import { Terminal } from './terminal';
 
 export class AccountCli extends BaseCli {
   me: UserInfo | undefined;
+  currrentUser: string = '';
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
@@ -15,14 +16,16 @@ export class AccountCli extends BaseCli {
         call: this.load.bind(this),
       },
       {
-        commands: ['article', 'a'],
-        description: '查看用户文章，示例：a imlinhanchao',
-        call: this.load.bind(this),
+        commands: ['A'],
+        description: '查看用户文章，示例：A imlinhanchao',
+        call: (...args: any[]) =>
+          this.terminal.emit('cmd', 'article ' + (args.join(' ') || this.currrentUser)),
       },
       {
-        commands: ['breezemoon', 'b'],
-        description: '查看用户清风明月，示例：b imlinhanchao',
-        call: this.load.bind(this),
+        commands: ['B'],
+        description: '查看用户清风明月，示例：B imlinhanchao',
+        call: (...args: any[]) =>
+          this.terminal.emit('cmd', 'breezemoon ' + (args.join(' ') || this.currrentUser)),
       },
     ];
   }
@@ -61,7 +64,7 @@ export class AccountCli extends BaseCli {
     super.load();
     this.render(user);
     this.terminal.setTip(
-      'u - 查看用户，a - 查看用户文章， b - 查看用户清风明月，help - 帮助，exit - 退出',
+      'u - 查看用户，A - 查看用户文章， B - 查看用户清风明月，help - 帮助，exit - 退出',
     );
   }
 
@@ -76,6 +79,7 @@ export class AccountCli extends BaseCli {
       return;
     }
 
+    this.currrentUser = info.userName;
     const username = info.userNickname ? `${info.userNickname}(${info.userName})` : info.userName;
     this.terminal.clear();
     this.log(

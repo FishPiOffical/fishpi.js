@@ -29,6 +29,7 @@ export class BreezemoonCli extends BaseCli {
   async load(user: string = '') {
     this.me = Config.get('username');
     this.terminal.setInputMode(TerminalInputMode.CMD);
+    if (user == '.') user = this.me || '';
     this.user = user;
     if (user) {
       await this.userList(user);
@@ -101,6 +102,7 @@ export class BreezemoonCli extends BaseCli {
   }
 
   send(content: string) {
+    if (!content) return;
     this.fishpi.breezemoon
       .send(content)
       .then(() => {
