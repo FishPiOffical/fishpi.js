@@ -1,3 +1,6 @@
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 import { Command } from 'commander';
 import { Config } from './config';
 import {
@@ -16,8 +19,10 @@ import {
   IRedpacket,
   CustomMsg,
   ClientType,
+  searchFiles,
+  Candidate,
 } from './lib';
-import { ITerminalKeyEvent, Terminal, TerminalInputMode } from './terminal';
+import { Terminal, TerminalInputMode } from './terminal';
 
 const redpacketType: any = {
   random: '拼手气',
@@ -31,13 +36,13 @@ export class ChatRoomCli extends BaseCli {
   eventFn: Record<string, any> = {};
   me: string | undefined;
   redpacketIds: string[] = [];
-  atList: IAtUser[] = [];
-  currentAt: number = 0;
+  candidate: Candidate;
   mode: 'cmd' | 'chat' = 'chat';
   msgList: any[] = [];
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
+    this.candidate = new Candidate(fishpi, terminal);
     this.fishpi.chatroom.setVia(ClientType.Other, 'Node Cli@' + this.fishpi.version);
     this.commands = [
       { commands: ['back', 'bk'], description: '返回聊天室', call: this.toChat.bind(this) },
@@ -209,7 +214,7 @@ export class ChatRoomCli extends BaseCli {
     this.fishpi.chatroom.on('revoke', (this.eventFn.revoke = this.onRevoke.bind(this)));
     this.terminal.on('input', (this.eventFn.input = this.onInput.bind(this)));
     this.terminal.on('complete', (this.eventFn.complete = this.onComplete.bind(this)));
-    this.terminal.on('keydown', (this.eventFn.key = this.onKeyDown.bind(this)));
+    this.candidate.load();
     await this.toChat();
     return super.load();
   }
@@ -225,7 +230,7 @@ export class ChatRoomCli extends BaseCli {
     this.fishpi.chatroom.off('revoke', this.eventFn.revoke);
     this.terminal.off('input', this.eventFn.input);
     this.terminal.off('complete', this.eventFn.complete);
-    this.terminal.off('keydown', this.eventFn.key);
+    this.candidate.unload();
     super.unload();
   }
 
@@ -330,61 +335,75 @@ export class ChatRoomCli extends BaseCli {
     this.fishpi.chatroom.send(value).catch((err) => {
       this.log(this.terminal.red.raw(`[错误]: ${err.message}`));
     });
-    this.atList = [];
-    this.currentAt = 0;
-    this.terminal.setTip('');
+    this.candidate.setCandidates([]);
   }
 
   onComplete(text: string, mode: string, callback: (val: string) => void) {
     if (mode == TerminalInputMode.INPUT) {
-      let mat = text.match(/@(\S{1,})$/);
-      if (mat) {
-        const userAt = mat[1];
-        this.fishpi.names(userAt).then((users: IAtUser[]) => {
-          if (users.length == 1) {
-            this.atList = users;
-            this.currentAt = 0;
-          }
-          if (this.atList[this.currentAt]?.userNameLowerCase.startsWith(userAt.toLowerCase())) {
-            callback(text.replace(/@(\S{1,})$/, '@' + this.atList[this.currentAt]?.userName + ' '));
-            this.terminal.setTip('');
-          } else {
-            this.atList = users;
-            this.currentAt = 0;
-            this.renderAtUsers();
-          }
-        });
-      }
-      mat = text.match(/#$/);
-      if (mat) {
-        callback(text.slice(0, -1) + `*\`# ${this.fishpi.chatroom.discusse} #\`*` + ' ');
-      }
+      this.atSearch(text, callback);
+      this.discussMatch(text, callback);
+    } else if (mode == TerminalInputMode.CMD) {
+      this.uploadMatch(text, callback);
     }
   }
 
-  onKeyDown(key: ITerminalKeyEvent) {
-    if (this.atList.length) {
-      switch (key.full) {
-        case 'left':
-          this.currentAt = (this.currentAt - 1 + this.atList.length) % this.atList.length;
-          this.renderAtUsers();
-          break;
-        case 'right':
-          this.currentAt = (this.currentAt + 1) % this.atList.length;
-          this.renderAtUsers();
-          break;
+  atSearch(text: string, callback: (val: string) => void) {
+    let mat = text.match(/@(\S{1,})$/);
+    if (!mat) return;
+    const userAt = mat[1];
+    this.fishpi.names(userAt).then((users: IAtUser[]) => {
+      if (users.length == 1) {
+        this.candidate.setCandidates([]);
+        callback(text.replace(/@(\S{1,})$/, '@' + users[0].userName + ' '));
+      } else if (this.candidate.isMatch(userAt)) {
+        callback(text.replace(/@(\S{1,})$/, '@' + this.candidate.candidate + ' '));
+        this.candidate.setCandidates([]);
+      } else {
+        this.candidate.setCandidates(users.map(u => u.userName), '@');
       }
+    });
+  }
+  
+  discussMatch(text: string, callback: (val: string) => void) {
+    const mat = text.match(/#$/);
+    if (mat) {
+      callback(text.slice(0, -1) + `*\`# ${this.fishpi.chatroom.discusse} #\`*` + ' ');
     }
   }
 
-  renderAtUsers() {
-    this.terminal.setTip(
-      this.atList
-        .map((u, i) =>
-          i == this.currentAt ? this.terminal.Inverse.text(`@${u.userName}`) : `@${u.userName}`,
-        )
-        .join('\t'),
-    );
+  uploadMatch(text: string, callback: (val: string) => void) {
+    if (this.terminal.info.inputMode != TerminalInputMode.CMD) return;
+    let mat = text.match(/^upload\s+/);
+    if (!mat) return;
+    let filePath = text.replace(/^upload\s+/, '').trim();
+    if (filePath.length == 0) return;
+
+    if (filePath.startsWith('~')) {
+      filePath = filePath.replace(/^~/, os.homedir());
+      callback(mat[0] + filePath);
+    }
+
+    const fileName = filePath.endsWith(path.sep) ? '' : path.basename(filePath);
+    const files = searchFiles(filePath);
+
+    function additionalFile(filePath: string, filename: string) {
+      const tail = filePath.endsWith(path.sep) ? '' : path.basename(filePath);
+      let text = filePath.trim().replace(new RegExp(`${tail}$`), filename)
+      if (fs.lstatSync(text).isDirectory()) {
+        text += path.sep;
+      }
+      return text;
+    }
+
+    if (files.length == 1) {
+      callback(mat[0] + additionalFile(filePath, files[0]));
+      this.candidate.setCandidates([]);
+    } else if (this.candidate.isMatch(fileName, false)) {
+      callback(mat[0] + additionalFile(filePath, this.candidate.candidate));
+      this.candidate.setCandidates([]);
+    } else {
+      this.candidate.setCandidates(files);
+    }
   }
 
   render(msg: any) {
@@ -499,8 +518,12 @@ export class ChatRoomCli extends BaseCli {
 
     content = content
       .trim()
-      .replace(/>+\s*$/gm, '')
-      .trim()
+      .replace(/<img\s+src="([^"]*?)"\s+alt="图片表情"([^>]*?>)/g, '[😀 动画表情]')
+      .replace(/<audio[^>]*?>.*?<\/audio>/g, '[🎵 音频]')
+      .replace(/<video[^>]*?>.*?<\/video>/g, '[🎬 视频]')
+      .replace(/<iframe[^>]*?src="([^"]*?)"[^>]*?>.*?<\/iframe>/g, '[内联网页]($1)')
+      .replace(/<img\s+src="([^"]*?)"\s+([^>]*?>)/g, '[图片]($1)')
+      .replace(/<(\w+)>(.*?)<\/\1>/gm, '$2')
       .replace(/```(.*?)\n([\s\S]*?)```/g, '{inverse}$1\n$2{/inverse}') // ``` 代码块 ```
       .replace(/`(.*?)`/g, '{inverse}$1{/inverse}')
       .replace(/\*\*(.*?)\*\*/g, '{bold}$1{/bold}') // **加粗**
@@ -512,12 +535,6 @@ export class ChatRoomCli extends BaseCli {
       .replace(/^\s*>+\s*$/gm, '') // 过滤空引用
       .replaceAll(`@${this.me}`, `{bold}{yellow-fg}@${this.me}{/}{/}`) // 高亮@自己
       .replace(/@([^<]*?)( |$)/gm, '{green-fg}@$1$2{/}') // 高亮@别人
-      .replace(/<img\s+src="([^"]*?)"\s+alt="图片表情"([^>]*?>)/g, '[😀 动画表情]')
-      .replace(/<audio[^>]*?>.*?<\/audio>/g, '[🎵 音频]')
-      .replace(/<video[^>]*?>.*?<\/video>/g, '[🎬 视频]')
-      .replace(/<iframe[^>]*?src="([^"]*?)"[^>]*?>.*?<\/iframe>/g, '[内联网页]($1)')
-      .replace(/<img\s+src="([^"]*?)"\s+([^>]*?>)/g, '[图片]($1)')
-      .replace(/<(\w+)>(.*?)<\/\1>/gm, '$2')
       .trim();
     return content;
   }

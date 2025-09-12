@@ -1,5 +1,7 @@
+import path from 'path';
+import fs from 'fs';
 import { Config } from './config';
-import { BaseCli, FishPi, IAtUser, IChatData } from './lib';
+import { BaseCli, Candidate, FishPi, IAtUser, IChatData, searchFiles } from './lib';
 import { ITerminalKeyEvent, Terminal, TerminalInputMode } from './terminal';
 
 export class ChatCli extends BaseCli {
@@ -8,12 +10,12 @@ export class ChatCli extends BaseCli {
   eventFns: any = {};
   list: IChatData[] = [];
   chats: IChatData[] = [];
-  atList: IAtUser[] = [];
-  currentAt: number = 0;
+  candidate: Candidate;
   page: number = 1;
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
+    this.candidate = new Candidate(fishpi, terminal);
     this.commands = [
       {
         commands: ['chat', 'c'],
@@ -45,7 +47,7 @@ export class ChatCli extends BaseCli {
     this.me = Config.get('username');
     this.terminal.on('input', (this.eventFns.input = this.onInput.bind(this)));
     this.terminal.on('complete', (this.eventFns.complete = this.onComplete.bind(this)));
-    this.terminal.on('keydown', (this.eventFns.keyDown = this.onKeyDown.bind(this)));
+    this.candidate.load();
     if (username && username != this.me && (await this.toChat(username))) return;
     await this.render();
     if (username) {
@@ -56,8 +58,8 @@ export class ChatCli extends BaseCli {
   async unload() {
     this.terminal.off('input', this.eventFns.input);
     this.terminal.off('complete', this.eventFns.complete);
-    this.terminal.off('keydown', this.eventFns.keyDown);
     this.fishpi.chat.close();
+    this.candidate.unload();
     super.unload();
   }
 
@@ -86,7 +88,7 @@ export class ChatCli extends BaseCli {
         chat.preview,
       );
     });
-    this.terminal.setTip(`输入编号，或 c <用户名> 开始聊天，按下 Tab 可补全用户名`);
+    this.terminal.setTip(`输入编号或用户名开始聊天，按下 Tab 可补全用户名`);
     this.terminal.setInputMode(TerminalInputMode.CMD);
   }
 
@@ -120,13 +122,26 @@ export class ChatCli extends BaseCli {
       .channel(this.chatUser!)
       .get({ page })
       .then((chats) => {
-        this.chats = chats.reverse();
+        this.chats = chats?.reverse() || [];
         this.chats.forEach((chat) => this.renderChat(chat));
         this.terminal.setTip(
           '输入消息内容，c 退出聊天，n 下一页，p 上一页，ry <消息Id> 回复某条消息，rk <消息Id> 撤回某条消息',
         );
-        this.terminal.setInputMode(TerminalInputMode.INPUT);
       });
+  }
+
+  async updateFile(...paths: string[]) {
+    if (!this.chatUser) {
+      this.log(this.terminal.red.raw('[错误]: 请先进入某个聊天再上传文件'));
+      return;
+    }
+
+    const { succMap } = await this.fishpi.upload(paths);
+    Object.keys(succMap).forEach((k) => {
+      const content = `![${k}](${succMap[k]})`;
+      this.terminal.setInputMode(TerminalInputMode.INPUT);
+      this.terminal.insert(content);
+    });
   }
 
   next() {
@@ -174,56 +189,59 @@ export class ChatCli extends BaseCli {
       const chat = this.list[index];
       this.toChat(chat.senderUserName == this.me ? chat.receiverUserName : chat.senderUserName);
     } else {
-      super.command(cmd);
+      this.toChat(cmds[0]);
     }
   }
+
 
   onComplete(text: string, mode: string, callback: (val: string) => void) {
-    if (mode == TerminalInputMode.CMD) {
-      let mat = text.match(/c\s+(\S{1,})$/);
-      if (mat) {
-        const userAt = mat[1];
-        this.fishpi.names(userAt).then((users: IAtUser[]) => {
-          if (users.length == 1) {
-            this.atList = users;
-            this.currentAt = 0;
-          }
-          if (this.atList[this.currentAt]?.userNameLowerCase.startsWith(userAt.toLowerCase())) {
-            callback(text.replace(/(c\s+)(\S{1,})$/, '$1' + this.atList[this.currentAt]?.userName));
-            this.terminal.setTip('');
-          } else {
-            this.atList = users;
-            this.currentAt = 0;
-            this.renderAtUsers();
-          }
-        });
-      }
+    if (!this.chatUser) {
+      this.userSearch(text, callback);
+    } else {
+      this.uploadMatch(text, callback);
     }
   }
 
-  onKeyDown(key: ITerminalKeyEvent) {
-    if (this.atList.length) {
-      switch (key.full) {
-        case 'left':
-          this.currentAt = (this.currentAt - 1 + this.atList.length) % this.atList.length;
-          this.renderAtUsers();
-          break;
-        case 'right':
-          this.currentAt = (this.currentAt + 1) % this.atList.length;
-          this.renderAtUsers();
-          break;
+  userSearch(user: string, callback: (val: string) => void) {
+    this.fishpi.names(user).then((users: IAtUser[]) => {
+      if (users.length == 1) {
+        this.candidate.setCandidates([]);
+        callback(users[0].userName);
+      } else if (this.candidate.isMatch(user)) {
+        callback(this.candidate.candidate);
+        this.candidate.setCandidates([]);
+      } else {
+        this.candidate.setCandidates(users.map(u => u.userName));
       }
-    }
+    });
   }
 
-  renderAtUsers() {
-    this.terminal.setTip(
-      this.atList
-        .map((u, i) =>
-          i == this.currentAt ? this.terminal.Inverse.text(`@${u.userName}`) : `@${u.userName}`,
-        )
-        .join('\t'),
-    );
+  uploadMatch(text: string, callback: (val: string) => void) {
+    let mat = text.match(/^upload\s+/);
+    if (!mat) return;
+    const filePath = text.replace(/^upload\s+/, '').trim();
+    if (filePath.length == 0) return;
+    const fileName = filePath.endsWith(path.sep) ? '' : path.basename(filePath);
+    const files = searchFiles(filePath);
+
+    function additionalFile(filePath: string, filename: string) {
+      const tail = filePath.endsWith(path.sep) ? '' : path.basename(filePath);
+      let text = filePath.trim().replace(new RegExp(`${tail}$`), filename)
+      if (fs.lstatSync(text).isDirectory()) {
+        text += path.sep;
+      }
+      return text;
+    }
+
+    if (files.length == 1) {
+      callback(mat[0] + additionalFile(filePath, files[0]));
+      this.candidate.setCandidates([]);
+    } else if (this.candidate.isMatch(fileName, false)) {
+      callback(mat[0] + additionalFile(filePath, this.candidate.candidate));
+      this.candidate.setCandidates([]);
+    } else {
+      this.candidate.setCandidates(files.slice(0, 5));
+    }
   }
 
   onInput(content: string) {

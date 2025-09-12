@@ -1,7 +1,8 @@
 import { Command } from 'commander';
 import { FishPi } from '../cli';
-import { Terminal, TerminalInputMode, TerminalLine } from './terminal';
-import { readFileSync } from 'fs';
+import { ITerminalKeyEvent, Terminal, TerminalInputMode, TerminalLine } from './terminal';
+import fs from 'fs';
+import path from 'path';
 import { resolve } from 'path';
 export * from '../cli';
 
@@ -17,7 +18,7 @@ export class BaseCli {
   }
 
   get version() {
-    return JSON.parse(readFileSync(resolve(__dirname, '../package.json'), 'utf-8')).version;
+    return JSON.parse(fs.readFileSync(resolve(__dirname, '../package.json'), 'utf-8')).version;
   }
 
   commander(program: Command): Promise<string> {
@@ -92,6 +93,100 @@ export class BaseCli {
     });
     return helpText;
   }
+}
+
+export class Candidate extends BaseCli {
+  eventFn: Record<string, any> = {};
+  candidates: string[] = [];
+  currentCandidate: number = 0;
+  listOffset: number = 0;
+  prefix = '';
+
+  constructor(fishpi: FishPi, terminal: Terminal) {
+    super(fishpi, terminal);
+  }
+
+  get candidate() {
+    return this.candidates[this.currentCandidate] || '';
+  }
+
+  isMatch(text: string, ignoreCase: boolean = true) {
+    if (!this.candidate) return false;
+    if (text) return true;
+    return ignoreCase
+      ? this.candidate.toLowerCase().startsWith(text.toLowerCase())
+      : this.candidate.startsWith(text);
+  }
+
+  async load() {
+    this.terminal.on('keydown', (this.eventFn.key = this.onKeyDown.bind(this)));
+  }
+
+  async unload() {
+    this.terminal.off('keydown', this.eventFn.key);
+  }
+
+  setCandidates(candidates: string[], prefix: string = '') {
+    this.candidates = candidates;
+    this.currentCandidate = 0;
+    this.listOffset = 0;
+    this.prefix = prefix;
+    if (this.candidates.length) {
+      this.renderCandidates(prefix);
+    } else {
+      this.terminal.setTip('');
+    }
+  }
+
+  onKeyDown(key: ITerminalKeyEvent) {
+    if (!['left', 'right', 'tab'].includes(key.full)) {
+      this.setCandidates([]);
+      return;
+    }
+    const size = this.candidates.length;
+    if (size) {
+      switch (key.full) {
+        case 'left':
+          this.currentCandidate = (this.currentCandidate - 1 + size) % size;
+          break;
+        case 'right':
+          this.currentCandidate = (this.currentCandidate + 1) % size;
+          break;
+        case 'tab':
+          return;
+      }
+      if (this.currentCandidate < this.listOffset) {
+        this.listOffset = this.currentCandidate;
+      } else if (this.currentCandidate > this.listOffset + 4) {
+        this.listOffset = Math.max(0, this.currentCandidate - 4);
+      }
+      this.renderCandidates(this.prefix);
+    }
+  }
+
+  renderCandidates(prefix: string) {
+    this.terminal.setTip(
+      this.candidates
+        .slice(this.listOffset, this.listOffset + 5)
+        .map((u, i) =>
+          i == this.currentCandidate - this.listOffset
+            ? this.terminal.Inverse.text(`${prefix}${u}`)
+            : `${prefix}${u}`,
+        )
+        .join('\t') + (this.candidates.length > 5 ? `\t...` : ''),
+    );
+  }
+}
+
+export function searchFiles(filePath: string): string[] {
+  const isDir = filePath.endsWith(path.sep);
+  const fileDir = isDir ? filePath : path.dirname(filePath);
+  if (!fs.existsSync(fileDir)) return [];
+  const files = fs.readdirSync(fileDir);
+  const baseName = isDir ? '' : path.basename(filePath);
+  return files.filter(
+    (f) => f.startsWith(baseName) && (baseName.startsWith('.') || !f.startsWith('.')),
+  );
 }
 
 export interface ICommand {
