@@ -319,6 +319,10 @@ class TerminalOutput {
   }
 
   setContent(contents: TerminalLine[]) {
+    if (contents.length > 2000) {
+      // 永远最多只渲染 2000 行
+      contents = contents.slice(contents.length - 2000);
+    }
     this.output.setContent(contents.map(TerminalContent.toString).join('\n'));
     this.src = contents;
     if (this.screen) this.screen.render();
