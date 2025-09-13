@@ -43,7 +43,7 @@ export class ChatRoomCli extends BaseCli {
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
     this.candidate = new Candidate(fishpi, terminal);
-    this.fishpi.chatroom.setVia(ClientType.Other, 'Node Cli@' + this.fishpi.version);
+    this.fishpi.chatroom.setVia(ClientType.CLI, this.fishpi.version);
     this.commands = [
       { commands: ['back', 'bk'], description: '返回聊天室', call: this.toChat.bind(this) },
       {

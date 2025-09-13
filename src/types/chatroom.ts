@@ -22,6 +22,10 @@ export enum ClientType {
    */
   macOS = 'macOS',
   /**
+   * Linux 客户端
+   */
+  Linux = 'Linux',
+  /**
    * iOS 客户端
    */
   iOS = 'iOS',
@@ -46,13 +50,29 @@ export enum ClientType {
    */
   VSCode = 'VSCode',
   /**
-   * Python 插件
+   * Python 客户端
    */
   Python = 'Python',
   /**
-   * Golang 插件
+   * Golang 客户端
    */
   Golang = 'Golang',
+  /**
+   * Rust 客户端
+   */
+  Rust = 'Rust',
+  /**
+   * Harmony App
+   */
+  Harmony = 'Harmony',
+  /**
+   * CLI 工具
+   */
+  CLI = 'CLI',
+  /**
+   * 鸽机器人
+   */
+  Bird = 'Bird',
   /**
    * 小冰机器人
    */
