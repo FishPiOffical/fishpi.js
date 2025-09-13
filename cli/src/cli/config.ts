@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { resolve } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { dirname, resolve } from 'path';
 import os from 'os';
 
 interface IConfig {
@@ -13,6 +13,7 @@ export class Config {
     if (existsSync(this.cfgPath)) {
       this.data = JSON.parse(readFileSync(this.cfgPath, 'utf-8'));
     } else {
+      mkdirSync(dirname(this.cfgPath), { recursive: true });
       this.data = {};
     }
   }
