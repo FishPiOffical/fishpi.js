@@ -39,13 +39,13 @@ export class BaseCli {
           const command = this.commands.filter((c) =>
             c.commands.some((cmd) => cmd.startsWith(text)),
           );
-          if (command.length == 0) {
+          if (command.length == 1) {
             callback(command[0].commands[0] + ' ');
             this.candidate.setCandidates([]);
-          } else if (this.candidate.isMatch(text)) {
+          } else if (command.length > 0 && this.candidate.isMatch(text)) {
             callback(this.candidate.data + ' ');
             this.candidate.setCandidates([]);
-          } else {
+          } else if (command.length > 1) {
             this.candidate.setCandidates(command.map((c) => c.commands[0]));
           }
         }
