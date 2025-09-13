@@ -159,7 +159,7 @@ export class NoticeCli extends BaseCli {
       this.terminal.clear();
       this.log(
         this.terminal.Bold.green.raw('通知列表'),
-        this.terminal.gray.raw(` (${noticeName[type as NoticeType]})`),
+        this.terminal.white.raw(` (${noticeName[type as NoticeType]})`),
       );
       this.log('');
       if (type === NoticeType.Comment || type === NoticeType.Reply) {

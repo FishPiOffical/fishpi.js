@@ -192,7 +192,7 @@ export class ChatCli extends BaseCli {
       msg.senderUserName == this.me
         ? this.terminal.Bold.green.raw(msg.senderUserName)
         : this.terminal.green.raw(msg.senderUserName);
-    const oId = this.terminal.gray.raw(`[${msg.oId}]:`);
+    const oId = this.terminal.white.raw(`[${msg.oId}]:`);
     const content = this.filterContent(msg.markdown);
     this.log(time, ' ', nickname, ' ', oId, ' ', content);
   }

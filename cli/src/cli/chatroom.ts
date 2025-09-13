@@ -346,7 +346,7 @@ export class ChatRoomCli extends BaseCli {
 
   onCustom(msg: CustomMsg) {
     if (this.mode != 'chat') return;
-    this.log(this.terminal.gray.raw(`(${msg})`));
+    this.log(this.terminal.white.raw(`(${msg})`));
   }
 
   onRevoke(msg: RevokeMsg) {
@@ -455,7 +455,7 @@ export class ChatRoomCli extends BaseCli {
     const nickname = this.terminal.Bold.green.raw(
       (msg.userNickname || msg.userName) + (msg.userNickname ? `(${msg.userName})` : ''),
     );
-    const oId = this.terminal.gray.raw(`[${msg.oId}]:`);
+    const oId = this.terminal.white.raw(`[${msg.oId}]:`);
     return { time, nickname, oId };
   }
 
@@ -505,7 +505,7 @@ export class ChatRoomCli extends BaseCli {
     const content = [
       this.terminal.white.raw(`[${weatherIcon[msg.content.data[0].code]}`),
       this.terminal.Bold.raw(`${msg.content.city} `),
-      this.terminal.gray.raw(`${msg.content.description}]`),
+      this.terminal.white.raw(`${msg.content.description}]`),
     ];
     this.log(time, ' ', nickname, ' ', oId, ' ', ...content);
   }

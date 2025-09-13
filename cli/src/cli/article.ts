@@ -206,7 +206,7 @@ export class ArticleCli extends BaseCli {
       ` 第 ${this.currentPage} 页 / 共 ${res.pagination.pageCount} 页`,
     );
     if (res.articles.length === 0) {
-      this.log(this.terminal.gray.raw('没有更多文章了...'));
+      this.log(this.terminal.white.raw('没有更多文章了...'));
       return;
     }
     res.articles.forEach((article, i) => {
@@ -449,12 +449,12 @@ export class ArticleCli extends BaseCli {
           if (article.isRewarded) {
             this.log(this.filterContent(article.rewardContent || ''));
           } else {
-            this.log(this.terminal.gray.raw('您还没有打赏，打赏后可见打赏内容'));
+            this.log(this.terminal.white.raw('您还没有打赏，打赏后可见打赏内容'));
           }
           this.log(this.terminal.cyan.raw('='.repeat(this.terminal.info.width - 1)));
         }
         if (!article.comments?.length) {
-          this.log(this.terminal.gray.raw('暂无评论'));
+          this.log(this.terminal.white.raw('暂无评论'));
         } else {
           this.log(
             this.terminal.Bold.blue.raw('💬 评论区 '),

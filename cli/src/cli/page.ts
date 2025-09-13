@@ -204,12 +204,12 @@ export class Page {
     );
     this.terminal.log('');
     this.terminal.setTip(
-      this.terminal.gray.text('输入') +
+      this.terminal.text('输入') +
         this.terminal.Inverse.text(' : ') +
-        this.terminal.gray.text('进入命令输入模式，') +
-        this.terminal.gray.text('输入') +
+        this.terminal.text('进入命令输入模式，') +
+        this.terminal.text('输入') +
         this.terminal.Inverse.text(' / ') +
-        this.terminal.gray.text('进入文字输入模式（若该页面支持）。'),
+        this.terminal.text('进入文字输入模式（若该页面支持）。'),
     );
   }
 }
