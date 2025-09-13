@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
+import os from 'os';
 
-const cfgPath = resolve(__dirname, 'config.json');
 interface IConfig {
   token?: string;
   username?: string;
@@ -10,8 +10,8 @@ interface IConfig {
 export class Config {
   static data: IConfig;
   static load() {
-    if (existsSync(cfgPath)) {
-      this.data = JSON.parse(readFileSync(cfgPath, 'utf-8'));
+    if (existsSync(this.cfgPath)) {
+      this.data = JSON.parse(readFileSync(this.cfgPath, 'utf-8'));
     } else {
       this.data = {};
     }
@@ -25,6 +25,13 @@ export class Config {
     return this.data[key];
   }
   static save() {
-    writeFileSync(cfgPath, JSON.stringify(this.data, null, 2), 'utf-8');
+    writeFileSync(this.cfgPath, JSON.stringify(this.data, null, 2), 'utf-8');
+  }
+  static get cfgPath() {
+    if (os.platform() === 'win32') {
+      return resolve(process.env.APPDATA || '', 'fishpi', 'config.json');
+    } else {
+      return resolve(os.homedir(), '.config', 'fishpi', 'config.json');
+    }
   }
 }

@@ -10,12 +10,10 @@ export class ChatCli extends BaseCli {
   eventFns: any = {};
   list: IChatData[] = [];
   chats: IChatData[] = [];
-  candidate: Candidate;
   page: number = 1;
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
-    this.candidate = new Candidate(fishpi, terminal);
     this.commands = [
       {
         commands: ['chat', 'c'],
@@ -223,7 +221,7 @@ export class ChatCli extends BaseCli {
         this.candidate.setCandidates([]);
         callback(users[0].userName);
       } else if (this.candidate.isMatch(user)) {
-        callback(this.candidate.candidate);
+        callback(this.candidate.data);
         this.candidate.setCandidates([]);
       } else {
         this.candidate.setCandidates(users.map((u) => u.userName));
@@ -252,7 +250,7 @@ export class ChatCli extends BaseCli {
       callback(mat[0] + additionalFile(filePath, files[0]));
       this.candidate.setCandidates([]);
     } else if (this.candidate.isMatch(fileName, false)) {
-      callback(mat[0] + additionalFile(filePath, this.candidate.candidate));
+      callback(mat[0] + additionalFile(filePath, this.candidate.data));
       this.candidate.setCandidates([]);
     } else {
       this.candidate.setCandidates(files.slice(0, 5));

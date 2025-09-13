@@ -9,12 +9,14 @@ export * from '../cli';
 export class BaseCli {
   fishpi: FishPi;
   terminal: Terminal;
+  candidate: Candidate;
   commands: ICommand[] = [];
   private eventCalls: any = {};
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     this.fishpi = fishpi;
     this.terminal = terminal;
+    this.candidate = new Candidate(terminal);
   }
 
   get version() {
@@ -34,9 +36,17 @@ export class BaseCli {
         callback: (val: string) => void,
       ): void => {
         if (mode == TerminalInputMode.CMD) {
-          const command = this.commands.find((c) => c.commands.some((cmd) => cmd.startsWith(text)));
-          if (command) {
-            callback(command.commands[0] + ' ');
+          const command = this.commands.filter((c) =>
+            c.commands.some((cmd) => cmd.startsWith(text)),
+          );
+          if (command.length == 0) {
+            callback(command[0].commands[0] + ' ');
+            this.candidate.setCandidates([]);
+          } else if (this.candidate.isMatch(text)) {
+            callback(this.candidate.data + ' ');
+            this.candidate.setCandidates([]);
+          } else {
+            this.candidate.setCandidates(command.map((c) => c.commands[0]));
           }
         }
       }),
@@ -95,27 +105,28 @@ export class BaseCli {
   }
 }
 
-export class Candidate extends BaseCli {
+export class Candidate {
+  terminal: Terminal;
   eventFn: Record<string, any> = {};
   candidates: string[] = [];
   currentCandidate: number = 0;
   listOffset: number = 0;
   prefix = '';
 
-  constructor(fishpi: FishPi, terminal: Terminal) {
-    super(fishpi, terminal);
+  constructor(terminal: Terminal) {
+    this.terminal = terminal;
   }
 
-  get candidate() {
+  get data() {
     return this.candidates[this.currentCandidate] || '';
   }
 
   isMatch(text: string, ignoreCase: boolean = true) {
-    if (!this.candidate) return false;
+    if (!this.data) return false;
     if (text) return true;
     return ignoreCase
-      ? this.candidate.toLowerCase().startsWith(text.toLowerCase())
-      : this.candidate.startsWith(text);
+      ? this.data.toLowerCase().startsWith(text.toLowerCase())
+      : this.data.startsWith(text);
   }
 
   async load() {

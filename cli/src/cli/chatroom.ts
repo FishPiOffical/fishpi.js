@@ -36,13 +36,11 @@ export class ChatRoomCli extends BaseCli {
   eventFn: Record<string, any> = {};
   me: string | undefined;
   redpacketIds: string[] = [];
-  candidate: Candidate;
   mode: 'cmd' | 'chat' = 'chat';
   msgList: any[] = [];
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
-    this.candidate = new Candidate(fishpi, terminal);
     this.fishpi.chatroom.setVia(ClientType.CLI, this.fishpi.version);
     this.commands = [
       { commands: ['back', 'bk'], description: '返回聊天室', call: this.toChat.bind(this) },
@@ -381,7 +379,7 @@ export class ChatRoomCli extends BaseCli {
         this.candidate.setCandidates([]);
         callback(text.replace(/@(\S{1,})$/, '@' + users[0].userName + ' '));
       } else if (this.candidate.isMatch(userAt)) {
-        callback(text.replace(/@(\S{1,})$/, '@' + this.candidate.candidate + ' '));
+        callback(text.replace(/@(\S{1,})$/, '@' + this.candidate.data + ' '));
         this.candidate.setCandidates([]);
       } else {
         this.candidate.setCandidates(
@@ -427,7 +425,7 @@ export class ChatRoomCli extends BaseCli {
       callback(mat[0] + additionalFile(filePath, files[0]));
       this.candidate.setCandidates([]);
     } else if (this.candidate.isMatch(fileName, false)) {
-      callback(mat[0] + additionalFile(filePath, this.candidate.candidate));
+      callback(mat[0] + additionalFile(filePath, this.candidate.data));
       this.candidate.setCandidates([]);
     } else {
       this.candidate.setCandidates(files);
