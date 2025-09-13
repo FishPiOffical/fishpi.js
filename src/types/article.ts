@@ -375,10 +375,6 @@ export class Author {
    */
   onlineMinute: number = 0;
   /**
-   * 上次登录日期
-   */
-  currentCheckinStreakStart: number = 0;
-  /**
    * 用户标签
    */
   tags: string = '';
@@ -399,18 +395,6 @@ export class Author {
    */
   nickname: string = '';
   /**
-   * 最长连续签到
-   */
-  longestCheckinStreak: number = 0;
-  /**
-   * 用户最后更新时间
-   */
-  updateTime: number = 0;
-  /**
-   * 用户最后登录时间
-   */
-  latestLoginTime: number = 0;
-  /**
    * 应用角色
    */
   appRole: number = 0;
@@ -418,14 +402,6 @@ export class Author {
    * 用户状态
    */
   status: number = 0;
-  /**
-   * 用户上次最长连续签到日期
-   */
-  longestCheckinStreakEnd: number = 0;
-  /**
-   * 上次回帖时间
-   */
-  latestCmtTime: number = 0;
   /**
    * 用户省份
    */
@@ -446,10 +422,6 @@ export class Author {
    * 用户语言
    */
   language: string = '';
-  /**
-   * 用户上次签到时间
-   */
-  checkinTime: number = 0;
   /**
    * 用户消费积分
    */
@@ -495,25 +467,18 @@ export class Author {
     const data = new Author();
     data.online = user.userOnlineFlag;
     data.onlineMinute = user.onlineMinute;
-    data.currentCheckinStreakStart = user.userCurrentCheckinStreakStart;
     data.tags = user.userTags;
     data.timezone = user.userTimezone;
     data.URL = user.userURL;
     data.latestArticleTime = user.userLatestArticleTime;
     data.nickname = user.userNickname;
-    data.longestCheckinStreak = user.userLongestCheckinStreak;
-    data.updateTime = user.userUpdateTime;
-    data.latestLoginTime = user.userLatestLoginTime;
     data.appRole = user.userAppRole;
     data.status = user.userStatus;
-    data.longestCheckinStreakEnd = user.userLongestCheckinStreakEnd;
-    data.latestCmtTime = user.userLatestCmtTime;
     data.province = user.userProvince;
     data.currentCheckinStreak = user.userCurrentCheckinStreak;
     data.userNo = user.userNo;
     data.avatarURL = user.userAvatarURL;
     data.language = user.userLanguage;
-    data.checkinTime = user.userCheckinTime;
     data.usedPoint = user.userUsedPoint;
     data.points = user.userPoint;
     data.commentCount = user.userCommentCount;
