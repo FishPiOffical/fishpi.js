@@ -8,6 +8,10 @@ const program = new Command();
 async function main() {
   Config.load();
 
+  if (!globalThis.fetch) {
+    globalThis.fetch = (await import('node-fetch')).default as any;
+  }
+
   const terminal = new Terminal();
   const fishpi = new FishPi();
   const page = new Page(terminal, fishpi);
