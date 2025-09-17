@@ -19,8 +19,12 @@ export class BaseCli {
     this.candidate = new Candidate(terminal);
   }
 
+  get pkg() {
+    return JSON.parse(fs.readFileSync(resolve(__dirname, '../package.json'), 'utf-8'));
+  }
+
   get version() {
-    return JSON.parse(fs.readFileSync(resolve(__dirname, '../package.json'), 'utf-8')).version;
+    return this.pkg.version;
   }
 
   commander(program: Command): Promise<string> {

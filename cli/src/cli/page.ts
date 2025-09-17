@@ -47,6 +47,10 @@ export class Page {
     return this.account.version;
   }
 
+  get bin() {
+    return Object.keys(this.account.pkg.bin)[0];
+  }
+
   commander(program: Command) {
     program
       .command('login')
