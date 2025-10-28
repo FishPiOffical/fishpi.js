@@ -620,7 +620,7 @@ class RedPacket {
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      return rsp.data;
+      return rsp;
     } catch (e) {
       throw e;
     }
