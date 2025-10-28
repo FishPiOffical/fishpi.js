@@ -387,6 +387,7 @@ class TerminalInput {
   private isHistorying = false;
   private labelBackup = '';
   private historyIndex = -1;
+  private currentInput = '';
 
   constructor(emitter: EventEmitter) {
     this.emitter = emitter;
@@ -467,7 +468,8 @@ class TerminalInput {
     this.input.key(['up'], () => {
       const history = this.inputHistory[this.inputMode];
       if (!history?.length) return;
-      const value = this.input.getValue();
+      const value = this.currentInput || this.input.getValue();
+      this.currentInput = value;
       let index = this.inputHistoryIndex[this.inputMode] || history.length;
       index = (index - 1 + history.length) % history.length;
       this.setValue(history[index]);
@@ -478,8 +480,9 @@ class TerminalInput {
       const history = this.inputHistory[this.inputMode];
       if (!history?.length) return;
       let index = this.inputHistoryIndex[this.inputMode] ?? history.length;
-      index = (index + 1) % history.length;
-      const value = index === history.length ? '' : history[index];
+      index++;
+      if (index > history.length) index = history.length;
+      const value = index === history.length ? this.currentInput : history[index];
       this.inputHistoryIndex[this.inputMode] = index;
       this.setValue(value);
     });
@@ -510,7 +513,10 @@ class TerminalInput {
     });
 
     this.input.on('keypress', (_ch, ev) => {
-      if (!['up', 'down'].includes(ev.full)) delete this.inputHistoryIndex[this.inputMode];
+      if (!['up', 'down'].includes(ev.full)) {
+        delete this.inputHistoryIndex[this.inputMode];
+        this.currentInput = '';
+      }
       if (this.isHistorying && ev.full != 'escape') setTimeout(() => this.triggerSearch(), 10);
       this.emitter.emit('keydown', ev);
     });

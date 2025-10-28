@@ -152,11 +152,11 @@ export class Notice {
       };
       this.ws.onmessage = async (e) => {
         let msg = JSON.parse(e.data);
-        if (msg.type == 'bz-update') {
-          msg = { ...msg.bz, type: 'bzUpdate' };
+        if (msg.command == 'bz-update') {
+          msg = { ...msg.bz, command: 'bzUpdate' };
         }
-        if (msg.type) {
-          this.emitter.emit(msg.type, msg);
+        if (msg.command) {
+          this.emitter.emit(msg.command, msg);
         }
       };
       this.ws.onerror = (e) => {

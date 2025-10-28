@@ -48,7 +48,7 @@ export class Page {
   }
 
   get bin() {
-    return Object.keys(this.account.pkg.bin)[0];
+    return Object.keys(this.account.pkg.bin || {})[0];
   }
 
   commander(program: Command) {
