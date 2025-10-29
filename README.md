@@ -58,8 +58,8 @@ await fish.chatroom.redpacket.send({
 })
 
 // 私聊历史获取
-let chatHistory = await fish.chat.get({ user: 'username', autoRead: false })
-// 监听私聊新消息
+let chatHistory = await fish.chat.channel('username').get({ user: 'username', autoRead: false })
+// 监听私聊新消息通知
 fishpi.notice.on('newIdleChatMessage', (msg: NoticeMsg) => {
     console.log(msg.senderUserName, '说：', msg.preview);
 });
