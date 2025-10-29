@@ -57,4 +57,14 @@ export interface IUserBag {
    * 摸鱼派一周年纪念勋章领取券
    */
   metalTicket: number;
+
+  /**
+   * 改名卡
+   */
+  nameCard: number;
+
+  /**
+   * 免签天数
+   */
+  sysCheckinRemain: number;
 }
