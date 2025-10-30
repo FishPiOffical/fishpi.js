@@ -169,7 +169,7 @@ export class Finger {
 
       if (rsp.code) throw new Error(rsp.msg);
 
-      return rsp;
+      return rsp.data;
     } catch (e) {
       throw e;
     }
