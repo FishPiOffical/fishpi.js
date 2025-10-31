@@ -1023,3 +1023,8 @@ export interface ICommentPost {
    */
   originalId?: string;
 }
+
+export interface IArticleHeat {
+  articleId: string;
+  heat: number;
+}

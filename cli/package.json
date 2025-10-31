@@ -41,7 +41,7 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "commander": "^14.0.0",
-    "fishpi": "^0.1.4",
+    "fishpi": "^0.1.9",
     "inquirer": "^12.9.4",
     "node-fetch": "^2.7.0"
   },

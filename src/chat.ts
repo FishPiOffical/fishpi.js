@@ -1,9 +1,9 @@
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { request, domain, WebSocket } from './utils';
-import { EventEmitter } from 'events';
-import { IChatData, IChatNotice, IChatQuery } from '.';
+import { IChatData, IChatQuery } from '.';
+import { IWebSocketEvent, WsEventBase } from './ws';
 
-interface IChatEvents {
+interface IChatEvents extends IWebSocketEvent {
   /**
    * 私聊消息
    * @param msg 私聊消息内容
@@ -14,23 +14,14 @@ interface IChatEvents {
    * @param oId 消息 ID
    */
   revoke: (oId: string) => void;
-  /**
-   * 聊天 Websocket 关闭
-   */
-  close: (event: CloseEvent) => void;
-  /**
-   * 聊天 Websocket 错误
-   */
-  error: (error: ErrorEvent) => void;
 }
 
-class ChatChannel {
-  private ws: ReconnectingWebSocket | null = null;
+class ChatChannel extends WsEventBase<IChatEvents> {
   private apiKey: string = '';
-  private emitter = new EventEmitter();
   private user = '';
 
   constructor(user: string, apiKey: string) {
+    super();
     this.apiKey = apiKey;
     this.user = user;
   }
@@ -42,21 +33,6 @@ class ChatChannel {
   setToken(apiKey: string) {
     this.apiKey = apiKey;
     this.connect(true);
-  }
-
-  /**
-   * 重连私聊频道
-   * @returns Websocket 连接对象
-   */
-  reconnect() {
-    if (!this.ws) return this.connect();
-    return new Promise((resolve) => {
-      if (!this.ws) return;
-      this.ws.reconnect();
-      this.ws.onopen = (e) => {
-        resolve(this.ws!);
-      };
-    });
   }
 
   /**
@@ -118,50 +94,7 @@ class ChatChannel {
     if (this.ws == null) {
       this.connect();
     }
-    return this.emitter.on(event, listener);
-  }
-
-  /**
-   * 移除聊天室监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  off<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
-    return this.emitter.off(event, listener);
-  }
-
-  /**
-   * 聊天室单次监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  once<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
-    return this.emitter.once(event, listener);
-  }
-
-  /**
-   * 清除聊天室监听
-   */
-  clearListener() {
-    this.emitter.removeAllListeners();
-  }
-
-  /**
-   * 移除聊天室消息监听函数
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  removeListener<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
-    return this.off(event, listener);
-  }
-
-  /**
-   * 添加聊天室消息监听函数
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  addListener<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
-    return this.on(event, listener);
+    return super.on(event, listener);
   }
 
   /**

@@ -9,22 +9,41 @@ import {
   NoticeType,
 } from './';
 import { domain, request, WebSocket } from './utils';
-import EventEmitter from 'events';
+import { IWebSocketEvent, WsEventBase } from './ws';
 
-interface INoticeEvents {
+interface INoticeEvents extends IWebSocketEvent {
+  /**
+   * 清风明月更新
+   * @param data 清风明月
+   */
   bzUpdate: (data: INoticeBreezemoon) => void;
+  /**
+   * 未读消息数通知
+   * @param data 未读消息数
+   */
   refreshNotification: (data: INoticeUnReadCount) => void;
+  /**
+   * 聊天未读消息数通知
+   * @param data 聊天未读消息数
+   */
   chatUnreadCountRefresh: (data: INoticeUnReadCount) => void;
+  /**
+   * 新私聊消息通知
+   * @param data 新私聊消息
+   */
   newIdleChatMessage: (data: INoticeIdleChat) => void;
+  /**
+   * 警告广播消息通知
+   * @param data 警告广播消息
+   */
   warnBroadcast: (data: INoticeWarnBroadcast) => void;
 }
 
-export class Notice {
+export class Notice extends WsEventBase<INoticeEvents> {
   private apiKey: string = '';
-  private ws: ReconnectingWebSocket | null = null;
-  private emitter = new EventEmitter();
 
   constructor(token: string = '') {
+    super();
     if (!token) {
       return;
     }
@@ -145,6 +164,7 @@ export class Notice {
         {
           WebSocket,
           connectionTimeout: 10000,
+          maxRetries: 10,
         },
       );
       this.ws.onopen = (e) => {
@@ -169,54 +189,20 @@ export class Notice {
   }
 
   /**
-   * 聊天室监听
-   * @param event 聊天室事件
+   * 消息通知监听
+   * @param event 消息通知事件
    * @param listener 监听器
    */
   on<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {
     if (this.ws == null) {
       this.connect();
     }
-    return this.emitter.on(event, listener);
+    return super.on(event, listener);
   }
 
   /**
-   * 移除聊天室监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  off<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {
-    return this.emitter.off(event, listener);
-  }
-
-  /**
-   * 聊天室单次监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  once<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {
-    return this.emitter.once(event, listener);
-  }
-
-  /**
-   * 清除聊天室监听
-   */
-  clearListener() {
-    this.emitter.removeAllListeners();
-  }
-
-  /**
-   * 移除聊天室消息监听函数
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  removeListener<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {
-    return this.off(event, listener);
-  }
-
-  /**
-   * 添加聊天室消息监听函数
-   * @param event 聊天室事件
+   * 添加消息通知监听
+   * @param event 消息通知事件
    * @param listener 监听器
    */
   addListener<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {

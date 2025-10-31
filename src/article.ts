@@ -1,4 +1,4 @@
-import { analyzeMetalAttr, domain, request, WebSocket } from './utils';
+import { domain, request, WebSocket } from './utils';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import {
   ArticleListType,
@@ -8,10 +8,19 @@ import {
   ArticleList,
   VoteType,
   IArticlePost,
+  IArticleHeat,
+  ArticleComment,
 } from './';
+import { IWebSocketEvent, WsEventBase } from './ws';
+
+interface IArticleEvents extends IWebSocketEvent {
+  heat: (msg: IArticleHeat) => void;
+  comment: (msg: ArticleComment) => void;
+}
 
 export class Article {
   private apiKey: string = '';
+  private channels: { [key: string]: ArticleChannel } = {};
 
   constructor(token: string = '') {
     if (!token) {
@@ -295,34 +304,65 @@ export class Article {
     }
   }
 
+  channel(id: string, type: ArticleType): ArticleChannel {
+    if (!this.channels[id]) this.channels[id] = new ArticleChannel(this.apiKey, id, type);
+    return this.channels[id];
+  }
+}
+
+export class ArticleChannel extends WsEventBase<IArticleEvents> {
+  private apiKey: string = '';
+  private id: string = '';
+  private type: ArticleType = ArticleType.Normal;
+
+  constructor(token: string, id: string, type: ArticleType) {
+    super();
+    if (!token) {
+      return;
+    }
+    this.apiKey = token;
+  }
   /**
    * 添加文章监听器
    * @param id 文章id
    * @param type 文章类型
    * @param callback 监听回调
    */
-  async addListener(
-    { id, type = 0 }: { id: string; type: ArticleType },
-    callback: (ev: any) => void,
-  ) {
-    const rws = new ReconnectingWebSocket(
-      `wss://${domain}/article-channel?articleId=${id}&articleType=${type}&apiKey=${this.apiKey}`,
-      [],
-      {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        WebSocket,
-        connectionTimeout: 10000,
-      },
-    );
+  async connect(reload?: boolean): Promise<ReconnectingWebSocket> {
+    return new Promise(async (resolve, reject) => {
+      if (this.ws && !reload) return resolve(this.ws);
+      if (this.ws) this.ws.close();
+      if (!this.apiKey) return reject(new Error('请先设置 API Key'));
 
-    rws.onopen = (e) => {};
-    rws.onmessage = callback;
-    rws.onerror = (e) => {
-      console.error(e);
-    };
-    rws.onclose = (e) => {
-      console.log(e);
-    };
-    return rws;
+      this.ws = new ReconnectingWebSocket(
+        `wss://${domain}/article-channel?articleId=${this.id}&articleType=${this.type}&apiKey=${this.apiKey}`,
+        [],
+        {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          WebSocket,
+          connectionTimeout: 10000,
+        },
+      );
+
+      this.ws.onopen = (e) => {
+        this.emitter.emit('open', e);
+      };
+      this.ws.onmessage = (ev: MessageEvent) => {
+        let msg = JSON.parse(ev.data);
+        let eventType = msg.type;
+        if (eventType === 'articleHeat') {
+          this.emitter.emit('heat', msg.data);
+        } else {
+          this.emitter.emit(msg.type, ArticleComment.from(msg.data));
+        }
+      };
+      this.ws.onerror = (e) => {
+        this.emitter.emit('error', e);
+      };
+      this.ws.onclose = (e) => {
+        this.emitter.emit('close', e);
+      };
+      return this.ws;
+    });
   }
 }

@@ -420,6 +420,7 @@ export class ArticleCli extends BaseCli {
     return this.fishpi.article
       .detail(oId, page)
       .then((article) => {
+        this.fishpi.article.channel(oId, article.type).on('heat', (_) => {});
         this.currentPostCommentPage = page;
         this.currentPostComments = article.comments || [];
         this.terminal.clear();

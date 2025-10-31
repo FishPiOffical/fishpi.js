@@ -1,6 +1,5 @@
 import ReconnectingWebSocket, { ErrorEvent, CloseEvent } from 'reconnecting-websocket';
 import { request, domain, toMetal, clientToVia, WebSocket } from './utils';
-import { EventEmitter } from 'events';
 import {
   ChatContentType,
   ChatMessageType,
@@ -22,8 +21,9 @@ import {
   IChatRoomNodeInfo,
   IRedpacket,
 } from './';
+import { IWebSocketEvent, WsEventBase } from './ws';
 
-interface IChatRoomEvents {
+interface IChatRoomEvents extends IWebSocketEvent {
   /**
    * 在线用户变更
    * @param onlines 在线用户
@@ -80,28 +80,19 @@ interface IChatRoomEvents {
    * @param data 消息内容
    */
   all: (type: string, data: any) => void;
-  /**
-   * 聊天 Websocket 关闭
-   */
-  close: (event: CloseEvent) => void;
-  /**
-   * 聊天 Websocket 错误
-   */
-  error: (error: ErrorEvent) => void;
 }
 
-export class ChatRoom {
+export class ChatRoom extends WsEventBase<IChatRoomEvents> {
   private apiKey: string = '';
   private _discusse: string = '';
   private _onlines: IOnlineInfo[] = [];
-  private ws: ReconnectingWebSocket | null = null;
   private wsTimer: NodeJS.Timeout | null = null;
   private client: ClientType | string = ClientType.Other;
   private version: string = 'Latest';
-  private emitter = new EventEmitter();
   private status = 'close';
 
   constructor(token: string = '') {
+    super();
     if (!token) {
       return;
     }
@@ -399,28 +390,26 @@ export class ChatRoom {
    * 连接聊天室
    * @param url 聊天室节点地址
    * @param timeout 超时时间，单位为秒，默认为 10
-   */
-  connect(args: { url?: string; timeout?: number } = {}) {
-    return this.reconnect(args);
-  }
-
-  /**
-   * 重连聊天室
-   * @param url 聊天室节点地址
-   * @param timeout 超时时间，单位为秒，默认为 10
    * @returns 返回 Open Event
    */
-  async reconnect({ url = ``, timeout = 10 }: { url?: string; timeout?: number } = {}) {
+  async connect(reload?: boolean): Promise<ReconnectingWebSocket>;
+  async connect(url?: string, timeout?: number): Promise<ReconnectingWebSocket>;
+  async connect(urlOrReload?: string | boolean, timeout: number = 10) {
     return new Promise(async (resolve) => {
       this.status = 'connecting';
-      if (!url)
+      let url: string = '';
+      if (urlOrReload === undefined || urlOrReload === '' || urlOrReload === true) {
         url = await this.getNode()
           .then((rsp) => rsp.recommend.node)
           .catch(() => `wss://${domain}/chat-room-channel?apiKey=${this.apiKey}`);
+      } else {
+        url = urlOrReload as string;
+      }
       if (!url.includes('apiKey=')) url += `${url.includes('?') ? '&' : '?'}apiKey=${this.apiKey}`;
       if (this.ws) return resolve(this.ws.reconnect());
       this.ws = new ReconnectingWebSocket(url, [], {
         WebSocket,
+        ...this.rwsOptions,
         connectionTimeout: 1000 * timeout,
       });
 
@@ -538,52 +527,7 @@ export class ChatRoom {
     if (this.status == 'close') {
       this.reconnect();
     }
-    return this.emitter.on(event, listener);
-  }
-
-  /**
-   * 移除聊天室监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  off<K extends keyof IChatRoomEvents>(event?: K, listener?: IChatRoomEvents[K]) {
-    if (!event) return this.emitter.removeAllListeners();
-    if (!listener) return this.emitter.removeAllListeners(event);
-    return this.emitter.off(event, listener);
-  }
-
-  /**
-   * 聊天室单次监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  once<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
-    return this.emitter.once(event, listener);
-  }
-
-  /**
-   * 清除聊天室监听
-   */
-  clearListener(event?: keyof IChatRoomEvents) {
-    this.emitter.removeAllListeners(event);
-  }
-
-  /**
-   * 移除聊天室消息监听函数
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  removeListener<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
-    return this.off(event, listener);
-  }
-
-  /**
-   * 添加聊天室消息监听函数
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  addListener<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
-    return this.on(event, listener);
+    return super.on(event, listener);
   }
 }
 
