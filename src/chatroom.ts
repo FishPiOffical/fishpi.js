@@ -89,7 +89,6 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
   private wsTimer: NodeJS.Timeout | null = null;
   private client: ClientType | string = ClientType.Other;
   private version: string = 'Latest';
-  private status = 'close';
 
   constructor(token: string = '') {
     super();
@@ -396,7 +395,6 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
   async connect(url?: string, timeout?: number): Promise<ReconnectingWebSocket>;
   async connect(urlOrReload?: string | boolean, timeout: number = 10) {
     return new Promise(async (resolve) => {
-      this.status = 'connecting';
       let url: string = '';
       if (urlOrReload === undefined || urlOrReload === '' || urlOrReload === true) {
         url = await this.getNode()
@@ -406,7 +404,7 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
         url = urlOrReload as string;
       }
       if (!url.includes('apiKey=')) url += `${url.includes('?') ? '&' : '?'}apiKey=${this.apiKey}`;
-      if (this.ws) return resolve(this.ws.reconnect());
+      if (this.ws) return resolve(this.reconnect());
       this.ws = new ReconnectingWebSocket(url, [], {
         WebSocket,
         ...this.rwsOptions,
@@ -414,7 +412,6 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
       });
 
       this.ws.onopen = (e) => {
-        this.status = 'connected';
         if (this.wsTimer) {
           clearInterval(this.wsTimer);
         }
@@ -425,6 +422,7 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
           1000 * 60 * 3,
         );
         resolve(e);
+        this.emitter.emit('open', e);
       };
       this.ws.onmessage = async (e) => {
         let msg = JSON.parse(e.data);
@@ -508,26 +506,12 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
         this.emitter.emit('all', data);
       };
       this.ws.onerror = (e) => {
-        this.status = 'close';
         this.emitter.emit('error', e);
       };
       this.ws.onclose = (e) => {
-        this.status = 'close';
         this.emitter.emit('close', e);
       };
     });
-  }
-
-  /**
-   * 聊天室监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  on<K extends keyof IChatRoomEvents>(event: K, listener: IChatRoomEvents[K]) {
-    if (this.status == 'close') {
-      this.reconnect();
-    }
-    return super.on(event, listener);
   }
 }
 

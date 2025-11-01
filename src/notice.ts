@@ -187,25 +187,4 @@ export class Notice extends WsEventBase<INoticeEvents> {
       };
     });
   }
-
-  /**
-   * 消息通知监听
-   * @param event 消息通知事件
-   * @param listener 监听器
-   */
-  on<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {
-    if (this.ws == null) {
-      this.connect();
-    }
-    return super.on(event, listener);
-  }
-
-  /**
-   * 添加消息通知监听
-   * @param event 消息通知事件
-   * @param listener 监听器
-   */
-  addListener<K extends keyof INoticeEvents>(event: K, listener: INoticeEvents[K]) {
-    return this.on(event, listener);
-  }
 }

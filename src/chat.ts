@@ -86,18 +86,6 @@ class ChatChannel extends WsEventBase<IChatEvents> {
   }
 
   /**
-   * 聊天室监听
-   * @param event 聊天室事件
-   * @param listener 监听器
-   */
-  on<K extends keyof IChatEvents>(event: K, listener: IChatEvents[K]) {
-    if (this.ws == null) {
-      this.connect();
-    }
-    return super.on(event, listener);
-  }
-
-  /**
    * 获取用户私聊历史消息
    * @param param 消息参数
    * @returns 私聊消息列表

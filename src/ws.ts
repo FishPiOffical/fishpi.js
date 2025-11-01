@@ -38,7 +38,7 @@ export class WsEventBase<T> {
   reconnect() {
     if (!this.ws) return this.connect();
     return new Promise((resolve) => {
-      if (!this.ws) return;
+      if (!this.ws || this.ws.readyState === WebSocket.CONNECTING) return;
       this.ws.reconnect();
       this.ws.onopen = (e) => {
         resolve(this.ws!);
