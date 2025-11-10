@@ -1,6 +1,11 @@
-import { from } from 'form-data';
 import { UserAppRole } from '.';
 import { domain, toMetal } from '../utils';
+
+export interface IUserLite { 
+  userAvatarURL: string, 
+  userNickname: string, 
+  userName: string 
+}
 
 /**
  * 用户信息

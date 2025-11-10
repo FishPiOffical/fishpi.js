@@ -2,9 +2,10 @@ import FormData from 'form-data';
 import fs from 'fs';
 import path from 'path';
 import md5 from 'js-md5';
-import { isBrowse, request, setDomain, toMetal } from './utils';
+import { domain, isBrowse, request, setDomain, toMetal } from './utils';
 import { ChatRoom, Notice, Emoji, User, Article, Comment, Chat, Breezemoon, Finger } from './';
 import { IAtUser, ILog, IUploadInfo, UserInfo, Account, PreRegisterInfo, RegisterInfo } from './';
+import { IUserLite } from './cli';
 
 export class FishPi {
   /**
@@ -185,6 +186,23 @@ export class FishPi {
   }
 
   /**
+   * 查询指定用户 oId 的用户信息
+   */
+  async userByoId(oId: string): Promise<IUserLite | undefined> {
+    try {
+      let rsp = await request({
+        url: `/api/user/getInfoById?userId=${oId}`,
+      });
+
+      if (rsp.code && rsp.code !== 0) return;
+
+      return rsp.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * 用户名联想，通常用于 @ 列表
    * @param username 用户名
    */
@@ -296,6 +314,50 @@ export class FishPi {
       if (rsp.code != 0) throw new Error(rsp.msg);
 
       return rsp.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 生成登录认证地址
+   * @param redirect 登录成功后跳转的地址
+   */
+  generateAuthURL(redirect: string): string {
+    return `https://${domain}/openid/login?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.mode=checkid_setup&openid.return_to=${encodeURIComponent(redirect)}&openid.realm=${encodeURIComponent(redirect)}&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select`;
+  }
+
+  /**
+   * 校验登录回调
+   * @param query 验证返回的地址 QueryString 参数 
+   * @returns 验证成功则返回用户简略信息，否则返回 undefined
+   */
+  async authVerify(query: Record<string, string>): Promise<IUserLite | undefined> {
+    const openVerify = {
+      "openid.ns": "http://specs.openid.net/auth/2.0",
+      "openid.mode": "check_authentication",
+      "openid.op_endpoint": query['openid.op_endpoint'],
+      "openid.return_to": query['openid.return_to'],
+      "openid.identity": query['openid.identity'],
+      "openid.claimed_id": query['openid.claimed_id'],
+      "openid.response_nonce": query['openid.response_nonce'],
+      "openid.assoc_handle": query['openid.assoc_handle'],
+      "openid.sig": query['openid.sig'],
+    };
+    let rsp;
+    try {
+      rsp = await request({
+        url: `openid/verify`,
+        method: 'post',
+        data: JSON.stringify(openVerify)
+      });
+
+      if (rsp.includes('is_valid:true')) {
+        const claimed_id = query['openid.claimed_id'] as string;
+        return await this.userByoId(claimed_id);
+      } else {
+        return;
+      }
     } catch (e) {
       throw e;
     }
