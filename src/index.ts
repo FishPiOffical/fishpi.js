@@ -329,27 +329,27 @@ export class FishPi {
 
   /**
    * 校验登录回调
-   * @param query 验证返回的地址 QueryString 参数 
+   * @param query 验证返回的地址 QueryString 参数
    * @returns 验证成功则返回用户简略信息，否则返回 undefined
    */
   async authVerify(query: Record<string, string>): Promise<IUserLite | undefined> {
     const openVerify = {
-      "openid.ns": "http://specs.openid.net/auth/2.0",
-      "openid.mode": "check_authentication",
-      "openid.op_endpoint": query['openid.op_endpoint'],
-      "openid.return_to": query['openid.return_to'],
-      "openid.identity": query['openid.identity'],
-      "openid.claimed_id": query['openid.claimed_id'],
-      "openid.response_nonce": query['openid.response_nonce'],
-      "openid.assoc_handle": query['openid.assoc_handle'],
-      "openid.sig": query['openid.sig'],
+      'openid.ns': 'http://specs.openid.net/auth/2.0',
+      'openid.mode': 'check_authentication',
+      'openid.op_endpoint': query['openid.op_endpoint'],
+      'openid.return_to': query['openid.return_to'],
+      'openid.identity': query['openid.identity'],
+      'openid.claimed_id': query['openid.claimed_id'],
+      'openid.response_nonce': query['openid.response_nonce'],
+      'openid.assoc_handle': query['openid.assoc_handle'],
+      'openid.sig': query['openid.sig'],
     };
     let rsp;
     try {
       rsp = await request({
         url: `openid/verify`,
         method: 'post',
-        data: JSON.stringify(openVerify)
+        data: JSON.stringify(openVerify),
       });
 
       if (rsp.includes('is_valid:true')) {

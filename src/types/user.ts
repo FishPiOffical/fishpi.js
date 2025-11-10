@@ -1,10 +1,10 @@
 import { UserAppRole } from '.';
 import { domain, toMetal } from '../utils';
 
-export interface IUserLite { 
-  userAvatarURL: string, 
-  userNickname: string, 
-  userName: string 
+export interface IUserLite {
+  userAvatarURL: string;
+  userNickname: string;
+  userName: string;
 }
 
 /**
