@@ -191,7 +191,7 @@ export class FishPi {
   async userByoId(oId: string): Promise<IUserLite | undefined> {
     try {
       let rsp = await request({
-        url: `/api/user/getInfoById?userId=${oId}`,
+        url: `api/user/getInfoById?userId=${oId}`,
       });
 
       if (rsp.code && rsp.code !== 0) return;
@@ -350,11 +350,12 @@ export class FishPi {
       rsp = await request({
         url: `openid/verify`,
         method: 'post',
-        data: JSON.stringify(openVerify),
+        data: openVerify,
       });
 
       if (rsp.includes('is_valid:true')) {
-        const claimed_id = query['openid.claimed_id'] as string;
+        const claimed_id = query['openid.claimed_id']?.split('/').pop();
+        if (!claimed_id) return;
         return await this.userByoId(claimed_id);
       } else {
         return;

@@ -1,6 +1,6 @@
 {
   "name": "fishpi",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A Package to use API of fishpi.",
   "type": "module",
   "types": "lib/index.d.ts",
