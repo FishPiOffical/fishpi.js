@@ -324,7 +324,8 @@ export class FishPi {
    * @param redirect 登录成功后跳转的地址
    */
   generateAuthURL(redirect: string): string {
-    return `https://${domain}/openid/login?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.mode=checkid_setup&openid.return_to=${encodeURIComponent(redirect)}&openid.realm=${encodeURIComponent(redirect)}&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select`;
+    const redirectOrigin = new URL(redirect).origin;
+    return `https://${domain}/openid/login?openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.mode=checkid_setup&openid.return_to=${encodeURIComponent(redirect)}&openid.realm=${encodeURIComponent(redirectOrigin)}&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select`;
   }
 
   /**
