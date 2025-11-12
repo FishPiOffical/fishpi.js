@@ -80,6 +80,15 @@ await FingerTo('GoldenFingerKey').queryLatestLoginIP('username')
 const finger = new Finger(apiKey);
 await finger.queryLatestLoginIP('username');
 
+// 第三方鱼排登录认证
+fishpi.generateAuthURL('redirect_uri_here');
+
+const userInfo = await fishpi.authVerify(res.query); // res.query 来自回调的查询参数
+if (userInfo) {
+    console.log('登录成功，用户信息：', userInfo);
+} else {
+    console.log('登录失败');
+}
 ```
 
 ## 注意事项
