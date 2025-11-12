@@ -2,6 +2,7 @@ import { UserAppRole } from '.';
 import { domain, toMetal } from '../utils';
 
 export interface IUserLite {
+  oId: string;
   userAvatarURL: string;
   userNickname: string;
   userName: string;

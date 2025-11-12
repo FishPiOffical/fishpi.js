@@ -196,7 +196,7 @@ export class FishPi {
 
       if (rsp.code && rsp.code !== 0) return;
 
-      return rsp.data;
+      return { ...rsp.data, oId };
     } catch (e) {
       throw e;
     }
