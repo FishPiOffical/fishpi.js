@@ -4,8 +4,17 @@ import path from 'path';
 import md5 from 'js-md5';
 import { domain, isBrowse, request, setDomain, toMetal } from './utils';
 import { ChatRoom, Notice, Emoji, User, Article, Comment, Chat, Breezemoon, Finger } from './';
-import { IAtUser, ILog, IUploadInfo, UserInfo, Account, PreRegisterInfo, RegisterInfo } from './';
-import { IUserLite } from './cli';
+import {
+  IAtUser,
+  ILog,
+  IUploadInfo,
+  IReport,
+  UserInfo,
+  Account,
+  PreRegisterInfo,
+  RegisterInfo,
+} from './';
+import { IUserLite, UserVIP } from './cli';
 
 export class FishPi {
   /**
@@ -241,10 +250,34 @@ export class FishPi {
   }
 
   /**
+   * 获取用户 VIP 信息
+   * @param userId 用户 oId
+   */
+  async vipInfo(userId: string): Promise<UserVIP> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/membership/${userId}`,
+        method: 'get',
+      });
+
+      if (rsp.code != 0) throw new Error(rsp.msg);
+
+      if (rsp.data.config) {
+        rsp.data.config = JSON.parse(rsp.data.config);
+      }
+
+      return UserVIP.from(rsp.data);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * 举报
    * @param data 举报信息
    */
-  async report(data: Report): Promise<void> {
+  async report(data: IReport): Promise<void> {
     try {
       let rsp = await request({
         url: `report`,

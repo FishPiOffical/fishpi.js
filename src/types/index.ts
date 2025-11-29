@@ -421,6 +421,158 @@ export interface IUploadInfo {
 }
 
 /**
+ * VIP 信息
+ */
+export interface IUserVIP {
+  /**
+   * VIP Id
+   */
+  oId: string;
+  /**
+   * VIP 状态
+   */
+  state: number;
+  /**
+   * 用户 Id
+   */
+  userId: string;
+  /**
+   * 是否 VIP
+   */
+  jointVip: boolean;
+  /**
+   * 颜色
+   */
+  color: string;
+  /**
+   * 是否有下划线
+   */
+  underline: boolean;
+  /**
+   * 是否有金属质感
+   */
+  metal: boolean;
+  /**
+   * 是否自动签到
+   */
+  autoCheckin: number;
+  /**
+   * 是否加粗
+   */
+  bold: boolean;
+  /**
+   * 等级代码
+   */
+  lvCode: string;
+  /**
+   * 过期时间
+   */
+  expiresAt: number;
+  /**
+   * 创建时间
+   */
+  createdAt: number;
+  /**
+   * 更新时间
+   */
+  updatedAt: number;
+}
+
+export class UserVIP implements IUserVIP {
+  /**
+   * VIP Id
+   */
+  oId: string = '';
+  /**
+   * VIP 状态
+   */
+  state: number = 0;
+  /**
+   * 用户 Id
+   */
+  userId: string = '';
+  /**
+   * 是否 VIP
+   */
+  jointVip: boolean = false;
+  /**
+   * 颜色
+   */
+  color: string = '';
+  /**
+   * 是否有下划线
+   */
+  underline: boolean = false;
+  /**
+   * 是否有金属质感
+   */
+  metal: boolean = false;
+  /**
+   * 是否自动签到
+   */
+  autoCheckin: number = 0;
+  /**
+   * 是否加粗
+   */
+  bold: boolean = false;
+  /**
+   * 等级代码
+   */
+  lvCode: string = '';
+  /**
+   * 过期时间
+   */
+  expiresAt: number = 0;
+  /**
+   * 创建时间
+   */
+  createdAt: number = 0;
+  /**
+   * 更新时间
+   */
+  updatedAt: number = 0;
+
+  get isVip(): boolean {
+    return this.state === 1 && this.expiresAt * 1000 >= Date.now();
+  }
+
+  get vipName(): string {
+    if (!this.isVip) return '非会员';
+    return this.lvCode.replace(/_YEAR/, '(包年)').replace(/_MONTH/, '(包月)');
+  }
+
+  get expireDate(): Date {
+    return new Date(this.expiresAt);
+  }
+
+  get createDate(): Date {
+    return new Date(this.createdAt);
+  }
+
+  get updateDate(): Date {
+    return new Date(this.updatedAt);
+  }
+
+  static from(data: any): UserVIP {
+    const vip = new UserVIP();
+    vip.oId = data.oId || '';
+    vip.state = data.state || 0;
+    vip.userId = data.userId || '';
+    vip.jointVip = data.config?.jointVip || false;
+    vip.color = data.config?.color || '';
+    vip.underline = data.config?.underline || false;
+    vip.metal = data.config?.metal || false;
+    vip.autoCheckin = data.config?.autoCheckin || 0;
+    vip.bold = data.config?.bold || false;
+    vip.lvCode = data.lvCode || '';
+    vip.expiresAt = data.expiresAt || 0;
+    vip.createdAt = data.createdAt || 0;
+    vip.updatedAt = data.updatedAt || 0;
+    return vip;
+  }
+}
+
+/**
  * 举报接口数据
  */
 export interface IReport {
