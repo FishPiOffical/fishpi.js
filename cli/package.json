@@ -1,6 +1,6 @@
 {
   "name": "fishpi-cli",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A fishpi command line tool.",
   "type": "module",
   "bin": {
@@ -41,7 +41,7 @@
   "dependencies": {
     "blessed": "^0.1.81",
     "commander": "^14.0.0",
-    "fishpi": "^0.1.10",
+    "fishpi": "^0.1.15",
     "inquirer": "^12.9.4",
     "node-fetch": "^2.7.0"
   },

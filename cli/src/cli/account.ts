@@ -109,6 +109,16 @@ export class AccountCli extends BaseCli {
       this.log(this.terminal.yellow.text(metals));
     }
 
+    const vip = await this.fishpi.vipInfo(info.oId);
+    if (vip.isVip) {
+      this.log(
+        '💎 ',
+        this.terminal.Bold.text(
+          `${vip.vipName} [到期时间: ${vip.expireDate.toLocaleDateString()}]`,
+        ),
+      );
+    }
+
     this.log('');
 
     if (info.userName == this.me?.userName) {
