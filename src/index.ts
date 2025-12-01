@@ -14,7 +14,7 @@ import {
   PreRegisterInfo,
   RegisterInfo,
 } from './';
-import { IUserLite, UserVIP } from './cli';
+import { IUserLite, UserVIP } from './types';
 
 export class FishPi {
   /**
