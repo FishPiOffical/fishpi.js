@@ -49,7 +49,11 @@ export class ArticleCli extends BaseCli {
         description: '上一页文章，在文章内则是上一页评论',
         call: this.prev.bind(this),
       },
-      { commands: ['vote', 'v'], description: '点赞文章', call: this.vote.bind(this) },
+      {
+        commands: ['vote', 'v'],
+        description: '点赞文章，加上序号则是感谢评论，示例：v 0',
+        call: this.vote.bind(this),
+      },
       { commands: ['reward', 'w'], description: '打赏文章', call: this.reward.bind(this) },
       {
         commands: ['thank', 't'],
@@ -281,7 +285,10 @@ export class ArticleCli extends BaseCli {
     }
   }
 
-  vote() {
+  vote(index?: string) {
+    if (index !== undefined) {
+      return this.voteComment(index);
+    }
     if (!this.currentPostId) {
       this.log(this.terminal.red.raw('[错误]: 请先查看文章再点赞'));
       return;
@@ -292,6 +299,28 @@ export class ArticleCli extends BaseCli {
         if (this.currentPostId)
           await this.renderPost(this.currentPostId, this.currentPostCommentPage);
         this.log(this.terminal.green.raw(`[成功]: 文章已点赞`));
+      })
+      .catch((err) => {
+        this.log(this.terminal.red.raw('[错误]: ' + err.message));
+      });
+  }
+
+  voteComment(index: string) {
+    if (!this.currentPostId) {
+      this.log(this.terminal.red.raw('[错误]: 请先查看文章再点赞评论'));
+      return;
+    }
+    const comment = this.currentPostComments[Number(index)];
+    if (!comment) {
+      this.log(this.terminal.red.raw('[错误]: 请输入正确的评论序号'));
+      return;
+    }
+    this.fishpi.comment
+      .vote(comment.oId, 'up')
+      .then(async () => {
+        if (this.currentPostId)
+          await this.renderPost(this.currentPostId, this.currentPostCommentPage);
+        this.log(this.terminal.green.raw(`[成功]: 评论已点赞`));
       })
       .catch((err) => {
         this.log(this.terminal.red.raw('[错误]: ' + err.message));

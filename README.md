@@ -102,8 +102,8 @@ globalThis.fetch = fetch as any;
 
 ## 命令行工具
 
-全局安装[`fishpi.js`](./cli)，执行 `fishpi` 可以使用一个摸鱼派命令行工具，包含几乎所有功能。
+全局安装[`fishpi-cli`](./cli)，执行 `fishpi` 可以使用一个摸鱼派命令行工具，包含几乎所有功能。
 
 ```
-npm i -g fishpi.js
+npm i -g fishpi-cli
 ```
