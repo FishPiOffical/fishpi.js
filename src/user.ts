@@ -168,4 +168,48 @@ export class User {
       throw e;
     }
   }
+
+  /**
+   * 关注用户
+   * @param followingId 用户id
+   */
+  async follow(followingId: string): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `follow/user`,
+        method: 'post',
+        data: {
+          apiKey: this.apiKey,
+          followingId,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 取消关注用户
+   * @param followingId 用户id
+   */
+  async unfollow(followingId: string): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `unfollow/user`,
+        method: 'post',
+        data: {
+          apiKey: this.apiKey,
+          followingId,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
 }
