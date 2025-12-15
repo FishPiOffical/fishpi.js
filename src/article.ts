@@ -220,8 +220,8 @@ export class Article {
   }
 
   /**
-   * 收藏/取消收藏文章
-   * @param id 文章id
+   * 收藏文章
+   * @param followingId 文章id
    */
   async follow(followingId: string): Promise<void> {
     let rsp;
@@ -242,7 +242,29 @@ export class Article {
   }
 
   /**
-   * 关注/取消关注文章
+   * 取消收藏文章
+   * @param followingId 文章id
+   */
+  async unfollow(followingId: string): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `unfollow/article`,
+        method: 'post',
+        data: {
+          apiKey: this.apiKey,
+          followingId,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 关注文章
    * @param followingId 文章id
    */
   async watch(followingId: string): Promise<void> {
@@ -250,6 +272,28 @@ export class Article {
     try {
       rsp = await request({
         url: `follow/article-watch`,
+        method: 'post',
+        data: {
+          apiKey: this.apiKey,
+          followingId,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 取消关注文章
+   * @param followingId 文章id
+   */
+  async unwatch(followingId: string): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `unfollow/article-watch`,
         method: 'post',
         data: {
           apiKey: this.apiKey,
