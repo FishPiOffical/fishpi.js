@@ -294,11 +294,14 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
     let rsp;
     try {
       rsp = await request({
-        url: `cr?apiKey=${this.apiKey}`,
+        url: `chat-room/barrager/get?apiKey=${this.apiKey}`,
         method: 'get',
       });
 
-      let mat = rsp.match(/>发送弹幕每次将花费\s*<b>([-0-9]+)<\/b>\s*([^<]*?)<\/div>/);
+      if (rsp.code != 0) throw new Error(rsp.msg);
+
+      // 解析格式如 "5积分" 的字符串
+      const mat = rsp.data.match(/([-0-9]+)(.+)/);
       if (mat) {
         return {
           cost: parseInt(mat[1]),
