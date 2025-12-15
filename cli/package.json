@@ -1,6 +1,6 @@
 {
   "name": "fishpi-cli",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "A fishpi command line tool.",
   "type": "module",
   "bin": {
