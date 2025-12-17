@@ -1,4 +1,4 @@
-import { UserInfo } from './';
+import { UserInfo, UserUpdateParams } from './';
 import { request, toMetal } from './utils';
 
 export class User {
@@ -204,6 +204,50 @@ export class User {
         data: {
           apiKey: this.apiKey,
           followingId,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 修改用户头像
+   * @param userAvatarURL 用户头像地址
+   */
+  async updateUserAvatar(userAvatarURL: string): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/settings/avatar`,
+        method: 'post',
+        data: {
+          apiKey: this.apiKey,
+          userAvatarURL,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 修改用户信息
+   * @param data 用户信息参数
+   */
+  async updateUserInfo(data:UserUpdateParams): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/settings/profiles`,
+        method: 'post',
+        data: {
+          apiKey: this.apiKey,
+          ...data,
         },
       });
 

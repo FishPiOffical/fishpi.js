@@ -141,9 +141,17 @@ export class MetalAttr {
    * 文字颜色
    */
   fontcolor: string = '';
+  /**
+   * 版本号
+   */
+  ver:number = 0.1;
+  /**
+   * 缩放比例
+   */
+  scale:number = 0.79;
 
   toString() {
-    return `url=${this.url}&backcolor=${this.backcolor}&fontcolor=${this.fontcolor}`;
+    return `url=${this.url}&backcolor=${this.backcolor}&fontcolor=${this.fontcolor}&ver=${this.ver}&scale=${this.scale}`;
   }
 }
 
@@ -291,4 +299,31 @@ export interface IAtUser {
    * 全小写用户名
    */
   userNameLowerCase: string;
+}
+
+
+/**
+ * 更新用户信息参数
+ */
+export interface UserUpdateParams {
+  /**
+   * 昵称
+   */
+  userNickname?: string;
+  /**
+   * 用户标签，多个标签用逗号分隔
+   */
+  userTags?: string;
+  /**
+   * 个人主页 URL
+   */
+  userURL?: string;
+  /**
+   * 个人简介
+   */
+  userIntro?: string;
+  /**
+   * MBTI 性格类型（例如：ENFP）
+   */
+  mbti?: string;
 }
