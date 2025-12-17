@@ -239,7 +239,7 @@ export class User {
    * 修改用户信息
    * @param data 用户信息参数
    */
-  async updateUserInfo(data:UserUpdateParams): Promise<void> {
+  async updateUserInfo(data: UserUpdateParams): Promise<void> {
     let rsp;
     try {
       rsp = await request({

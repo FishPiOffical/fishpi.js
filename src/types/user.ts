@@ -144,11 +144,11 @@ export class MetalAttr {
   /**
    * 版本号
    */
-  ver:number = 0.1;
+  ver: number = 0.1;
   /**
    * 缩放比例
    */
-  scale:number = 0.79;
+  scale: number = 0.79;
 
   toString() {
     return `url=${this.url}&backcolor=${this.backcolor}&fontcolor=${this.fontcolor}&ver=${this.ver}&scale=${this.scale}`;
@@ -300,7 +300,6 @@ export interface IAtUser {
    */
   userNameLowerCase: string;
 }
-
 
 /**
  * 更新用户信息参数
