@@ -348,6 +348,25 @@ export class Article {
     }
   }
 
+  /**
+   * 获取帖子的Markdown原文
+   * @param articleId 文章Id
+   */
+  async md(articleId: string): Promise<string> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/article/md/${articleId}?apiKey=${this.apiKey}`,
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return rsp;
+    } catch (e) {
+      throw e;
+    }
+  }
+
   channel(id: string, type: ArticleType): ArticleChannel {
     if (!this.channels[id]) this.channels[id] = new ArticleChannel(this.apiKey, id, type);
     return this.channels[id];
