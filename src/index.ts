@@ -195,6 +195,24 @@ export class FishPi {
   }
 
   /**
+   * 查询指定用户积分
+   * @param username 用户名
+   * @returns 用户积分
+   */
+  async userPoints(username: string): Promise<number> {
+    try {
+      let rsp = await request({
+        url: `user/${username}/point`,
+      });
+
+      if (rsp.code && rsp.code !== 0) return 0;
+
+      return rsp.data.userPoint;
+    } catch (e) {
+      throw e;
+    }
+  }
+  /**
    * 查询指定用户 oId 的用户信息
    */
   async userByoId(oId: string): Promise<IUserLite | undefined> {
