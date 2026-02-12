@@ -179,7 +179,7 @@ export class ChatCli extends BaseCli {
     const replyContent = `${content}\n\n##### 引用 [↩](https://fishpi.cn/chat#chat${oId} "跳转至原消息")\n
 > ${msg.markdown
       .split('\n')
-      .map((line) => `> ${line}`)
+      .map((line: string) => `> ${line}`)
       .join('\n')}`;
     this.send(replyContent);
   }

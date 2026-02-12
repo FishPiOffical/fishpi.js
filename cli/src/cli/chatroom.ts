@@ -18,7 +18,6 @@ import {
   IWeatherMessage,
   IRedpacket,
   CustomMsg,
-  ClientType,
   searchFiles,
   Candidate,
 } from './lib';
@@ -41,7 +40,7 @@ export class ChatRoomCli extends BaseCli {
 
   constructor(fishpi: FishPi, terminal: Terminal) {
     super(fishpi, terminal);
-    this.fishpi.chatroom.setVia(ClientType.CLI, this.version);
+    this.fishpi.chatroom.setVia('CLI', this.version);
     this.commands = [
       { commands: ['back', 'bk'], description: '返回聊天室', call: this.toChat.bind(this) },
       {
