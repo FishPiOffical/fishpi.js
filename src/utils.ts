@@ -1,6 +1,7 @@
 import { IMetal, Metal } from './';
 import ws from 'ws';
 import FormData from 'form-data';
+import { EventEmitter as NodeEventEmitter } from 'events';
 
 let domain = 'fishpi.cn';
 
@@ -85,4 +86,66 @@ const isBrowse = typeof window !== 'undefined';
 
 const WebSocket = isBrowse ? window.WebSocket : ws.WebSocket;
 
-export { request, domain, toMetal, analyzeMetalAttr, isBrowse, setDomain, clientToVia, WebSocket };
+// 浏览器兼容的 EventEmitter
+class BrowserEventEmitter {
+  public listeners: Map<string, Function[]> = new Map();
+
+  on(event: string, listener: Function) {
+    if (!this.listeners.has(event)) {
+      this.listeners.set(event, []);
+    }
+    this.listeners.get(event)!.push(listener);
+    return this;
+  }
+
+  off(event: string, listener: Function) {
+    const listeners = this.listeners.get(event);
+    if (listeners) {
+      const index = listeners.indexOf(listener);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+    return this;
+  }
+
+  once(event: string, listener: Function) {
+    const onceListener = (...args: any[]) => {
+      this.off(event, onceListener);
+      listener(...args);
+    };
+    this.on(event, onceListener);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]) {
+    const listeners = this.listeners.get(event);
+    if (listeners) {
+      listeners.forEach((listener) => listener(...args));
+    }
+    return this;
+  }
+
+  removeAllListeners(event?: string) {
+    if (event) {
+      this.listeners.delete(event);
+    } else {
+      this.listeners.clear();
+    }
+    return this;
+  }
+}
+
+const EventEmitter = isBrowse ? BrowserEventEmitter : NodeEventEmitter;
+
+export {
+  request,
+  domain,
+  toMetal,
+  analyzeMetalAttr,
+  isBrowse,
+  setDomain,
+  clientToVia,
+  WebSocket,
+  EventEmitter,
+};

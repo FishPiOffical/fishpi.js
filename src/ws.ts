@@ -1,8 +1,7 @@
-import { EventEmitter } from 'events';
 import ReconnectingWebSocket, {
   Options as ReconnectingWebSocketOptions,
 } from 'reconnecting-websocket';
-import { WebSocket } from './utils';
+import { WebSocket, EventEmitter } from './utils';
 
 export interface IWebSocketEvent {
   /**

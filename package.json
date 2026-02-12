@@ -1,14 +1,14 @@
 {
   "name": "fishpi",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "description": "A Package to use API of fishpi.",
   "type": "module",
-  "types": "lib/index.d.ts",
+  "types": "lib/index.d.mts",
   "main": "lib/index.cjs",
-  "module": "lib/index.esm.js",
+  "module": "lib/index.mjs",
   "exports": {
     ".": {
-      "import": "./lib/index.esm.js",
+      "import": "./lib/index.mjs",
       "require": "./lib/index.cjs"
     }
   },
@@ -23,9 +23,8 @@
     "clear:types": "rimraf lib/types",
     "format": "prettier --write src/ && prettier --write cli/src",
     "link:cli": "node ./utils/cli-link.cjs",
-    "prebuild": "npm run clear && npm run link:cli && npm run format && npm run build:types",
-    "build:types": "tsc --emitDeclarationOnly --declaration --declarationDir ./lib/types",
-    "build": "rollup -c && npm run clear:types",
+    "prebuild": "npm run clear && npm run link:cli && npm run format",
+    "build": "tsdown && mv lib/index.iife.js lib/fishpi.min.js",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -54,10 +53,6 @@
     "ws": "^8.4.2"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^28.0.6",
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.1",
-    "@rollup/plugin-typescript": "^12.1.4",
     "@types/blessed": "^0.1.25",
     "@types/js-md5": "^0.8.0",
     "@types/node": "^24.3.0",
@@ -69,8 +64,7 @@
     "node-fetch": "^2.7.0",
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
-    "rollup": "^4.48.1",
-    "rollup-plugin-dts": "^6.2.3",
+    "tsdown": "^0.20.3",
     "typescript": "^5.9.2"
   },
   "release": {

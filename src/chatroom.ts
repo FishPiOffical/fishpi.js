@@ -1,4 +1,4 @@
-import ReconnectingWebSocket, { ErrorEvent, CloseEvent } from 'reconnecting-websocket';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 import { request, domain, toMetal, clientToVia, WebSocket } from './utils';
 import {
   ChatContentType,
