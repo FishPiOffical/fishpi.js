@@ -1,6 +1,6 @@
 {
   "name": "fishpi",
-  "version": "0.1.22",
+  "version": "0.1.26",
   "description": "A Package to use API of fishpi.",
   "type": "module",
   "types": "lib/index.d.mts",
@@ -10,10 +10,15 @@
     ".": {
       "import": "./lib/index.mjs",
       "require": "./lib/index.cjs"
+    },
+    "./browser": {
+      "types": "./lib/browser/index.d.ts",
+      "import": "./lib/browser/index.js"
     }
   },
   "files": [
     "lib/index*",
+    "lib/browser",
     "lib/fishpi.min.js",
     "README.md"
   ],

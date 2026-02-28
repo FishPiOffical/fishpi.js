@@ -1,7 +1,11 @@
-import { IMetal, Metal } from './';
-import ws from 'ws';
-import FormData from 'form-data';
-import { EventEmitter as NodeEventEmitter } from 'events';
+import { Metal } from './';
+
+// @ts-ignore
+const isBrowse = typeof __BROWSER__ !== 'undefined' ? __BROWSER__ : typeof window !== 'undefined';
+
+if (!isBrowse && !globalThis.FormData) {
+  (globalThis as any).FormData = require('form-data');
+}
 
 let domain = 'fishpi.cn';
 
@@ -82,9 +86,7 @@ function clientToVia(client: string) {
   return { client: via[0], version: via[1] };
 }
 
-const isBrowse = typeof window !== 'undefined';
-
-const WebSocket = isBrowse ? window.WebSocket : ws.WebSocket;
+let WebSocket = isBrowse ? window.WebSocket : require('ws').WebSocket;
 
 // 浏览器兼容的 EventEmitter
 class BrowserEventEmitter {
@@ -136,7 +138,13 @@ class BrowserEventEmitter {
   }
 }
 
-const EventEmitter = isBrowse ? BrowserEventEmitter : NodeEventEmitter;
+let EventEmitter = BrowserEventEmitter;
+
+if (!isBrowse) {
+  import('events').then((mod) => {
+    EventEmitter = mod.EventEmitter as any;
+  });
+}
 
 export {
   request,

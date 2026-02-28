@@ -1,8 +1,5 @@
-import FormData from 'form-data';
-import fs from 'fs';
-import path from 'path';
 import md5 from 'js-md5';
-import { domain, isBrowse, request, setDomain, toMetal } from './utils';
+import { domain, isBrowse, request, setDomain } from './utils';
 import { ChatRoom, Notice, Emoji, User, Article, Comment, Chat, Breezemoon, Finger } from './';
 import {
   IAtUser,
@@ -63,10 +60,6 @@ export class FishPi {
       return;
     }
     this.setToken(token);
-  }
-
-  get version() {
-    return JSON.parse(fs.readFileSync(path.resolve(__dirname, '../package.json'), 'utf-8')).version;
   }
 
   async setToken(apiKey: string) {
@@ -340,11 +333,16 @@ export class FishPi {
    */
   async upload(files: Array<File | string>): Promise<IUploadInfo> {
     let data: any;
+    // @ts-ignore
+    const isBrowserEnv = typeof __BROWSER__ !== 'undefined' ? __BROWSER__ : isBrowse;
 
-    if (isBrowse) {
+    if (isBrowserEnv) {
       data = new FormData();
       files.forEach((f) => data.append('file[]', f));
     } else {
+      const FormData = await import('form-data').then((mod) => mod.default);
+      const fs = await import('fs');
+      const path = await import('path');
       data = new FormData();
       files.forEach((f) =>
         data.append('file[]', fs.readFileSync(f.toString()), path.basename(f.toString())),
@@ -359,7 +357,7 @@ export class FishPi {
         url: `upload`,
         method: 'post',
         data,
-        headers: isBrowse ? undefined : data.getHeaders(),
+        headers: isBrowserEnv ? undefined : data.getHeaders(),
       });
 
       if (rsp.code != 0) throw new Error(rsp.msg);
