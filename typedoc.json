@@ -1,0 +1,13 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "plugin": ["typedoc-plugin-markdown"],
+  "theme": "default",
+  "name": "FishPi.js API Documentation",
+  "includeVersion": true,
+  "readme": "README.md",
+  "exclude": ["**/node_modules/**", "**/cli/**", "**/utils/**", "**/utils.ts"],
+  "cleanOutputDir": true,
+  "githubPages": true
+}

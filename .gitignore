@@ -124,3 +124,6 @@ config.json
 # CLI Link
 src/cli
 src/cli.ts
+
+# docs
+docs/

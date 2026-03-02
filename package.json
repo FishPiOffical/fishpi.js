@@ -31,6 +31,8 @@
     "link:cli": "node ./utils/cli-link.cjs",
     "prebuild": "npm run clear && npm run link:cli && npm run format",
     "build": "tsdown && mv lib/index.iife.js lib/fishpi.min.js",
+    "docs:build": "typedoc",
+    "docs:watch": "typedoc --watch",
     "prepare": "npm run build"
   },
   "keywords": [
@@ -71,6 +73,8 @@
     "prettier": "^3.6.2",
     "rimraf": "^6.0.1",
     "tsdown": "^0.20.3",
+    "typedoc": "^0.28.17",
+    "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "^5.9.2"
   },
   "release": {
