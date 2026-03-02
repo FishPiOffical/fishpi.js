@@ -506,7 +506,7 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
           }
         }
         this.emitter.emit(msg.type, data);
-        this.emitter.emit('all', data);
+        this.emitter.emit('all', msg.type, data);
       };
       this.ws.onerror = (e) => {
         this.emitter.emit('error', e);
