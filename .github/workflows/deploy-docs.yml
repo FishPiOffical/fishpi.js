@@ -28,7 +28,7 @@ jobs:
           node-version: 20
           cache: 'npm'
       - name: Install dependencies
-        run: npm install
+        run: npm install --ignore-scripts
       - name: Build documentation
         run: npm run docs:build
       - name: Setup Pages
