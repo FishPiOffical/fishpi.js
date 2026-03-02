@@ -1,10 +1,25 @@
 import { UserAppRole } from '.';
 import { domain, toMetal } from '../utils';
 
+/**
+ * 基础用户信息
+ */
 export interface IUserLite {
+  /**
+   * 用户 ID
+   */
   oId: string;
+  /**
+   * 用户头像 URL
+   */
   userAvatarURL: string;
+  /**
+   * 用户昵称
+   */
   userNickname: string;
+  /**
+   * 用户名
+   */
   userName: string;
 }
 
@@ -94,10 +109,18 @@ export class UserInfo {
    */
   mbti: string = '';
 
+  /**
+   * 获取用户显示名称
+   */
   get name(): string {
     return this.userNickname ? `${this.userNickname}(${this.userName})` : this.userName;
   }
 
+  /**
+   * 从接口数据转换为 UserInfo 实例
+   * @param user 接口数据
+   * @returns UserInfo 实例
+   */
   static from(user: Record<string, any>) {
     const data = new UserInfo();
     data.oId = user.oId;

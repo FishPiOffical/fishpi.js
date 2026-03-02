@@ -1,9 +1,19 @@
 import { UserInfo, UserUpdateParams } from './';
 import { request, toMetal } from './utils';
 
+/**
+ * 摸鱼派用户接口
+ */
 export class User {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
 
+  /**
+   * 实例化用户
+   * @param token 认证 Token
+   */
   constructor(token: string = '') {
     if (!token) {
       return;
@@ -13,7 +23,7 @@ export class User {
 
   /**
    * 重新设置请求 Token
-   * @param apiKey 接口 API Key
+   * @param token 接口 API Key
    */
   setToken(token: string) {
     this.apiKey = token;
@@ -216,6 +226,7 @@ export class User {
   /**
    * 修改用户头像
    * @param userAvatarURL 用户头像地址
+   * @returns void
    */
   async updateUserAvatar(userAvatarURL: string): Promise<void> {
     let rsp;
@@ -238,6 +249,7 @@ export class User {
   /**
    * 修改用户信息
    * @param data 用户信息参数
+   * @returns void
    */
   async updateUserInfo(data: UserUpdateParams): Promise<void> {
     let rsp;

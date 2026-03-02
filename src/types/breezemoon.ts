@@ -37,6 +37,11 @@ export class BreezemoonContent {
    */
   city: string = '';
 
+  /**
+   * 从接口数据转换为 BreezemoonContent 实例
+   * @param src 接口数据
+   * @returns BreezemoonContent 实例
+   */
   static from(src: Record<string, any>): BreezemoonContent {
     const data = new BreezemoonContent();
     data.authorName = src.breezemoonAuthorName;
@@ -51,6 +56,9 @@ export class BreezemoonContent {
   }
 }
 
+/**
+ * 清风明月列表
+ */
 export class BreezemoonList {
   /**
    * 分页信息
@@ -61,6 +69,11 @@ export class BreezemoonList {
    */
   breezemoons: BreezemoonContent[] = [];
 
+  /**
+   * 从接口数据转换为 BreezemoonList 实例
+   * @param src 接口数据
+   * @returns BreezemoonList 实例
+   */
   static from(src: Record<string, any>): BreezemoonList {
     const data = new BreezemoonList();
     data.pagination = src.pagination;

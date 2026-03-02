@@ -1,9 +1,19 @@
 import { IUserBag, IUserIP, MetalBase } from './';
 import { request } from './utils';
 
+/**
+ * 摸鱼派金手指接口
+ */
 export class Finger {
+  /**
+   * 金手指密钥
+   */
   private goldFingerKey: string = '';
 
+  /**
+   * 实例化金手指
+   * @param key 金手指密钥
+   */
   constructor(key: string) {
     if (!key) {
       return;
@@ -14,6 +24,7 @@ export class Finger {
   /**
    * 设置金手指
    * @param key 金手指密钥
+   * @returns void
    */
   setFinger(key: string) {
     this.goldFingerKey = key;
@@ -21,9 +32,11 @@ export class Finger {
 
   /**
    * 上传摸鱼大闯关关卡数据
-   * @param userName: 用户在摸鱼派的用户名
-   * @param stage: 关卡数
-   * @param time: 通过此关时间（毫秒级时间戳）
+   * @param params 关卡数据
+   * @param params.userName 用户在摸鱼派的用户名
+   * @param params.stage 关卡数
+   * @param params.time 通过此关时间（毫秒级时间戳）
+   * @returns void
    */
   async addMofishScore({
     userName,
@@ -55,7 +68,8 @@ export class Finger {
 
   /**
    * 查询用户最近登录的IP地址
-   * @param userName: 用户在摸鱼派的用户名
+   * @param userName 用户在摸鱼派的用户名
+   * @returns 用户 IP 信息
    */
   async queryLatestLoginIP(userName: string): Promise<IUserIP> {
     let rsp;
@@ -79,8 +93,9 @@ export class Finger {
 
   /**
    * 添加勋章
-   * @param userName: 用户在摸鱼派的用户名
-   * @param metal: 勋章信息
+   * @param userName 用户在摸鱼派的用户名
+   * @param metal 勋章信息
+   * @returns void
    */
   async addMetal(userName: string, metal: MetalBase): Promise<void> {
     let rsp;

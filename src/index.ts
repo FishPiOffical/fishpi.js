@@ -13,6 +13,9 @@ import {
 } from './';
 import { IUserLite, UserVIP } from './types';
 
+/**
+ * 摸鱼派 SDK 主入口
+ */
 export class FishPi {
   /**
    *  请求 API 的 API Key
@@ -62,6 +65,11 @@ export class FishPi {
     this.setToken(token);
   }
 
+  /**
+   * 设置请求 Token
+   * @param apiKey 接口 API Key
+   * @returns void
+   */
   async setToken(apiKey: string) {
     this.apiKey = apiKey;
     this.chatroom.setToken(this.apiKey);
@@ -74,6 +82,11 @@ export class FishPi {
     this.chat.setToken(this.apiKey);
   }
 
+  /**
+   * 设置 API 域名
+   * @param domain API 域名
+   * @returns void
+   */
   async setDomain(domain: string) {
     setDomain(domain);
   }
@@ -107,7 +120,7 @@ export class FishPi {
   /**
    * 预注册账号
    * @param data 用户信息
-   * @returns
+   * @returns void
    */
   async preRegister(data: PreRegisterInfo): Promise<void> {
     try {
@@ -131,7 +144,7 @@ export class FishPi {
   /**
    * 验证手机验证码
    * @param code 验证码
-   * @returns
+   * @returns 验证状态
    */
   async verify(code: string): Promise<number> {
     try {
@@ -150,6 +163,8 @@ export class FishPi {
 
   /**
    * 注册账号
+   * @param data 注册信息
+   * @returns void
    */
   async register(data: RegisterInfo): Promise<void> {
     try {

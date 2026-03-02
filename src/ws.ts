@@ -3,6 +3,9 @@ import ReconnectingWebSocket, {
 } from 'reconnecting-websocket';
 import { WebSocket, EventEmitter } from './utils';
 
+/**
+ * 通用 WebSocket 事件
+ */
 export interface IWebSocketEvent {
   /**
    * Websocket 打开
@@ -18,9 +21,21 @@ export interface IWebSocketEvent {
   error: (error: ErrorEvent) => void;
 }
 
+/**
+ * WebSocket 事件基础类
+ */
 export class WsEventBase<T> {
+  /**
+   * 事件触发器
+   */
   emitter = new EventEmitter();
+  /**
+   * WebSocket 连接对象
+   */
   ws: ReconnectingWebSocket | null = null;
+  /**
+   * WebSocket 配置
+   */
   rwsOptions: ReconnectingWebSocketOptions = {
     minReconnectionDelay: 10000,
     maxReconnectionDelay: 600000,
@@ -61,6 +76,7 @@ export class WsEventBase<T> {
    * WebSocket 监听
    * @param event WebSocket 事件
    * @param listener 监听器
+   * @returns EventEmitter
    */
   on<K extends keyof T>(event: K, listener: T[K]) {
     if (this.ws == null || this.ws.readyState !== WebSocket.OPEN) {
@@ -73,6 +89,7 @@ export class WsEventBase<T> {
    * 移除 WebSocket 监听
    * @param event WebSocket 事件
    * @param listener 监听器
+   * @returns EventEmitter
    */
   off<K extends keyof T>(event?: K, listener?: T[K]) {
     if (!event) return this.emitter.removeAllListeners();
@@ -84,6 +101,7 @@ export class WsEventBase<T> {
    *  WebSocket 单次监听
    * @param event WebSocket 事件
    * @param listener 监听器
+   * @returns EventEmitter
    */
   once<K extends keyof T>(event: K, listener: T[K]) {
     return this.emitter.once(event as string, listener as (...args: any[]) => void);

@@ -11,6 +11,9 @@ import {
 import { domain, request, WebSocket } from './utils';
 import { IWebSocketEvent, WsEventBase } from './ws';
 
+/**
+ * 通知事件监听器
+ */
 interface INoticeEvents extends IWebSocketEvent {
   /**
    * 清风明月更新
@@ -39,9 +42,19 @@ interface INoticeEvents extends IWebSocketEvent {
   warnBroadcast: (data: INoticeWarnBroadcast) => void;
 }
 
+/**
+ * 摸鱼派通知接口
+ */
 export class Notice extends WsEventBase<INoticeEvents> {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
 
+  /**
+   * 实例化通知
+   * @param token 认证 Token
+   */
   constructor(token: string = '') {
     super();
     if (!token) {
@@ -52,7 +65,7 @@ export class Notice extends WsEventBase<INoticeEvents> {
 
   /**
    * 重新设置请求 Token
-   * @param apiKey 接口 API Key
+   * @param token 接口 API Key
    */
   setToken(token: string) {
     this.apiKey = token;
@@ -60,6 +73,7 @@ export class Notice extends WsEventBase<INoticeEvents> {
 
   /**
    * 获取未读消息数
+   * @returns 未读消息数信息
    */
   async count(): Promise<INoticeCount> {
     let rsp;
@@ -80,6 +94,7 @@ export class Notice extends WsEventBase<INoticeEvents> {
   /**
    * 获取消息列表
    * @param type 消息类型
+   * @returns 消息列表
    */
   async list(type: NoticeType): Promise<NoticeList> {
     let rsp;
@@ -150,7 +165,8 @@ export class Notice extends WsEventBase<INoticeEvents> {
   }
 
   /**
-   * 连接用户私聊频道
+   * 连接通知频道
+   * @param reload 是否重新连接
    * @returns Websocket 连接对象
    */
   connect(reload = false): Promise<ReconnectingWebSocket> {

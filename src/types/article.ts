@@ -49,10 +49,19 @@ export class ArticlePost implements IArticlePost {
    */
   offerPoint?: number;
 
+  /**
+   * 从接口数据转换为 ArticlePost 实例
+   * @param article 帖子数据
+   * @returns ArticlePost 实例
+   */
   static from(article: IArticlePost) {
     return Object.assign(new ArticlePost(), article);
   }
 
+  /**
+   * 转换为接口请求数据
+   * @returns 接口请求数据
+   */
   toJson() {
     return {
       articleTitle: this.title,
@@ -70,6 +79,9 @@ export class ArticlePost implements IArticlePost {
   }
 }
 
+/**
+ * 评论提交信息
+ */
 export class CommentPost implements ICommentPost {
   /**
    * 文章 Id
@@ -92,10 +104,19 @@ export class CommentPost implements ICommentPost {
    */
   originalId?: string;
 
+  /**
+   * 从接口数据转换为 CommentPost 实例
+   * @param comment 评论数据
+   * @returns CommentPost 实例
+   */
   static from(comment: ICommentPost) {
     return Object.assign(new CommentPost(), comment);
   }
 
+  /**
+   * 转换为接口请求数据
+   * @returns 接口请求数据
+   */
   toJson() {
     return {
       articleId: this.articleId,

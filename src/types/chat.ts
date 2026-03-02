@@ -60,9 +60,15 @@ export interface IChatRevoke {
    * 消息 Id
    */
   data: string;
+  /**
+   * 消息类型
+   */
   type: 'revoke';
 }
 
+/**
+ * 私聊查询参数
+ */
 export interface IChatQuery {
   /**
    * 页码
@@ -78,6 +84,9 @@ export interface IChatQuery {
   autoRead?: boolean;
 }
 
+/**
+ * 私聊通知信息
+ */
 export interface IChatNotice {
   /**
    * 命令

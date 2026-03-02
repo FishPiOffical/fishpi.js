@@ -13,15 +13,39 @@ import {
 } from './';
 import { IWebSocketEvent, WsEventBase } from './ws';
 
+/**
+ * 文章事件监听器
+ */
 interface IArticleEvents extends IWebSocketEvent {
+  /**
+   * 热度更新
+   * @param msg 文章热度信息
+   */
   heat: (msg: IArticleHeat) => void;
+  /**
+   * 评论通知
+   * @param msg 文章评论信息
+   */
   comment: (msg: ArticleComment) => void;
 }
 
+/**
+ * 摸鱼派文章接口
+ */
 export class Article {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
+  /**
+   * 文章频道
+   */
   private channels: { [key: string]: ArticleChannel } = {};
 
+  /**
+   * 各个模块的实例化
+   * @param token 认证 Token
+   */
   constructor(token: string = '') {
     if (!token) {
       return;
@@ -31,7 +55,7 @@ export class Article {
 
   /**
    * 重新设置请求 Token
-   * @param apiKey 接口 API Key
+   * @param token 接口 API Key
    */
   setToken(token: string) {
     this.apiKey = token;
@@ -90,8 +114,11 @@ export class Article {
 
   /**
    * 查询文章列表
-   * @param type 查询类型
-   * @param tag 指定查询标签，可选
+   * @param params 查询参数
+   * @param params.type 查询类型
+   * @param params.page 页码，默认 1
+   * @param params.size 每页数量，默认 20
+   * @param params.tag 指定查询标签，可选
    * @returns 文章列表
    */
   async list({
@@ -201,6 +228,7 @@ export class Article {
   /**
    * 感谢文章
    * @param id 文章id
+   * @returns void
    */
   async thank(id: string): Promise<void> {
     let rsp;
@@ -244,6 +272,7 @@ export class Article {
   /**
    * 取消收藏文章
    * @param followingId 文章id
+   * @returns void
    */
   async unfollow(followingId: string): Promise<void> {
     let rsp;
@@ -266,6 +295,7 @@ export class Article {
   /**
    * 关注文章
    * @param followingId 文章id
+   * @returns void
    */
   async watch(followingId: string): Promise<void> {
     let rsp;
@@ -288,6 +318,7 @@ export class Article {
   /**
    * 取消关注文章
    * @param followingId 文章id
+   * @returns void
    */
   async unwatch(followingId: string): Promise<void> {
     let rsp;
@@ -331,6 +362,7 @@ export class Article {
   /**
    * 获取文章在线人数
    * @param id 文章id
+   * @returns 文章热度值
    */
   async heat(id: string): Promise<number> {
     let rsp;
@@ -351,6 +383,7 @@ export class Article {
   /**
    * 获取帖子的Markdown原文
    * @param articleId 文章Id
+   * @returns 文章 Markdown 内容
    */
   async md(articleId: string): Promise<string> {
     let rsp;
@@ -367,17 +400,41 @@ export class Article {
     }
   }
 
+  /**
+   * 获取文章频道
+   * @param id 文章 Id
+   * @param type 文章类型
+   * @returns 文章频道实例
+   */
   channel(id: string, type: ArticleType): ArticleChannel {
     if (!this.channels[id]) this.channels[id] = new ArticleChannel(this.apiKey, id, type);
     return this.channels[id];
   }
 }
 
+/**
+ * 文章实时频道
+ */
 export class ArticleChannel extends WsEventBase<IArticleEvents> {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
+  /**
+   * 文章 Id
+   */
   private id: string = '';
+  /**
+   * 文章类型
+   */
   private type: ArticleType = ArticleType.Normal;
 
+  /**
+   * 实例化文章频道
+   * @param token 认证 Token
+   * @param id 文章 Id
+   * @param type 文章类型
+   */
   constructor(token: string, id: string, type: ArticleType) {
     super();
     if (!token) {
@@ -386,10 +443,9 @@ export class ArticleChannel extends WsEventBase<IArticleEvents> {
     this.apiKey = token;
   }
   /**
-   * 添加文章监听器
-   * @param id 文章id
-   * @param type 文章类型
-   * @param callback 监听回调
+   * 连接实时频道
+   * @param reload 是否强制重连
+   * @returns WebSocket 实例
    */
   async connect(reload?: boolean): Promise<ReconnectingWebSocket> {
     return new Promise(async (resolve, reject) => {

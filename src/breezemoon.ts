@@ -1,9 +1,19 @@
 import { BreezemoonContent, BreezemoonList } from '.';
 import { request } from './utils';
 
+/**
+ * 摸鱼派清风明月接口
+ */
 export class Breezemoon {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
 
+  /**
+   * 各个模块的实例化
+   * @param token 认证 Token
+   */
   constructor(token: string = '') {
     if (!token) {
       return;
@@ -13,7 +23,7 @@ export class Breezemoon {
 
   /**
    * 重新设置请求 Token
-   * @param apiKey 接口 API Key
+   * @param token 接口 API Key
    */
   setToken(token: string) {
     this.apiKey = token;
@@ -23,6 +33,7 @@ export class Breezemoon {
    * 获取清风明月列表
    * @param page 消息页码
    * @param size 每页个数
+   * @returns 清风明月列表
    */
   async list(page = 1, size = 20): Promise<BreezemoonContent[]> {
     try {
@@ -43,6 +54,7 @@ export class Breezemoon {
    * @param user 用户名
    * @param page 消息页码
    * @param size 每页个数
+   * @returns 清风明月列表
    */
   async listByUser(user: string, page = 1, size = 20): Promise<BreezemoonList> {
     try {
@@ -61,6 +73,7 @@ export class Breezemoon {
   /**
    * 发送清风明月
    * @param content 内容
+   * @returns void
    */
   async send(content: string): Promise<void> {
     try {

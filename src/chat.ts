@@ -3,6 +3,9 @@ import { request, domain, WebSocket } from './utils';
 import { IChatData, IChatQuery } from '.';
 import { IWebSocketEvent, WsEventBase } from './ws';
 
+/**
+ * 私聊事件监听器
+ */
 interface IChatEvents extends IWebSocketEvent {
   /**
    * 私聊消息
@@ -16,10 +19,24 @@ interface IChatEvents extends IWebSocketEvent {
   revoke: (oId: string) => void;
 }
 
+/**
+ * 私聊频道
+ */
 class ChatChannel extends WsEventBase<IChatEvents> {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
+  /**
+   * 目标用户名
+   */
   private user = '';
 
+  /**
+   * 实例化私聊频道
+   * @param user 目标用户名
+   * @param apiKey 接口 API Key
+   */
   constructor(user: string, apiKey: string) {
     super();
     this.apiKey = apiKey;
@@ -74,6 +91,11 @@ class ChatChannel extends WsEventBase<IChatEvents> {
     });
   }
 
+  /**
+   * 发送私聊消息
+   * @param msg 消息内容
+   * @returns void
+   */
   async send(msg: string) {
     if (this.ws == null) {
       await this.connect();
@@ -81,6 +103,9 @@ class ChatChannel extends WsEventBase<IChatEvents> {
     if (this.user) this.ws?.send(msg);
   }
 
+  /**
+   * 关闭私聊频道
+   */
   close() {
     this.ws?.close();
   }

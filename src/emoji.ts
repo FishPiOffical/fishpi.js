@@ -1,9 +1,22 @@
 import { request, domain } from './utils';
 
+/**
+ * 摸鱼派表情接口
+ */
 export class Emoji {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
+  /**
+   * 自定义表情列表
+   */
   private emojis: string[] = [];
 
+  /**
+   * 各个模块的实例化
+   * @param token 认证 Token
+   */
   constructor(token: string = '') {
     if (!token) {
       return;
@@ -13,7 +26,7 @@ export class Emoji {
 
   /**
    * 重新设置请求 Token
-   * @param apiKey 接口 API Key
+   * @param token 接口 API Key
    */
   setToken(token: string) {
     this.apiKey = token;
@@ -23,6 +36,9 @@ export class Emoji {
         .catch(() => {});
   }
 
+  /**
+   * 默认表情列表
+   */
   get default() {
     return {
       doge: 'https://cdn.jsdelivr.net/npm/vditor@3.8.7/dist/images/emoji/doge.png',

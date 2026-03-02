@@ -2,8 +2,17 @@
  * 摸鱼大闯关信息
  */
 export class MoFishGame implements IMoFishGame {
+  /**
+   * 用户名
+   */
   userName = '';
+  /**
+   * 关卡
+   */
   stage = '';
+  /**
+   * 时间
+   */
   time = 0;
 }
 
@@ -30,7 +39,13 @@ export interface IMoFishGame {
  * 用户 IP 信息
  */
 export interface IUserIP {
+  /**
+   * 最近登录 IP
+   */
   latestLoginIP: string;
+  /**
+   * 用户 ID
+   */
   userId: string;
 }
 

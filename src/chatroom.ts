@@ -82,14 +82,39 @@ interface IChatRoomEvents extends IWebSocketEvent {
   all: (type: string, data: any) => void;
 }
 
+/**
+ * 摸鱼派聊天室接口
+ */
 export class ChatRoom extends WsEventBase<IChatRoomEvents> {
+  /**
+   * 接口 API Key
+   */
   private apiKey: string = '';
+  /**
+   * 讨论话题
+   */
   private _discusse: string = '';
+  /**
+   * 在线用户列表
+   */
   private _onlines: IOnlineInfo[] = [];
+  /**
+   * WebSocket 心跳定时器
+   */
   private wsTimer: NodeJS.Timeout | null = null;
+  /**
+   * 客户端类型
+   */
   private client: ClientType | string = ClientType.Other;
+  /**
+   * 客户端版本
+   */
   private version: string = 'Latest';
 
+  /**
+   * 实例化聊天室
+   * @param token 认证 Token
+   */
   constructor(token: string = '') {
     super();
     if (!token) {
@@ -101,21 +126,22 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
   /**
    * 当前在线人数列表，需要先调用 addListener 添加聊天室消息监听
    */
-  get onlines() {
+  get onlines(): IOnlineInfo[] {
     return this._onlines;
   }
 
   /**
    * 当前聊天室话题，需要先调用 addListener 添加聊天室消息监听
    */
-  get discusse() {
+  get discusse(): string {
     return this._discusse;
   }
 
   /**
    * 設置当前聊天室话题
+   * @param val 话题内容
    */
-  set discusse(val) {
+  set discusse(val: string) {
     this.send(`[setdiscuss]${val}[/setdiscuss]`).catch(() => {});
   }
 
@@ -175,10 +201,12 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
 
   /**
    * 获取指定消息附近的聊天室消息
-   * @param oId 消息 Id
-   * @param mode 获取模式，context 上下文模式，after 之后模式
-   * @param size 获取消息数量，默认 25，最大 100
-   * @param type 获取消息类型，默认 HTML
+   * @param params 获取参数
+   * @param params.oId 消息 Id
+   * @param params.mode 获取模式，context 上下文模式，after 之后模式
+   * @param params.size 获取消息数量，默认 25，最大 100
+   * @param params.type 获取消息类型，默认 HTML
+   * @returns 聊天室消息列表
    */
   async get({
     oId,
