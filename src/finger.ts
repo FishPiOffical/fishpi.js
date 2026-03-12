@@ -287,4 +287,29 @@ export class Finger {
       throw e;
     }
   }
+
+  /**
+   * 给指定用户发送通知
+   * @param userName: 用户在摸鱼派的用户名
+   * @param notification: 通知内容
+   * @returns void
+   */
+  async sendNotice(userName: string, notification: string): Promise<void> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `user/edit/notification`,
+        method: 'post',
+        data: {
+          goldFingerKey: this.goldFingerKey,
+          userName,
+          notification,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+    } catch (e) {
+      throw e;
+    }
+  }
 }

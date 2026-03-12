@@ -1,6 +1,6 @@
 {
   "name": "fishpi",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "description": "A Package to use API of fishpi.",
   "type": "module",
   "types": "lib/index.d.mts",

@@ -1,6 +1,6 @@
 # Fishpi.js
 
-摸鱼派社区 (https://fishpi.cn/) 的 API Package，可以快速开发出一款应用支援社区功能。
+摸鱼派社区 (https://fishpi.cn/) 的 API Package，可以快速开发出一款应用支援社区功能。[[接口文档]](https://fishpioffical.github.io/fishpi.js/)
 
 ## 功能
 - 用户信息；
