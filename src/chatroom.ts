@@ -23,7 +23,7 @@ import {
 } from './';
 import { IWebSocketEvent, WsEventBase } from './ws';
 
-interface IChatRoomEvents extends IWebSocketEvent {
+export interface IChatRoomEvents extends IWebSocketEvent {
   /**
    * 在线用户变更
    * @param onlines 在线用户

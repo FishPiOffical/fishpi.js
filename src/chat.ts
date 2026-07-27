@@ -6,7 +6,7 @@ import { IWebSocketEvent, WsEventBase } from './ws';
 /**
  * 私聊事件监听器
  */
-interface IChatEvents extends IWebSocketEvent {
+export interface IChatEvents extends IWebSocketEvent {
   /**
    * 私聊消息
    * @param msg 私聊消息内容

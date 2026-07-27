@@ -14,7 +14,7 @@ import { IWebSocketEvent, WsEventBase } from './ws';
 /**
  * 通知事件监听器
  */
-interface INoticeEvents extends IWebSocketEvent {
+export interface INoticeEvents extends IWebSocketEvent {
   /**
    * 清风明月更新
    * @param data 清风明月

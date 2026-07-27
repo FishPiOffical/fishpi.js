@@ -16,7 +16,7 @@ import { IWebSocketEvent, WsEventBase } from './ws';
 /**
  * 文章事件监听器
  */
-interface IArticleEvents extends IWebSocketEvent {
+export interface IArticleEvents extends IWebSocketEvent {
   /**
    * 热度更新
    * @param msg 文章热度信息
