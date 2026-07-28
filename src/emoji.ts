@@ -1,3 +1,4 @@
+import { IEmojiGroup, IEmojiGroupInfo, IEmojiInfo } from './types/emoji';
 import { request, domain } from './utils';
 
 /**
@@ -9,7 +10,8 @@ export class Emoji {
    */
   private apiKey: string = '';
   /**
-   * 自定义表情列表
+   * 自定义表情列表(旧版)
+   * @deprecated
    */
   private emojis: string[] = [];
 
@@ -37,7 +39,7 @@ export class Emoji {
   }
 
   /**
-   * 默认表情列表
+   * 默认表情列表 :key: 可直接使用
    */
   get default() {
     return {
@@ -223,6 +225,11 @@ export class Emoji {
     };
   }
 
+  /**
+   * 获取自定义表情列表(旧版)
+   * @deprecated
+   * @returns 自定义表情列表
+   */
   async get(): Promise<string[]> {
     let rsp;
     try {
@@ -246,6 +253,7 @@ export class Emoji {
 
   /**
    * 设置表情包列表
+   * @deprecated
    * @param data 所有表情包图像列表
    */
   async set(data: string[]) {
@@ -269,6 +277,12 @@ export class Emoji {
     }
   }
 
+  /**
+   * 添加表情包(旧版)
+   * @deprecated
+   * @param url 表情包 URL
+   * @returns 更新后的表情包列表
+   */
   async append(url: string): Promise<string[]> {
     let emojis = this.emojis.length > 0 ? this.emojis : await this.get();
     if (emojis.indexOf(url) >= 0) throw new Error('表情包已存在');
@@ -278,6 +292,12 @@ export class Emoji {
     return emojis.concat([]);
   }
 
+  /**
+   * 移除表情包(旧版)
+   * @deprecated
+   * @param url 表情包 URL
+   * @returns 更新后的表情包列表
+   */
   async remove(url: string): Promise<string[]> {
     let emojis = this.emojis.length > 0 ? this.emojis : await this.get();
     if (emojis.indexOf(url) < 0) return emojis;
@@ -287,8 +307,257 @@ export class Emoji {
     return emojis.concat([]);
   }
 
+  /**
+   * 判断表情包是否存在(旧版)
+   * @deprecated
+   * @param url 表情包 URL
+   * @returns 表情包是否存在
+   */
   async exists(url: string): Promise<Boolean> {
     let emojis = this.emojis.length > 0 ? this.emojis : await this.get();
     return emojis.indexOf(url) >= 0;
+  }
+
+  /**
+   * 获取表情分组列表
+   * @returns 表情分组列表
+   */
+  async groups(): Promise<IEmojiGroup[]> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/groups?apiKey=${this.apiKey}`,
+        method: 'get',
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return rsp.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 获取分组内表情
+   * @param groupId 分组 ID
+   * @returns 表情列表
+   */
+  async groupEmojis(groupId: string): Promise<IEmojiInfo[]> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/emojis?groupId=${groupId}&apiKey=${this.apiKey}`,
+        method: 'get',
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return rsp.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 创建表情分组
+   * @param name 分组名称
+   * @param sort 分组排序
+   * @returns 创建是否成功
+   */
+  async createGroup(name: string, sort=0): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/create`,
+        method: 'post',
+        data: {
+          name,
+          sort,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 删除表情分组
+   * @param groupId 分组 ID
+   * @returns 删除是否成功
+   */
+  async deleteGroup(groupId: string): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/delete`,
+        method: 'post',
+        data: {
+          groupId,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 更新表情分组信息
+   * @param groupId 分组 ID
+   * @param name 分组名称
+   * @param sort 分组排序
+   * @returns 更新是否成功
+   */
+  async updateGroup(groupId: string, name: string, sort=0): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/update`,
+        method: 'post',
+        data: {
+          groupId,
+          name,
+          sort,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 上传 URL 到"全部"分组
+   * @param url 表情包 URL
+   * @returns 上传是否成功
+   */
+  async addUrlToGlobal(url: string): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/upload`,
+        method: 'post',
+        data: {
+          url,
+          apiKey: this.apiKey,
+        },
+      });
+      if (rsp.code) throw new Error(rsp.msg);
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  async addUrlToGroup(url: string, groupId: string): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/add-url-emoji`,
+        method: 'post',
+        data: {
+          groupId,
+          url,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 添加表情到分组
+   * @param data 表情信息
+   * @returns 添加是否成功
+   */
+  async addEmojiToGroup(data: IEmojiGroupInfo): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/add-emoji`,
+        method: 'post',
+        data: {
+          ...data,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 移除表情分组中的表情
+   * @param groupId 分组 ID
+   * @param emojiId 表情 ID
+   * @returns 移除是否成功
+   */
+  async removeEmojiFromGroup(groupId: string, emojiId: string): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/group/remove-emoji`,
+        method: 'post',
+        data: {
+          groupId,
+          emojiId,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   * 更新表情信息
+   * @param data 表情信息
+   * @returns 更新是否成功
+   */
+  async updateEmoji(data: IEmojiGroupInfo): Promise<boolean> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/emoji/emoji/update`,
+        method: 'post',
+        data: {
+          ...data,
+          apiKey: this.apiKey,
+        },
+      });
+
+      if (rsp.code) throw new Error(rsp.msg);
+
+      return true;
+    } catch (e) {
+      throw e;
+    }
   }
 }
