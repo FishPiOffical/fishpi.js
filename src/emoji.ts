@@ -365,7 +365,7 @@ export class Emoji {
    * @param sort 分组排序
    * @returns 创建是否成功
    */
-  async createGroup(name: string, sort=0): Promise<boolean> {
+  async createGroup(name: string, sort = 0): Promise<boolean> {
     let rsp;
     try {
       rsp = await request({
@@ -418,7 +418,7 @@ export class Emoji {
    * @param sort 分组排序
    * @returns 更新是否成功
    */
-  async updateGroup(groupId: string, name: string, sort=0): Promise<boolean> {
+  async updateGroup(groupId: string, name: string, sort = 0): Promise<boolean> {
     let rsp;
     try {
       rsp = await request({

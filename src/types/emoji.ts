@@ -21,7 +21,7 @@ export interface IEmojiGroup {
 }
 
 /**
- * 表情的分组信息 
+ * 表情的分组信息
  */
 export interface IEmojiGroupInfo {
   /**
