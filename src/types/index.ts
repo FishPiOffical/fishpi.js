@@ -6,6 +6,7 @@ export * from './redpacket';
 export * from './user';
 export * from './finger';
 export * from './notice';
+export * from './emoji';
 
 /**
  * 数据类型
