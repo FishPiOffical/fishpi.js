@@ -546,7 +546,10 @@ export class ChatRoom extends WsEventBase<IChatRoomEvents> {
   }
 }
 
-class RedPacket {
+/**
+ * 红包
+ */
+export class RedPacket {
   private chatroom: ChatRoom;
   private apiKey: string = '';
 

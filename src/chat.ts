@@ -22,7 +22,7 @@ export interface IChatEvents extends IWebSocketEvent {
 /**
  * 私聊频道
  */
-class ChatChannel extends WsEventBase<IChatEvents> {
+export class ChatChannel extends WsEventBase<IChatEvents> {
   /**
    * 接口 API Key
    */
@@ -151,6 +151,9 @@ class ChatChannel extends WsEventBase<IChatEvents> {
   }
 }
 
+/**
+ * 私聊
+ */
 export class Chat {
   private apiKey: string = '';
   private chats: { [key: string]: ChatChannel } = {};
