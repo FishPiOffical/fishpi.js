@@ -1,5 +1,5 @@
 import { defineConfig } from 'tsdown'
-import pkg from "./package.json" assert {type: 'json'};
+import pkg from "./package.json" with {type: 'json'};
 
 const moduleName = pkg.name.replace(/^@.*\//, "");
 const author = pkg.author;

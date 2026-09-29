@@ -343,6 +343,30 @@ export class FishPi {
   }
 
   /**
+   * 获取上传票据
+   * @returns 上传票据信息，包括 ticket、uploadURL 和 expiresIn。
+   */
+  private async getUploadTicket(): Promise<{
+    ticket: string;
+    uploadURL: string;
+    expiresIn: number;
+  }> {
+    let rsp;
+    try {
+      rsp = await request({
+        url: `api/rhypic/upload-ticket?apiKey=${this.apiKey}`,
+        method: 'post',
+      });
+
+      if (rsp.code != 0) throw new Error(rsp.msg);
+
+      return rsp.data;
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
    * 上传文件
    * @param files 要上传的文件，如果是在 Node 使用，则传入文件路径数组，若是在浏览器使用，则传入文件对象数组。
    */
@@ -353,26 +377,35 @@ export class FishPi {
 
     if (isBrowserEnv) {
       data = new FormData();
-      files.forEach((f) => data.append('file[]', f));
+      files.forEach((f) => data.append('file', f));
     } else {
-      const FormData = await import('form-data').then((mod) => mod.default);
-      const fs = await import('fs');
       const path = await import('path');
-      data = new FormData();
-      files.forEach((f) =>
-        data.append('file[]', fs.readFileSync(f.toString()), path.basename(f.toString())),
-      );
+      if (globalThis && !globalThis.FormData) {
+        // 兼容 Node<18
+        globalThis.FormData = await import('form-data').then((mod) => mod.default as any);
+        const fs = await import('fs');
+        data = new FormData();
+        files.forEach((f) =>
+          data.append('file', fs.readFileSync(f.toString()), path.basename(f.toString())),
+        );
+      } else {
+        data = new FormData();
+        files.forEach((f) => data.append('file', new File([f], path.basename(f.toString()))));
+      }
     }
 
-    data.append('apiKey', this.apiKey);
+    const { ticket, uploadURL } = await this.getUploadTicket();
 
     let rsp;
     try {
       rsp = await request({
-        url: `upload`,
+        url: `${uploadURL}/api/v1/files`,
         method: 'post',
         data,
-        headers: isBrowserEnv ? undefined : data.getHeaders(),
+        headers: {
+          ...(isBrowserEnv ? {} : data.getHeaders()),
+          Authorization: `Bearer ${ticket}`,
+        },
       });
 
       if (rsp.code != 0) throw new Error(rsp.msg);

@@ -38,7 +38,7 @@ async function request(opt: any) {
 
   let rsp: any;
   try {
-    rsp = fetch(`https://${domain}/${url}`, options)
+    rsp = fetch(url.startsWith('http') ? url : `https://${domain}/${url}`, options)
       .then((res: Response) => res.text())
       .then((res: string) => {
         try {
